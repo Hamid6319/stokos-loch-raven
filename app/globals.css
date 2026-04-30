@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+@theme {
+  /* Yeh line Tailwind ko batayegi ke 'font-sans' class aapka Jakarta font use kare */
+  --font-sans: var(--font-jakarta);
+}
+
+/* Broadway Style: Dark by Default */
+:root {
+  --background: #050505;
+  --foreground: #ffffff;
+  --nav-bg: #121212;
+  --border-color: #262626;
+}
+
+.light {
+  --background: #ffffff;
+  --foreground: #000000;
+  --nav-bg: #ffffff;
+  --border-color: #e5e7eb;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  /* Yahan font-family ko variable se connect kar diya */
+  font-family: var(--font-jakarta); 
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.custom-nav {
+  background-color: var(--nav-bg);
+  border-color: var(--border-color);
+  color: var(--foreground);
+}
+
+input {
+  color: inherit;
+  font-family: inherit; /* Input bhi aapka font use kare */
+}
