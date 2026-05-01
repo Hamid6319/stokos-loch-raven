@@ -13,7 +13,7 @@ const CATEGORIES = [
   { id: "sandwiches", name: "Sandwiches" },
   { id: "club-sandwiches", name: "Club Sanwiches" },
   { id: "pizzas", name: "Pizzas" },
-  { id: "specialty-pizzas", name: "Stoko's Specialty Pizzas" },
+  { id: "specialty-pizzas", name: "Stoko's Specialty Pizzas"},
   { id: "stromboli", name: "Famous Stromboli" },
   { id: "calzones", name: "Calzones" },
   { id: "quesadillas", name: "Quesadillas" },
@@ -83,7 +83,7 @@ export default function Categories() {
                     isActive
                       ? cat.special
                         ? "bg-green-500 text-white shadow-[0_0_14px_rgba(34,197,94,0.5)]"
-                        : "bg-green-500 text-white shadow-[0_0_14px_rgba(34,197,94,0.5)] scale-105"
+                        : "---- text-white shadow-[0_0_14px_rgba(34,197,94,0.5)] scale-105"
                       : "bg-zinc-100 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800"
                   }
                 `}

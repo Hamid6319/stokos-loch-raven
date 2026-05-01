@@ -2,6 +2,8 @@ import Navbar from "@/components/navbar";
 import Header from "@/components/header";
 import Hero from "@/components/hero";
 import Categories from "../components/categories";
+import MenuSection from "@/components/menusection";
+import { PRODUCTS } from "@/lib/data/products";
 // import Herosection from "@/components/herosection";
 // import TrustBar from "@/components/trustbar";
 // import Features from "@/components/feature";
@@ -15,7 +17,7 @@ export default function Home() {
       <Header />  
        <Hero />  
       <Categories />
-
+     <MenuSection title="Popular Menu Items" products={PRODUCTS} />
     </main>
   );
 }

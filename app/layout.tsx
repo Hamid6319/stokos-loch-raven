@@ -21,20 +21,20 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      
+      {/* ✅ Theme script BEFORE body (no flicker) */}
       <body className={`${jakarta.variable} font-sans min-h-screen antialiased`}>
-
+        
         <script
           dangerouslySetInnerHTML={{
             __html: `
               (function () {
                 try {
                   const saved = localStorage.getItem("theme");
-
-                  if (saved === "light") {
-                    document.documentElement.classList.remove("dark");
-                  } else {
+                  if (saved === "dark") {
                     document.documentElement.classList.add("dark");
-                    localStorage.setItem("theme", "dark");
+                  } else {
+                    document.documentElement.classList.remove("dark");
                   }
                 } catch (e) {}
               })();

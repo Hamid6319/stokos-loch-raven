@@ -1,0 +1,46 @@
+"use client";
+
+import ProductCard from "@/components/productcard";
+
+interface MenuSectionProps {
+  title: string;
+  products: any[];
+}
+
+export default function MenuSection({ title, products }: MenuSectionProps) {
+  return (
+    <section className="max-w-[1440px] mx-auto px-4 md:px-10 py-10">
+      
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8 border-l-4 border-yellow-500 pl-4">
+        
+        <div className="flex items-baseline gap-3">
+          
+          <h2 className="text-black dark:text-white 
+            text-2xl md:text-3xl font-black italic uppercase tracking-tighter">
+            {title}
+          </h2>
+
+          <span className="text-zinc-600 dark:text-zinc-500 
+            text-xs font-bold uppercase hidden sm:block">
+            {products.length} Items
+          </span>
+
+        </div>
+
+        <button className="text-yellow-500 text-xs font-black uppercase tracking-widest hover:underline transition-all">
+          ALL <span className="ml-1">→</span>
+        </button>
+
+      </div>
+
+      {/* Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+        {products.map((product) => (
+          <ProductCard key={product.id} product={product} />
+        ))}
+      </div>
+
+    </section>
+  );
+}

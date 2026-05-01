@@ -1,0 +1,38 @@
+export const PRODUCTS = [
+  {
+    id: 1,
+    title: "Kabab Pro Max Large",
+    price: 1499,
+    oldPrice: null,
+    image: "/images/pizza.png",
+    badge: "NEW",
+    discount: null,
+  },
+  {
+    id: 2,
+    title: "Medium Pizza",
+    price: 999,
+    oldPrice: 1199,
+    image: "/images/pizza.png",
+    badge: "SAVE 17%",
+    discount: 200,
+  },
+  {
+    id: 3,
+    title: "Chicken Fajita Pizza",
+    price: 1299,
+    oldPrice: 1499,
+    image: "/images/pizza.png",
+    badge: "HOT",
+    discount: 200,
+  },
+  {
+    id: 4,
+    title: "BBQ Tikka Pizza",
+    price: 1399,
+    oldPrice: null,
+    image: "/images/pizza.png",
+    badge: "POPULAR",
+    discount: null,
+  },
+];
