@@ -13,7 +13,7 @@ export default function Hero() {
         
         {/* 1. BACKGROUND IMAGE */}
         <Image
-          src="/images/hero-2.png"
+          src="/images/herotwo.png"
           alt="Stokos Deals"
           fill
           priority
