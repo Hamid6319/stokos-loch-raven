@@ -1,6 +1,7 @@
 import Navbar from "@/components/navbar";
 import Header from "@/components/header";
 import Hero from "@/components/hero";
+import Categories from "../components/categories";
 // import Herosection from "@/components/herosection";
 // import TrustBar from "@/components/trustbar";
 // import Features from "@/components/feature";
@@ -13,11 +14,8 @@ export default function Home() {
       <Navbar />
       <Header />  
        <Hero />  
-      {/* <Herosection />
-      <TrustBar />
-      <Features />
-      <HowItWorks />
-      <Footer /> */}
+      <Categories />
+
     </main>
   );
 }
