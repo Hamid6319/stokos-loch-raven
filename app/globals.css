@@ -1,49 +1,39 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
+
+/* Font */
 @theme {
-  /* Yeh line Tailwind ko batayegi ke 'font-sans' class aapka Jakarta font use kare */
   --font-sans: var(--font-jakarta);
 }
 
-/* Broadway Style: Dark by Default */
-:root {
-  --background: #050505;
-  --foreground: #ffffff;
-  --nav-bg: #121212;
-  --border-color: #262626;
-}
-
-.light {
-  --background: #ffffff;
-  --foreground: #000000;
-  --nav-bg: #ffffff;
-  --border-color: #e5e7eb;
+/* Base styles */
+html {
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 body {
-  background-color: var(--background);
-  color: var(--foreground);
-  /* Yahan font-family ko variable se connect kar diya */
-  font-family: var(--font-jakarta); 
-  transition: background-color 0.3s ease, color 0.3s ease;
+  @apply bg-white text-black dark:bg-black dark:text-white;
+  font-family: var(--font-jakarta);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
+/* Reusable container (optional) */
 .custom-nav {
-  background-color: var(--nav-bg);
-  border-color: var(--border-color);
-  color: var(--foreground);
+  @apply bg-white text-black border border-zinc-200 
+         dark:bg-black dark:text-white dark:border-zinc-800;
 }
 
-input {
-  color: inherit;
-  font-family: inherit; /* Input bhi aapka font use kare */
-}
-
-/* globals.css */
+/* Scrollbar hide */
 @layer utilities {
   .no-scrollbar::-webkit-scrollbar {
     display: none !important;
   }
+
   .no-scrollbar {
     -ms-overflow-style: none !important;
     scrollbar-width: none !important;
