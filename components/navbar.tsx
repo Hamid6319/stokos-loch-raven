@@ -77,7 +77,7 @@ export default function Navbar() {
             >
               <span className="font-bold">{isDark ? "Light Mode" : "Dark Mode"}</span>
               <div className={`p-2 rounded-lg ${isDark ? 'bg-zinc-800' : 'bg-white shadow-sm'}`}>
-                {isDark ? <Sun size={18} className="text-yellow-500" /> : <Moon size={18} className="text-zinc-600" />}
+                {isDark ? <Sun size={18} className="text-white-500" /> : <Moon size={18} className="text-zinc-600" />}
               </div>
             </button>
 
@@ -97,7 +97,7 @@ export default function Navbar() {
       <div className="lg:hidden fixed bottom-0 left-0 w-full custom-nav border-t flex justify-around items-center py-4 z-50">
         <Home className="text-zinc-500" />
         <MapPin className="text-zinc-500" />
-        <button onClick={() => setOpen(true)} className="bg-yellow-500 text-black w-14 h-14 rounded-full flex items-center justify-center -mt-10 shadow-xl border-4 border-white dark:border-[#050505] active:scale-90 transition-all">
+        <button onClick={() => setOpen(true)} className="bg-green-500 text-white w-14 h-14 rounded-full flex items-center justify-center -mt-10 shadow-xl border-4 border-white dark:border-[#050505] active:scale-90 transition-all">
           <Menu size={24} />
         </button>
         <Info className="text-zinc-500" />

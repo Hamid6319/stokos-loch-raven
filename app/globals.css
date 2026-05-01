@@ -2,27 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
-
-/* Font */
-@theme {
-  --font-sans: var(--font-jakarta);
-}
-
 /* Base styles */
 html {
   transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 body {
-  @apply bg-white text-black dark:bg-black dark:text-white;
-  font-family: var(--font-jakarta);
+  @apply bg-white text-black dark:bg-black dark:text-white font-sans;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-/* Reusable container (optional) */
+/* Reusable container */
 .custom-nav {
   @apply bg-white text-black border border-zinc-200 
          dark:bg-black dark:text-white dark:border-zinc-800;

@@ -59,11 +59,12 @@ export default function Categories() {
   return (
     <div className="w-full sticky top-[68px] z-30 bg-white dark:bg-black border-b border-zinc-200 dark:border-zinc-800 py-3 md:py-4 transition-colors">
       
-      <div className="max-w-[1580px] mx-auto px-4 md:px-0">
+      <div className="max-w-[1580px] mx-auto px-4 md:px-0 py-1">
         
+        {/* ✅ FIX: overflow-y-visible added */}
         <div
           ref={scrollRef}
-          className="flex items-center gap-2.5 md:gap-3 overflow-x-auto no-scrollbar flex-nowrap scroll-smooth"
+          className="flex items-center gap-2.5 md:gap-3 overflow-x-auto overflow-y-visible no-scrollbar flex-nowrap scroll-smooth"
         >
           {CATEGORIES.map((cat) => {
             const isActive = active === cat.id;
@@ -75,13 +76,14 @@ export default function Categories() {
                 className={`
                   flex-shrink-0 whitespace-nowrap px-5 md:px-7 py-2 md:py-2.5 rounded-full
                   text-[11px] md:text-sm font-semibold transition-all duration-200
-                  outline-none
+                  outline-none relative
+                  ${isActive ? "z-10" : ""}
 
                   ${
                     isActive
                       ? cat.special
-                        ? "bg-yellow-400 text-black shadow-[0_0_12px_rgba(250,204,21,0.4)] scale-105"
-                        : "bg-green-500 text-white shadow-[0_0_12px_rgba(34,197,94,0.4)] scale-105"
+                        ? "bg-green-500 text-white shadow-[0_0_14px_rgba(34,197,94,0.5)]"
+                        : "bg-green-500 text-white shadow-[0_0_14px_rgba(34,197,94,0.5)] scale-105"
                       : "bg-zinc-100 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800"
                   }
                 `}
@@ -91,6 +93,7 @@ export default function Categories() {
             );
           })}
 
+          {/* spacer */}
           <div className="flex-shrink-0 w-6 h-1" />
         </div>
       </div>
