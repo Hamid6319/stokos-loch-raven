@@ -12,7 +12,7 @@ export const PRODUCTS = [
     id: 2,
     title: "Honey BBQ Chicken Pizza",
     price: "10.99",
-    image: "/images/tomatocheez.png",
+    image: "/images/vagetable.jpeg",
     badge: null,
     description: "Topped with BBQ sauce, mozzarella, and chicken meat."
   },
@@ -20,7 +20,7 @@ export const PRODUCTS = [
     id: 3,
     title: "Buffalo Chicken Pizza",
     price: "10.99",
-    image: "/images/tomatocheez.png",
+    image: "/images/pizza1.jpeg",
     badge: null,
     description: "Crispy chicken strips, our own wing sauce, bleu cheese, and mozzarella cheese."
   },
