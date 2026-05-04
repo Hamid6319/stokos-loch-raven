@@ -12,7 +12,7 @@ export default function Home() {
       <Header />  
        <Hero />  
       <Categories />
-     <MenuSection title="Popular Menu Items" products={PRODUCTS} />
+     <MenuSection title="Pizzas" products={PRODUCTS} />
     </main>
   );
 }
