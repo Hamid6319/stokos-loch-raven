@@ -17,7 +17,7 @@ export default function MenuSection({ title, products }: MenuSectionProps) {
         <div className="flex items-baseline gap-3">
           
           <h2 className="text-black dark:text-white 
-            text-2xl md:text-3xl font-black italic uppercase tracking-tighter">
+text-2xl md:text-3xl font-black uppercase tracking-tighter">
             {title}
           </h2>
 

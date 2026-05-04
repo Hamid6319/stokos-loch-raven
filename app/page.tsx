@@ -4,11 +4,6 @@ import Hero from "@/components/hero";
 import Categories from "../components/categories";
 import MenuSection from "@/components/menusection";
 import { PRODUCTS } from "@/lib/data/products";
-// import Herosection from "@/components/herosection";
-// import TrustBar from "@/components/trustbar";
-// import Features from "@/components/feature";
-// import HowItWorks from "@/components/HowItWorks"; 
-// import Footer from "@/components/Footer";
 
 export default function Home() {
   return (
