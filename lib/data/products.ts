@@ -53,4 +53,5 @@ export const PRODUCTS = [
       { label: "X-Large 16\"", price: 20.99 },
     ]
   },
+
 ];
