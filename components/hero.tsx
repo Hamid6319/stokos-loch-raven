@@ -45,7 +45,7 @@ export default function Hero() {
 
           {/* Action Buttons: Force Row on Mobile with smaller width */}
           <div className="flex flex-row items-center gap-2 md:gap-6">
-            <button className="whitespace-nowrap bg-green-500 hover:bg-green-600 text-black font-extrabold px-4 md:px-10 py-2.5 md:py-3.5 rounded-full text-[10px] md:text-sm uppercase transition-all shadow-xl active:scale-95">
+            <button className="whitespace-nowrap bg-green-500 hover:bg-green-600 text-white font-extrabold px-4 md:px-10 py-2.5 md:py-3.5 rounded-full text-[10px] md:text-sm uppercase transition-all shadow-xl active:scale-95">
               Order Specials
             </button>
 
