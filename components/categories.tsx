@@ -75,9 +75,9 @@ export default function Categories() {
                   ${
                     isActive
                       ? cat.special
-                        ? "bg-green-500 text-white"
+                        ? "bg-[#DA3327] text-white"
                         /* FIX: Changed "----" to "bg-black" (or whatever color you want for active items) */
-                        : "bg-green-500 dark:bg-green-500 text-white dark:text-white"
+                        : "bg-[#DA3327] dark:bg-[#DA3327] text-white dark:text-white"
                       : "bg-zinc-100 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800"
                   }
                 `}
