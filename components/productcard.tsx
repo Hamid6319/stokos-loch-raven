@@ -67,7 +67,7 @@ export default function ProductCard({ product }: any) {
 
             <div className="flex items-center gap-0.5 md:gap-1.5">
               {/* ✅ Changed Currency to $ */}
-              <span className="text-sm md:text-xl font-black leading-none">
+              <span className="text-[22px] md:text-xl font-black leading-none">
                 $
               </span>
 
@@ -83,7 +83,7 @@ export default function ProductCard({ product }: any) {
             bg-zinc-200 text-black border border-zinc-300
             dark:bg-zinc-900 dark:text-white dark:border-zinc-800 
             flex items-center justify-center 
-            hover:bg-green-500 hover:border-green-500 hover:text-white 
+            hover:bg-yellow-500 hover:border-yellow-500 dark:hover:bg-yellow-500 hover:text-white 
             hover:scale-110 transition-all duration-300 shadow-lg active:scale-90">
             <Plus size={16} className="md:w-6 md:h-6" strokeWidth={3} />
           </button>
