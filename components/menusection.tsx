@@ -13,14 +13,16 @@ export default function MenuSection({ title, products }: MenuSectionProps) {
     <section className="max-w-[1440px] mx-auto px-4 md:px-10 py-10">
       
       {/* Header */}
-      <div className="flex items-center justify-between mb-8 border-l-4 border-yellow-500 pl-4">
+      <div className="flex items-center justify-between mb-8 border-l-4 border-yellow-500 pl-6">
         
         <div className="flex items-baseline gap-3">
           
-          <h2 className="text-black dark:text-white 
-            text-2xl md:text-3xl font-black uppercase tracking-tighter">
-            {title}
-          </h2>
+          <h2
+  className="text-black dark:text-white 
+  text-2xl md:text-3xl font-black uppercase tracking-widest"
+>
+  {title}
+</h2>
 
           <span className="text-zinc-600 dark:text-zinc-500 
             text-xs font-bold uppercase hidden sm:block">

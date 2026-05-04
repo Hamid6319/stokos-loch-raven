@@ -13,18 +13,27 @@ interface ProductModalProps {
 export default function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
   // States
   const [quantity, setQuantity] = useState(1);
-  const [selectedSize, setSelectedSize] = useState({ label: "Medium 12\"", price: 9.99 });
+  const [selectedSize, setSelectedSize] = useState({ label: "", price: 0 });
   const [toppingSides, setToppingSides] = useState<Record<string, "left" | "right" | "whole">>({});
   const [selectedSauces, setSelectedSauces] = useState<string[]>([]);
-  const [totalPrice, setTotalPrice] = useState(product.price);
-  const [note, setNote] = useState(""); // State for Kitchen Notes
+  const [totalPrice, setTotalPrice] = useState("0.00");
+  const [note, setNote] = useState("");
 
-  // Options Data
-  const sizes = [
-    { label: "Medium 12\"", price: 9.99 },
-    { label: "Large 14\"", price: 10.99 },
-    { label: "X-Large 16\"", price: 11.99 },
-  ];
+  // ✅ Fix: Reset selection when modal opens with a new product
+  useEffect(() => {
+    if (isOpen && product) {
+      setQuantity(1);
+      setNote("");
+      setSelectedSauces([]);
+      setToppingSides({});
+      // Set default size to the first one in the product's size list
+      if (product.sizes && product.sizes.length > 0) {
+        setSelectedSize(product.sizes[0]);
+      } else {
+        setSelectedSize({ label: "Regular", price: parseFloat(product.price) });
+      }
+    }
+  }, [isOpen, product]);
 
   const toppings = [
     { name: "Extra Cheese", price: 1.5 },
@@ -75,7 +84,6 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
 
   if (!isOpen) return null;
 
-  // Helper for Half-Pizza icons
   const HalfIcon = ({ side, active }: { side: "left" | "right" | "whole", active: boolean }) => {
     return (
       <div className={`w-4 h-4 rounded-full border-2 border-current flex overflow-hidden ${active ? 'text-white' : 'text-zinc-800'}`}>
@@ -90,7 +98,6 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
     <div className="fixed inset-0 z-50 flex items-center justify-center p-0 md:p-4 bg-black/60 backdrop-blur-sm">
       <div className="bg-white dark:bg-[#121212] w-full max-w-lg h-full md:h-auto md:rounded-3xl overflow-hidden md:max-h-[92vh] flex flex-col shadow-2xl relative text-black dark:text-white">
         
-        {/* Header */}
         <div className="flex items-center justify-between p-5 border-b dark:border-zinc-800 bg-white dark:bg-[#121212] sticky top-0 z-10">
           <h2 className="text-xl font-black uppercase tracking-tight">{product.title}</h2>
           <button onClick={onClose} className="p-2 bg-black text-white rounded-full hover:scale-110 transition-transform">
@@ -98,7 +105,6 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
           </button>
         </div>
 
-        {/* Scrollable Content */}
         <div className="overflow-y-auto flex-grow p-0 no-scrollbar">
           <div className="relative w-full aspect-[16/10]">
             <Image src={product.image} alt={product.title} fill className="object-cover" />
@@ -107,20 +113,26 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
           <div className="p-6 space-y-10">
             <p className="text-zinc-600 dark:text-zinc-400 text-sm">{product.description}</p>
 
-            {/* Sizes */}
+            {/* Sizes Selection - Dynamic from product.sizes */}
             <section>
               <div className="flex justify-between items-center mb-4">
                 <h3 className="font-black uppercase text-sm tracking-widest">Choose an Option</h3>
                 <span className="text-[10px] text-zinc-500 uppercase">Required</span>
               </div>
               <div className="space-y-2">
-                {sizes.map((size) => (
+                {(product.sizes || []).map((size: any) => (
                   <label key={size.label} className="flex items-center justify-between p-4 border dark:border-zinc-800 rounded-xl cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors">
                     <div className="flex items-center gap-3">
-                      <input type="radio" name="size" checked={selectedSize.label === size.label} onChange={() => setSelectedSize(size)} className="w-5 h-5 accent-black" />
+                      <input 
+                        type="radio" 
+                        name="size" 
+                        checked={selectedSize.label === size.label} 
+                        onChange={() => setSelectedSize(size)} 
+                        className="w-5 h-5 accent-black" 
+                      />
                       <span className="font-bold text-sm">{size.label}</span>
                     </div>
-                    <span className="font-bold text-sm">${size.price}</span>
+                    <span className="font-bold text-sm">${size.price.toFixed(2)}</span>
                   </label>
                 ))}
               </div>
@@ -179,14 +191,12 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
                 </div>
             </section>
 
-            {/* ✅ NEW: Notes for the Kitchen Section */}
             <section className="pb-6">
                 <h3 className="font-black uppercase text-sm tracking-widest mb-4">Notes for the Kitchen</h3>
                 <div className="space-y-2">
                     <textarea 
                       value={note}
                       onChange={(e) => setNote(e.target.value)}
-                      placeholder="" 
                       className="w-full h-20 p-3 border dark:border-zinc-800 rounded-lg bg-transparent outline-none focus:ring-1 focus:ring-black dark:focus:ring-white transition-all resize-none text-sm"
                     />
                     <p className="text-[11px] text-zinc-500 leading-tight">
@@ -197,7 +207,6 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
           </div>
         </div>
 
-        {/* Footer */}
         <div className="p-5 border-t dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 flex flex-col gap-4">
             <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center bg-white dark:bg-black rounded-full p-1 border dark:border-zinc-800">
