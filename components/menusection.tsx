@@ -1,6 +1,7 @@
 "use client";
 
 import ProductCard from "@/components/productcard";
+import { ChevronRight } from "lucide-react"; // Added this import
 
 interface MenuSectionProps {
   title: string;
@@ -17,7 +18,7 @@ export default function MenuSection({ title, products }: MenuSectionProps) {
         <div className="flex items-baseline gap-3">
           
           <h2 className="text-black dark:text-white 
-text-2xl md:text-3xl font-black uppercase tracking-tighter">
+            text-2xl md:text-3xl font-black uppercase tracking-tighter">
             {title}
           </h2>
 
@@ -28,8 +29,9 @@ text-2xl md:text-3xl font-black uppercase tracking-tighter">
 
         </div>
 
-        <button className="text-yellow-500 text-lg font-black uppercase tracking-widest hover:underline transition-all">
-          ALL <span className="ml-1">→</span>
+        {/* Updated Button with Icon */}
+        <button className="text-yellow-500 text-sm md:text-lg font-black uppercase tracking-widest hover:underline transition-all flex items-center gap-1">
+          ALL <ChevronRight size={20} strokeWidth={4} className="mt-0.5" />
         </button>
 
       </div>
