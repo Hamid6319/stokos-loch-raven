@@ -12,7 +12,7 @@ export const PRODUCTS = [
     id: 2,
     title: "Honey BBQ Chicken Pizza",
     price: "10.99",
-    image: "/images/pizza.png",
+    image: "/images/tomatocheez.png",
     badge: null,
     description: "Topped with BBQ sauce, mozzarella, and chicken meat."
   },
@@ -20,7 +20,7 @@ export const PRODUCTS = [
     id: 3,
     title: "Buffalo Chicken Pizza",
     price: "10.99",
-    image: "/images/pizza.png",
+    image: "/images/tomatocheez.png",
     badge: null,
     description: "Crispy chicken strips, our own wing sauce, bleu cheese, and mozzarella cheese."
   },
@@ -29,7 +29,7 @@ export const PRODUCTS = [
     title: "Stoko's Deluxe Pizza",
     price: "14.99",
     oldPrice: null,
-    image: "/images/pizza.png",
+    image: "/images/tomatocheez.png",
     badge: null,
     description: "Pepperoni, sausage, ground beef, ham, bacon, mushrooms, green peppers, onions, and black olives."
   },
