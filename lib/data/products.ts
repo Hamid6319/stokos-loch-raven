@@ -4,7 +4,7 @@ export const PRODUCTS = [
     title: "Tomato & Cheese Pizza",
     price: "9.99",
     oldPrice: null,
-    image: "/images/tomatocheez.png",
+    image: "/images/pizza1.jpeg",
     badge: "Best Seller",
     description: "Classic cheese or create your own pizza."
   },
@@ -12,7 +12,7 @@ export const PRODUCTS = [
     id: 2,
     title: "Honey BBQ Chicken Pizza",
     price: "10.99",
-    image: "/images/vagetable.jpeg",
+    image: "/images/pizza1.jpeg",
     badge: null,
     description: "Topped with BBQ sauce, mozzarella, and chicken meat."
   },
@@ -29,7 +29,7 @@ export const PRODUCTS = [
     title: "Stoko's Deluxe Pizza",
     price: "14.99",
     oldPrice: null,
-    image: "/images/tomatocheez.png",
+    image: "/images/pizza1.jpeg",
     badge: null,
     description: "Pepperoni, sausage, ground beef, ham, bacon, mushrooms, green peppers, onions, and black olives."
   },
