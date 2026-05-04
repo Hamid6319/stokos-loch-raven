@@ -13,7 +13,7 @@ export default function Hero() {
         
         {/* 1. BACKGROUND IMAGE */}
         <Image
-          src="/images/herotwo.png"
+          src="/images/heroimage.png"
           alt="Stokos Deals"
           fill
           priority
@@ -21,7 +21,7 @@ export default function Hero() {
         />
 
         {/* 2. DARK OVERLAY FOR MOBILE (bg-black/65 mobile ke liye, gradient desktop ke liye) */}
-        <div className="absolute inset-0 bg-black/25 md:bg-gradient-to-r md:from-black/90 md:via-black/40 md:to-transparent z-10" />
+        <div className="absolute inset-0 bg-black/10 md:bg-gradient-to-r md:from-black/40 md:via-black/10 md:to-transparent z-10" />
 
         {/* 3. CONTENT AREA */}
         <div className="absolute inset-0 flex flex-col justify-end md:justify-center px-5 py-6 md:px-16 lg:px-24 z-20">
