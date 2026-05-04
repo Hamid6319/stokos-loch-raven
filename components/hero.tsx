@@ -27,7 +27,7 @@ export default function Hero() {
         <div className="absolute inset-0 flex flex-col justify-end md:justify-center px-5 py-6 md:px-16 lg:px-24 z-20">
           
           {/* Badge */}
-          <div className="flex items-center gap-1.5 bg-red-600 text-white px-3 py-1 rounded-full w-fit mb-3 md:mb-6 shadow-lg">
+          <div className="flex items-center gap-1.5 bg-green-500 text-white px-3 py-1 rounded-full w-fit mb-3 md:mb-6 shadow-lg">
             <Flame size={12} fill="white" className="animate-pulse md:w-[14px]" />
             <span className="text-[9px] md:text-xs font-bold uppercase tracking-widest">NEW SPECIALS LIVE</span>
           </div>
@@ -45,7 +45,7 @@ export default function Hero() {
 
           {/* Action Buttons: Force Row on Mobile with smaller width */}
           <div className="flex flex-row items-center gap-2 md:gap-6">
-            <button className="whitespace-nowrap bg-green-500 hover:bg-green-600 text-white font-extrabold px-4 md:px-10 py-2.5 md:py-3.5 rounded-full text-[10px] md:text-sm uppercase transition-all shadow-xl active:scale-95">
+            <button className="whitespace-nowrap bg-[#DA3327] hover:bg-[#DA3327] text-white font-extrabold px-4 md:px-10 py-2.5 md:py-3.5 rounded-full text-[10px] md:text-sm uppercase transition-all shadow-xl active:scale-95">
               Order Specials
             </button>
 

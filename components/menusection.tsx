@@ -28,7 +28,7 @@ text-2xl md:text-3xl font-black uppercase tracking-tighter">
 
         </div>
 
-        <button className="text-yellow-500 text-xs font-black uppercase tracking-widest hover:underline transition-all">
+        <button className="text-yellow-500 text-lg font-black uppercase tracking-widest hover:underline transition-all">
           ALL <span className="ml-1">→</span>
         </button>
 
