@@ -5,15 +5,31 @@ import { useState, useRef } from "react";
 const CATEGORIES = [
   { id: "trending", name: "Popular Menu Items", special: true },
   { id: "breakfast", name: "Breakfast (served until 11am)" },
-  { id: "coupons", name: "Menu Coupons" }, // This was likely the one failing
+  { id: "coupons", name: "Menu Coupons" },
   { id: "salads", name: "Fresh Salads" },
   { id: "hot-subs", name: "Hot Subs" },
   { id: "cold-subs", name: "Cold Sub" },
   { id: "seafood-subs", name: "Seafood Subs" },
   { id: "sandwiches", name: "Sandwiches" },
-  { id: "club-sandwiches", name: "Club Sanwiches" },
+  { id: "club-sandwiches", name: "Club Sandwiches" },
+
   { id: "pizzas", name: "Pizzas" },
-  // ... rest of your categories
+  { id: "specialty-pizzas", name: "Stoko's Specialty Pizzas" },
+  { id: "stromboli", name: "Famous Stromboli" },
+  { id: "calzones", name: "Calzones" },
+  { id: "quesadillas", name: "Quesadillas" },
+  { id: "platters", name: "Platters" },
+  { id: "chicken", name: "Chicken" },
+  { id: "fish-special", name: "Fish Special" },
+  { id: "fish-only", name: "Fish Only" },
+  { id: "pasta", name: "Italian Pasta" },
+  { id: "gyros", name: "Gyros" },
+  { id: "pick-2", name: "Pick 2" },
+  { id: "wrapped", name: "Get Wrapped" },
+
+  { id: "sides", name: "Side Orders" },
+  { id: "dessert", name: "Dessert" },
+  { id: "beverages", name: "Beverages" },
 ];
 
 export default function Categories() {
@@ -59,9 +75,9 @@ export default function Categories() {
                   ${
                     isActive
                       ? cat.special
-                        ? "bg-green-500 text-white shadow-[0_0_15px_rgba(34,197,94,0.6)]"
+                        ? "bg-green-500 text-white"
                         /* FIX: Changed "----" to "bg-black" (or whatever color you want for active items) */
-                        : "bg-green-500 dark:bg-green-500 text-white dark:text-white shadow-lg"
+                        : "bg-green-500 dark:bg-green-500 text-white dark:text-white"
                       : "bg-zinc-100 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800"
                   }
                 `}

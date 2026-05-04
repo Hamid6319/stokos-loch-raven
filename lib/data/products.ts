@@ -4,7 +4,7 @@ export const PRODUCTS = [
     title: "Tomato & Cheese Pizza",
     price: "9.99",
     oldPrice: null,
-    image: "/images/pizza.png",
+    image: "/images/tomatocheez.png",
     badge: "Best Seller",
     description: "Classic cheese or create your own pizza."
   },
