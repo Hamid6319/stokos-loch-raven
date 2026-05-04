@@ -8,7 +8,7 @@ export default function ProductCard({ product }: any) {
     <div className="group relative 
       bg-white text-black 
       dark:bg-[#121212] dark:text-white 
-      rounded-2xl md:rounded-[2.5rem] 
+      rounded-2xl md:rounded-[1.5rem] 
       p-2.5 md:p-4 w-full shadow-2xl 
       transition-all duration-300 
       hover:bg-zinc-100 dark:hover:bg-[#181818] 
@@ -16,8 +16,18 @@ export default function ProductCard({ product }: any) {
       flex flex-col"
     >
       
-      {/* Image */}
+      {/* Image Container */}
       <div className="relative w-full aspect-square overflow-hidden rounded-xl md:rounded-[1.5rem] mb-3 md:mb-5">
+        
+        {/* ✅ Badge (Best Seller etc) */}
+        {product.badge && (
+          <div className="absolute top-3 left-3 z-10">
+            <span className="bg-green-600 text-white text-[10px] md:text-xs font-bold px-3 py-1 rounded-md shadow-lg">
+              {product.badge}
+            </span>
+          </div>
+        )}
+
         <Image
           src={product.image}
           alt={product.title}
@@ -36,11 +46,11 @@ export default function ProductCard({ product }: any) {
           {product.title}
         </h3>
         
-        {/* Description */}
+        {/* ✅ Updated Dynamic Description */}
         <p className="hidden md:block 
-          text-zinc-600 dark:text-zinc-500 
-          text-[11px] mt-2 line-clamp-2 leading-relaxed min-h-[32px]">
-          Handcrafted with fresh premium ingredients and our signature secret sauce.
+          text-black dark:text-white
+          text-[14px] mt-2 line-clamp-3 leading-relaxed min-h-[48px]">
+          {product.description}
         </p>
 
         {/* Bottom */}
@@ -51,13 +61,14 @@ export default function ProductCard({ product }: any) {
               <span className="text-[8px] md:text-[10px] 
                 text-zinc-400 dark:text-zinc-600 
                 line-through font-bold mb-0.5">
-                Rs. {product.oldPrice}
+                ${product.oldPrice}
               </span>
             )}
 
             <div className="flex items-center gap-0.5 md:gap-1.5">
-              <span className="text-[8px] md:text-[10px] font-black uppercase leading-none">
-                Rs.
+              {/* ✅ Changed Currency to $ */}
+              <span className="text-sm md:text-xl font-black leading-none">
+                $
               </span>
 
               <span className="text-base md:text-3xl font-black leading-none tracking-tighter 
