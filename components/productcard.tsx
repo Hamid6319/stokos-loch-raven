@@ -43,7 +43,7 @@ export default function ProductCard({ product }: any) {
 
         {/* Content */}
         <div className="flex flex-col flex-grow px-1 pb-1">
-          <h3 className="text-black dark:text-white text-sm md:text-xl font-black uppercase tracking-tight leading-tight group-hover:text-yellow-500 transition-colors line-clamp-2">
+          <h3 className="text-black dark:text-white text-sm md:text-xl font-black uppercase tracking-tight leading-tight group-hover:text-[#DA3327] transition-colors line-clamp-2">
             {product.title}
           </h3>
           
@@ -62,10 +62,10 @@ export default function ProductCard({ product }: any) {
             <button 
               onClick={(e) => { e.stopPropagation(); setShowModal(true); }}
               className="w-10 h-10 md:w-12 md:h-12 rounded-full 
-                bg-zinc-200 text-black border border-zinc-300
-                dark:bg-zinc-900 dark:text-white dark:border-zinc-800 
+                bg-[#DA3327] text-white border border-zinc-300
+                dark:bg-[#DA3327] dark:text-white dark:border-zinc-800 
                 flex items-center justify-center 
-                hover:bg-yellow-500 hover:border-yellow-500 dark:hover:bg-yellow-500 hover:text-white 
+                hover:text-white 
                 hover:scale-110 transition-all duration-300 shadow-lg active:scale-90"
             >
               <Plus size={20} className="md:w-6 md:h-6" strokeWidth={3} />

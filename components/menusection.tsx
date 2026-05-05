@@ -10,7 +10,7 @@ interface MenuSectionProps {
 
 export default function MenuSection({ title, products }: MenuSectionProps) {
   return (
-    <section className="max-w-[1750px] mx-auto px-2  py-10">
+    <section className="w-full mx-auto px-12  py-10">
       
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
@@ -32,7 +32,7 @@ export default function MenuSection({ title, products }: MenuSectionProps) {
         </div>
 
         {/* Updated Button with Icon */}
-        <button className="text-yellow-500 text-sm md:text-lg font-black uppercase tracking-widest hover:underline transition-all flex items-center gap-1">
+        <button className="text-black dark:text-white text-sm md:text-lg font-black uppercase tracking-widest transition-all flex items-center gap-1">
           ALL <ChevronRight size={20} strokeWidth={4} className="mt-0.5" />
         </button>
 
