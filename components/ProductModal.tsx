@@ -139,7 +139,7 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
             </section>
 
             {/* Toppings Section */}
-            {/* <section>
+            <section>
                 <h3 className="font-black uppercase text-sm tracking-widest mb-4">Add Toppings</h3>
                 <div className="space-y-0">
                     {toppings.map((item) => {
@@ -170,10 +170,10 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
                         );
                     })}
                 </div>
-            </section> */}
+            </section>
 
             {/* Sauces Section */}
-            {/* <section>
+            <section>
                 <h3 className="font-black uppercase text-sm tracking-widest mb-4">Add Dipping Sauce</h3>
                 <div className="space-y-0">
                     {sauces.map((item) => (
@@ -189,7 +189,7 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
                         </label>
                     ))}
                 </div>
-            </section> */}
+            </section>
 
             <section className="pb-6">
                 <h3 className="font-black uppercase text-sm tracking-widest mb-4">SPECIAL INSTRUCTIONS</h3>
