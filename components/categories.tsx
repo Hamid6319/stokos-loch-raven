@@ -49,7 +49,7 @@ export default function Categories() {
 
   return (
     <div className="w-full sticky top-[68px] z-30 bg-white dark:bg-black border-b border-zinc-200 dark:border-zinc-800 transition-colors">
-      <div className="max-w-[1750px] mx-auto px-2">
+      <div className="w-full mx-auto px-12">
         
         {/* 
            FIX: Added py-4 (vertical padding) to the container. 
