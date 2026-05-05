@@ -24,40 +24,32 @@ export default function Hero() {
 
   useEffect(() => {
     setIsLoaded(true);
-
-    // Check if screen is mobile to show correct image
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
     window.addEventListener("resize", checkMobile);
-
     const timer = setInterval(() => {
       setCurrentIndex((prev) => (prev === 0 ? 1 : 0));
     }, 5000);
-
     return () => {
       clearInterval(timer);
       window.removeEventListener("resize", checkMobile);
     };
   }, []);
 
-  // Placeholder while loading to prevent layout shift
-  if (!isLoaded) return <div className="w-full aspect-[1/1.1] md:aspect-[25/9] bg-zinc-900 rounded-[1.4rem]" />;
+  // Use a transparent background for the placeholder to avoid the "box" look
+  if (!isLoaded) return <div className="w-full aspect-[1/1.1] md:aspect-[25/9] rounded-[1.4rem] bg-transparent" />;
 
   return (
     <div className="w-full px-2 md:px-12 py-2 md:py-4">
       {/* 
-          ASPECT RATIO FIX: 
-          Mobile: aspect-[1/1.1] (slightly taller than square) ensures text fits.
-          Desktop: aspect-[25/9] (Ultra-wide)
+          Removing bg-zinc-900 here prevents that "dark background" from 
+          showing through during the image fade.
       */}
-      <div className="relative w-full aspect-[1/1.1] md:aspect-[21/8] lg:aspect-[25/9] overflow-hidden rounded-[1.4rem] shadow-2xl bg-zinc-900">
+      <div className="relative w-full aspect-[1/1.1] md:aspect-[21/8] lg:aspect-[25/9] overflow-hidden rounded-[1.4rem] shadow-2xl bg-transparent">
         
         <AnimatePresence initial={false}>
           <motion.div
-            key={`${currentIndex}-${isMobile}`} // Re-animate if index OR screen type changes
+            key={`${currentIndex}-${isMobile}`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -77,9 +69,6 @@ export default function Hero() {
             />
           </motion.div>
         </AnimatePresence>
-
-        {/* Dark overlay at bottom so image feels grounded */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
       </div>
     </div>
   );

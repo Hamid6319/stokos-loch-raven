@@ -17,13 +17,12 @@ export default function MenuSection({ title, products }: MenuSectionProps) {
         
         <div className="flex items-baseline gap-3">
           
-          <h2
+       <h2
   className="text-black dark:text-white 
-  text-2xl md:text-3xl font-black uppercase tracking-widest ml-1"
+  text-3xl md:text-5xl font-black uppercase tracking-widest ml-1 leading-tight"
 >
   {title}
 </h2>
-
           <span className="text-zinc-600 dark:text-zinc-500 
             text-xs font-bold uppercase hidden sm:block">
             {products.length} Items
