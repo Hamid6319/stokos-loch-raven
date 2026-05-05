@@ -1,59 +1,64 @@
 "use client";
 
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { Flame } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+
+const images = [
+  {
+    src: "/images/banner1.png",
+    alt: "Stokos Deals Special 1",
+  },
+  {
+    src: "/images/banner2.png",
+    alt: "Stokos Deals Special 2",
+  },
+];
 
 export default function Hero() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    setIsLoaded(true);
+    const timer = setInterval(() => {
+      setCurrentIndex((prev) => (prev === 0 ? 1 : 0));
+    }, 5000); // Stays on each image for 5 seconds
+    return () => clearInterval(timer);
+  }, []);
+
+  if (!isLoaded) return <div className="w-full aspect-[1.2/1] md:aspect-[25/9] bg-zinc-900 rounded-[2.5rem]" />;
+
   return (
     <div className="w-full px-2 md:px-6 py-2 md:py-4">
-      {/* 
-         Aspect ratio 1.2/1 mobile par image ko sharp rakhta hai.
-      */}
-      <div className="relative w-full aspect-[1.2/1] md:aspect-[21/8] lg:aspect-[25/9] overflow-hidden rounded-[1.5rem] md:rounded-[2.5rem] shadow-2xl group">
+      <div className="relative w-full aspect-[1.2/1] md:aspect-[21/8] lg:aspect-[25/9] overflow-hidden rounded-[1.5rem] md:rounded-[2.5rem] shadow-2xl bg-zinc-900">
         
-        {/* 1. BACKGROUND IMAGE */}
-        <Image
-          src="/images/heroimage.png"
-          alt="Stokos Deals"
-          fill
-          priority
-          className="object-cover object-center transition-transform duration-1000 group-hover:scale-105"
-        />
+        {/* Removed mode="wait" to allow cross-fade effect */}
+        <AnimatePresence initial={false}>
+          <motion.div
+            key={currentIndex}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ 
+              duration: 0.7, // Reduced from 1.0 to 0.7 for more speed
+              ease: "easeInOut" 
+            }}
+            className="absolute inset-0 w-full h-full"
+          >
+            <Image
+              src={images[currentIndex].src}
+              alt={images[currentIndex].alt}
+              fill
+              priority
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 100vw"
+              className="object-cover object-center"
+            />
+          </motion.div>
+        </AnimatePresence>
 
-        {/* 2. DARK OVERLAY FOR MOBILE (bg-black/65 mobile ke liye, gradient desktop ke liye) */}
-        <div className="absolute inset-0 bg-black/10 md:bg-gradient-to-r md:from-black/40 md:via-black/10 md:to-transparent z-10" />
-
-        {/* 3. CONTENT AREA */}
-        <div className="absolute inset-0 flex flex-col justify-end md:justify-center px-5 py-6 md:px-16 lg:px-24 z-20">
-          
-          {/* Badge */}
-          <div className="flex items-center gap-1.5 bg-green-500 text-white px-3 py-1 rounded-full w-fit mb-3 md:mb-6 shadow-lg">
-            <Flame size={12} fill="white" className="animate-pulse md:w-[14px]" />
-            <span className="text-[9px] md:text-xs font-bold uppercase tracking-widest">NEW SPECIALS LIVE</span>
-          </div>
-
-          {/* Heading: Mobile par text-3.5xl (bara) kar diya hai */}
-          <h1 className="text-white text-[2.2rem] sm:text-4xl md:text-6xl lg:text-8xl font-extrabold italic uppercase leading-[0.95] tracking-tighter mb-3 md:mb-6 max-w-3xl drop-shadow-2xl">
-            Stokos Deals <br /> 
-            <span className="text-white/95 text-[0.9em]">Stacked High</span>
-          </h1>
-
-          {/* Description: Pure White color and clear visibility */}
-          <p className="text-white text-[12px] sm:text-sm md:text-lg lg:text-xl max-w-[280px] md:max-w-lg mb-5 md:mb-10 font-medium leading-snug">
-            Towson's hottest meals — wings, pizza, subs & seafood. Fresh, fast, and always a deal.
-          </p>
-
-          {/* Action Buttons: Force Row on Mobile with smaller width */}
-          <div className="flex flex-row items-center gap-2 md:gap-6">
-            <button className="whitespace-nowrap bg-[#DA3327] hover:bg-[#DA3327] text-white font-extrabold px-4 md:px-10 py-2.5 md:py-3.5 rounded-full text-[10px] md:text-sm uppercase transition-all shadow-xl active:scale-95">
-              Order Specials
-            </button>
-
-            <button className="whitespace-nowrap bg-black/50 hover:bg-black/70 text-white border border-white/20 font-extrabold px-4 md:px-10 py-2.5 md:py-3.5 rounded-full text-[10px] md:text-sm uppercase transition-all backdrop-blur-md active:scale-95">
-              EXPLORE MENU 
-            </button>
-          </div>
-        </div>
+        {/* Subtle Bottom Vignette */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
       </div>
     </div>
   );

@@ -5,7 +5,7 @@ import { Search, Flame, ShoppingBag, Menu, MapPin, ChevronDown } from "lucide-re
 
 export default function Header() {
   return (
-    <header className="sticky top-0 z-40 w-full custom-nav border-b px-4 py-2 md:py-3">
+    <header className="sticky top-0 z-40 w-full custom-nav border-b px-4 py-5 md:py-8">
       <div className="flex items-center justify-between max-w-[1440px] mx-auto gap-2 md:gap-4">
         
         {/* LEFT: Mobile Menu + Logo */}
@@ -16,7 +16,7 @@ export default function Header() {
           {/* RESPONSIVE LOGO: w-24 on mobile, w-48 on desktop */}
           <div className="relative w-40 md:w-36 lg:w-44 transition-all duration-300">
             <Image 
-              src="/images/newlogo.png" 
+              src="/images/Stokos-logo.png" 
               alt="Stokos Logo" 
               width={400} 
               height={400} 

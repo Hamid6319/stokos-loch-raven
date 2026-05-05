@@ -58,7 +58,7 @@ export default function Navbar() {
           </div>
 
           <div className="px-6 py-8 flex justify-center">
-            <Image src="/images/newlogo.png" alt="Logo" width={250} height={250} className="w-auto h-34 object-contain" />
+            <Image src="/images/Stokos-logo.png" alt="Logo" width={250} height={250} className="w-auto h-34 object-contain" />
           </div>
 
           <nav className="flex flex-col gap-6 text-lg font-bold mt-4">
