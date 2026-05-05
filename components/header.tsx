@@ -5,7 +5,7 @@ import { Search, Flame, ShoppingBag, Menu, MapPin, ChevronDown } from "lucide-re
 
 export default function Header() {
   return (
-    <header className="sticky top-0 z-40 w-full custom-nav border-b px-4 py-5 md:py-8">
+    <header className="sticky top-0 z-40 w-full custom-nav border-b px-4 py-5 md:py-5">
       <div className="flex items-center justify-between max-w-[1440px] mx-auto gap-2 md:gap-4">
         
         {/* LEFT: Mobile Menu + Logo */}

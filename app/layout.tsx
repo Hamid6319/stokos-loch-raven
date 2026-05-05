@@ -25,22 +25,18 @@ export default function RootLayout({
       {/* ✅ Theme script BEFORE body (no flicker) */}
       <body className={`${jakarta.variable} font-sans min-h-screen antialiased`}>
         
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function () {
-                try {
-                  const saved = localStorage.getItem("theme");
-                  if (saved === "dark") {
-                    document.documentElement.classList.add("dark");
-                  } else {
-                    document.documentElement.classList.remove("dark");
-                  }
-                } catch (e) {}
-              })();
-            `,
-          }}
-        />
+    <script
+  dangerouslySetInnerHTML={{
+    __html: `
+      (function () {
+        try {
+          document.documentElement.classList.remove("dark");
+          localStorage.setItem("theme", "light");
+        } catch (e) {}
+      })();
+    `,
+  }}
+/>
 
         <Navbar />
 
