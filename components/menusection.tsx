@@ -20,7 +20,7 @@ export default function MenuSection({ title, products }: MenuSectionProps) {
             className="
               text-black dark:text-white
               text-3xl md:text-4xl
-              font-black uppercase tracking-wide
+              font-black uppercase tracking-wider
               ml-1 leading-tight
             "
           >
