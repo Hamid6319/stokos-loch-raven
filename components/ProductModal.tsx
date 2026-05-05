@@ -139,7 +139,7 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
             </section>
 
             {/* Toppings Section */}
-            <section>
+            {/* <section>
                 <h3 className="font-black uppercase text-sm tracking-widest mb-4">Add Toppings</h3>
                 <div className="space-y-0">
                     {toppings.map((item) => {
@@ -170,10 +170,10 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
                         );
                     })}
                 </div>
-            </section>
+            </section> */}
 
             {/* Sauces Section */}
-            <section>
+            {/* <section>
                 <h3 className="font-black uppercase text-sm tracking-widest mb-4">Add Dipping Sauce</h3>
                 <div className="space-y-0">
                     {sauces.map((item) => (
@@ -189,10 +189,10 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
                         </label>
                     ))}
                 </div>
-            </section>
+            </section> */}
 
             <section className="pb-6">
-                <h3 className="font-black uppercase text-sm tracking-widest mb-4">Notes for the Kitchen</h3>
+                <h3 className="font-black uppercase text-sm tracking-widest mb-4">SPECIAL INSTRUCTIONS</h3>
                 <div className="space-y-2">
                     <textarea 
                       value={note}
@@ -200,7 +200,7 @@ export default function ProductModal({ product, isOpen, onClose }: ProductModalP
                       className="w-full h-20 p-3 border dark:border-zinc-800 rounded-lg bg-transparent outline-none focus:ring-1 focus:ring-black dark:focus:ring-white transition-all resize-none text-sm"
                     />
                     <p className="text-[11px] text-zinc-500 leading-tight">
-                        Have an allergy, dietary restriction, or special request?
+                        *Requests may result in upcharges
                     </p>
                 </div>
             </section>

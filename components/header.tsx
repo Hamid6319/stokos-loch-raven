@@ -52,7 +52,7 @@ export default function Header() {
           </button>
 
           {/* CART ICON */}
-          <button className="relative p-2.5 md:p-3 rounded-full bg-green-500 text-black hover:bg-green-600 transition-all shadow-md active:scale-95">
+          <button className="relative p-2.5 md:p-3 rounded-full bg-[#DA3327] text-white hover:bg-[#DA3327] transition-all shadow-md active:scale-95">
             <ShoppingBag size={18} />
             <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold h-5 w-5 flex items-center justify-center rounded-full border-2 border-white dark:border-black">
               2
