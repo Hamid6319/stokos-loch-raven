@@ -41,7 +41,7 @@ export default function Hero() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ 
-              duration: 0.7, // Reduced from 1.0 to 0.7 for more speed
+              duration: 0.9, // Reduced from 1.0 to 0.7 for more speed
               ease: "easeInOut" 
             }}
             className="absolute inset-0 w-full h-full"
