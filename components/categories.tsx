@@ -48,8 +48,8 @@ export default function Categories() {
   };
 
   return (
-    <div className="w-full sticky top-[68px] z-30 bg-white dark:bg-black border-b border-zinc-200 dark:border-zinc-800 transition-colors">
-      <div className="w-full mx-auto px-12">
+    <div className="w-full  top-[68px] z-30 bg-white dark:bg-black border-b border-zinc-200 dark:border-zinc-800 transition-colors">
+      <div className="w-full mx-auto md:px-12 px-4">
         
         {/* 
            FIX: Added py-4 (vertical padding) to the container. 

@@ -10,7 +10,7 @@ interface MenuSectionProps {
 
 export default function MenuSection({ title, products }: MenuSectionProps) {
   return (
-    <section className="w-full mx-auto px-12  py-10">
+    <section className="w-full mx-auto md:px-12 px-4  py-10">
       
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
@@ -38,11 +38,16 @@ export default function MenuSection({ title, products }: MenuSectionProps) {
       </div>
 
       {/* Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-8">
-        {products.map((product) => (
-          <ProductCard key={product.id} product={product} />
-        ))}
-      </div>
+  <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4 pb-24 auto-rows-fr">
+  {products.slice(0, 10).map((product, index) => (
+    <div
+      key={product.id}
+      className={`h-full ${index >= 4 ? "hidden md:block" : "block"}`}
+    >
+      <ProductCard product={product} />
+    </div>
+  ))}
+</div>
 
     </section>
   );
