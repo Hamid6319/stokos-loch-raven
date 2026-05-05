@@ -30,8 +30,8 @@ export default function Hero() {
   if (!isLoaded) return <div className="w-full aspect-[1.2/1] md:aspect-[25/9] bg-zinc-900 rounded-[2.5rem]" />;
 
   return (
-    <div className="w-full px-2 md:px-6 py-2 md:py-4">
-      <div className="relative w-full aspect-[1.2/1] md:aspect-[21/8] lg:aspect-[25/9] overflow-hidden rounded-[1.5rem] md:rounded-[2.5rem] shadow-2xl bg-zinc-900">
+    <div className="w-full px-2 md:px-12 py-2 md:py-4">
+      <div className="relative w-full aspect-[1.2/1] md:aspect-[21/8] lg:aspect-[25/9] overflow-hidden rounded-[1.4rem] md:rounded-[1.4rem] shadow-2xl bg-zinc-900">
         
         {/* Removed mode="wait" to allow cross-fade effect */}
         <AnimatePresence initial={false}>

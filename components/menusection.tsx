@@ -10,10 +10,10 @@ interface MenuSectionProps {
 
 export default function MenuSection({ title, products }: MenuSectionProps) {
   return (
-    <section className="max-w-[1440px] mx-auto px-4 md:px-10 py-10">
+    <section className="max-w-[1750px] mx-auto px-2  py-10">
       
       {/* Header */}
-      <div className="flex items-center justify-between mb-8 border-l-4 border-yellow-500 pl-6">
+      <div className="flex items-center justify-between mb-8">
         
         <div className="flex items-baseline gap-3">
           
