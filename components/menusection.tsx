@@ -19,7 +19,7 @@ export default function MenuSection({ title, products }: MenuSectionProps) {
           
           <h2
   className="text-black dark:text-white 
-  text-2xl md:text-3xl font-black uppercase tracking-widest"
+  text-2xl md:text-3xl font-black uppercase tracking-widest ml-1"
 >
   {title}
 </h2>
