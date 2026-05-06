@@ -5,6 +5,7 @@ import Categories from "../components/categories";
 import MenuSection from "@/components/menusection";
 import { PRODUCTS } from "@/lib/data/products";
 import { POPULAR_ITEMS } from "@/lib/data/popularitems";
+import { BREAKFAST } from "@/lib/data/breakfast";
 
 
 
@@ -34,6 +35,13 @@ export default function Home() {
          products={PRODUCTS.filter((p: any) => p.category === "pizzas")}
         />
 
+
+    <MenuSection
+  id="breakfast"
+  title="Breakfast"
+  subtitle="served until 11am"
+  products={BREAKFAST.filter((p: any) => p.category === "breakfast")}
+/>
 
         {/* Add more sections as needed matching the IDs in your Categories list */}
         

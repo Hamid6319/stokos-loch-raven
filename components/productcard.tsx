@@ -53,20 +53,22 @@ export default function ProductCard({ product }: any) {
         {/* Content */}
         <div className="flex flex-col flex-1 px-1 pb-1 min-w-0">
           {/* Title Fixed Height */}
-          <h3
-            className="
-              text-black dark:text-white
-              text-[14px]  sm:text-sm md:text-sm 
-              font-black uppercase tracking-tight leading-tight
-              group-hover:text-[#DA3327]
-              transition-colors
-              line-clamp-2
-              h-[34px] md:h-[30px]
-              overflow-hidden
-            "
-          >
-            {product.title}
-          </h3>
+         <h3
+  className="
+    text-black dark:text-white
+    text-[12px] sm:text-[13px] md:text-[13px]
+    font-black uppercase tracking-tight
+    leading-[1.25]
+    group-hover:text-[#DA3327]
+    transition-colors
+    line-clamp-2
+    min-h-[34px]
+    overflow-hidden
+    break-words
+  "
+>
+  {product.title}
+</h3>
 
           {/* Description Fixed Height */}
           <p

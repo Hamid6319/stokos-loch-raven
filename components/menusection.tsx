@@ -4,30 +4,50 @@ import ProductCard from "@/components/productcard";
 import { ChevronRight } from "lucide-react";
 
 interface MenuSectionProps {
-  id: string;    // Add this
+  id?: string;
   title: string;
+  subtitle?: string;
   products: any[];
 }
 
-
-export default function MenuSection({ id, title, products }: MenuSectionProps) {
-  const visibleProducts = products.slice(0,8);
+export default function MenuSection({
+  id,
+  title,
+  subtitle,
+  products,
+}: MenuSectionProps) {
+  const visibleProducts = products.slice(0, 8);
 
   return (
-    <section id={id} className="w-[1290px] mx-auto px-4 md:px-12 pt-6 pb-8 md:pt-8 md:pb-10">
+    <section
+      id={id}
+      className="w-full max-w-[1290px] mx-auto px-4 md:px-12 pt-6 pb-8 md:pt-8 md:pb-10"
+    >
       {/* Header */}
       <div className="flex items-center justify-between mb-5 md:mb-6">
-        <div className="flex items-baseline gap-3">
+        <div className="flex items-baseline gap-3 flex-wrap">
           <h2
             className="
               text-black dark:text-white
               text-3xl md:text-4xl
-              font-black uppercase tracking-wider
+              font-black uppercase tracking-wide
               ml-1 leading-tight
             "
           >
             {title}
           </h2>
+
+          {subtitle && (
+            <span
+              className="
+                text-black dark:text-white
+                text-xs md:text-3xl
+                font-bold
+              "
+            >
+              ({subtitle})
+            </span>
+          )}
 
           <span
             className="
@@ -53,28 +73,23 @@ export default function MenuSection({ id, title, products }: MenuSectionProps) {
       </div>
 
       {/* Grid */}
-  <div
-  className="
-    grid grid-cols-2 
-    md:grid-cols-3 lg:grid-cols-4 
-    gap-3 md:gap-4
-    auto-rows-fr
-  "
->
-  {/* 1. Use slice(0, 8) to limit the total items rendered to 8 */}
-  {visibleProducts.slice(0, 8).map((product, index) => (
-    <div
-      key={product.id}
-      className={`h-full ${
-        /* 2. Hide items 5 through 8 on mobile (index 4 to 7), 
-           show them only from md (desktop) up */
-        index >= 4 ? "hidden md:block" : "block"
-      }`}
-    >
-      <ProductCard product={product} />
-    </div>
-  ))}
-</div>
+      <div
+        className="
+          grid grid-cols-2
+          md:grid-cols-3 lg:grid-cols-4
+          gap-3 md:gap-4
+          auto-rows-fr
+        "
+      >
+        {visibleProducts.map((product, index) => (
+          <div
+            key={product.id}
+            className={`h-full ${index >= 4 ? "hidden md:block" : "block"}`}
+          >
+            <ProductCard product={product} />
+          </div>
+        ))}
+      </div>
     </section>
   );
 }
