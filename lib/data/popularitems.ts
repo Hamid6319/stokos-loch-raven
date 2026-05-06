@@ -1,59 +1,35 @@
 export const POPULAR_ITEMS = [
   {
     id: 1,
-    title: "Tomato & Cheese Pizza",
-    price: "10.99",
+    category: "trending",
+    title: "Whole Sub Combo",
+    price: "19.98",
     oldPrice: null,
-    image: "/images/pizza1.jpeg",
+    image: "https://images.pexels.com/photos/28962792/pexels-photo-28962792.jpeg?cs=srgb&dl=pexels-vince-28962792.jpg&fm=jpg",
     badge: "Best Seller",
-    description: "Classic cheese or create your own pizza.",
-    sizes: [
-      { label: "Medium 12\"", price: 10.99 },
-      { label: "Large 14\"", price: 11.99 },
-      { label: "X-Large 16\"", price: 12.99 },
-    ]
+    description: "Includes whole sub, French fries, and a can of soda. Seafood subs extra.",
+    sizes: []
   },
   {
     id: 2,
-    title: "Honey BBQ Chicken Pizza",
-    price: "12.99",
-    image: "/images/pizza1.jpeg",
+    category: "trending",
+    title: "Cheesesteak Hot Sub",
+    price: "10.99",
+    oldPrice: null,
+    image: "https://media.istockphoto.com/id/2191246992/photo/close-up-of-sandwich-with-ham-on-white-plate-and-setting-on-wooden-table-inside-with-slices.webp?a=1&b=1&s=612x612&w=0&k=20&c=Dl8TBI9g8W6Ys9fJvNq4iUoZuYzju9JGbo8V57_WVQs=",
     badge: null,
-    description: "Topped with BBQ sauce, mozzarella, and chicken meat.",
-    sizes: [
-      { label: "Medium 12\"", price: 12.99 },
-      { label: "Large 14\"", price: 14.99 },
-      { label: "X-Large 16\"", price: 17.99 },
-    ]
+    description: "Steak, cheese, and caramelized onion sandwich.",
+    sizes: []
   },
   {
     id: 3,
-    title: "Buffalo Chicken Pizza",
-    price: "12.99",
-    image: "/images/pizza1.jpeg",
-    badge: null,
-    description: "Crispy chicken strips, our own wing sauce, bleu cheese, and mozzarella cheese.",
-    sizes: [
-              { label: "Medium 12\"", price: 12.99 },
-      { label: "Large 14\"", price: 14.99 },
-      { label: "X-Large 16\"", price: 17.99 },
-    ]
-  },
-  {
-    id: 4,
-    title: "Stoko's Deluxe Pizza",
-    price: "16.98",
+    category: "trending",
+    title: "Chicken Tenders",
+    price: "8.99",
     oldPrice: null,
-    image: "/images/pizza1.jpeg",
+    image: "https://images.pexels.com/photos/37228290/pexels-photo-37228290.jpeg?cs=srgb&dl=pexels-cristian-arteaga-1679611-37228290.jpg&fm=jpg",
     badge: null,
-    description: "Pepperoni, sausage, ground beef, ham, bacon, mushrooms, green peppers, onions, and black olives.",
-    sizes: [
-      { label: "Medium 14\"", price: 16.98 },
-      { label: "Large 14\"", price: 18.98 },
-      { label: "X-Large 16\"", price: 20.99 },
-    ]
+    description: "Served with fries or rice and a can of soda.",
+    sizes: []
   },
-
-   
-
 ];

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 const CATEGORIES = [
   { id: "trending", name: "Popular Menu Items", special: true },
@@ -12,7 +12,6 @@ const CATEGORIES = [
   { id: "seafood-subs", name: "Seafood Subs" },
   { id: "sandwiches", name: "Sandwiches" },
   { id: "club-sandwiches", name: "Club Sandwiches" },
-
   { id: "pizzas", name: "Pizzas" },
   { id: "specialty-pizzas", name: "Stoko's Specialty Pizzas" },
   { id: "stromboli", name: "Famous Stromboli" },
@@ -26,7 +25,6 @@ const CATEGORIES = [
   { id: "gyros", name: "Gyros" },
   { id: "pick-2", name: "Pick 2" },
   { id: "wrapped", name: "Get Wrapped" },
-
   { id: "sides", name: "Side Orders" },
   { id: "dessert", name: "Dessert" },
   { id: "beverages", name: "Beverages" },
@@ -38,23 +36,28 @@ export default function Categories() {
 
   const handleCategoryClick = (id: string, e: React.MouseEvent<HTMLButtonElement>) => {
     setActive(id);
+    
+    // 1. Scroll the Category Bar horizontally
     const target = e.currentTarget;
     const container = scrollRef.current;
-
     if (container) {
       const scrollPos = target.offsetLeft - container.offsetWidth / 2 + target.offsetWidth / 2;
       container.scrollTo({ left: scrollPos, behavior: "smooth" });
     }
+
+    // 2. Scroll the Page to the correct section
+    const section = document.getElementById(id);
+    if (section) {
+      // Offset for the sticky header
+      const yOffset = -140; 
+      const y = section.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      window.scrollTo({ top: y, behavior: "smooth" });
+    }
   };
 
   return (
-    <div className="w-full  top-[68px] z-30 bg-white dark:bg-black border-b border-zinc-200 dark:border-zinc-800 transition-colors">
-      <div className="w-full mx-auto md:px-12 px-4">
-        
-        {/* 
-           FIX: Added py-4 (vertical padding) to the container. 
-           This gives the shadows and "scale-105" room to breathe so they don't get clipped.
-        */}
+    <div className="w-full  sticky top-[68px] z-30 bg-white dark:bg-black border-b border-zinc-200 dark:border-zinc-800 transition-colors">
+      <div className="w-[1290px] mx-auto md:px-12 px-4">
         <div
           ref={scrollRef}
           className="flex items-center gap-2.5 md:gap-3 overflow-x-auto no-scrollbar flex-nowrap scroll-smooth py-4"
@@ -71,13 +74,9 @@ export default function Categories() {
                   text-[11px] md:text-sm font-semibold transition-all duration-200
                   outline-none relative
                   ${isActive ? "z-10" : ""}
-
                   ${
                     isActive
-                      ? cat.special
-                        ? "bg-[#DA3327] text-white"
-                        /* FIX: Changed "----" to "bg-black" (or whatever color you want for active items) */
-                        : "bg-[#DA3327] dark:bg-[#DA3327] text-white dark:text-white"
+                      ? "bg-[#DA3327] text-white"
                       : "bg-zinc-100 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800"
                   }
                 `}
@@ -86,8 +85,6 @@ export default function Categories() {
               </button>
             );
           })}
-
-          {/* spacer */}
           <div className="flex-shrink-0 w-6 h-1" />
         </div>
       </div>

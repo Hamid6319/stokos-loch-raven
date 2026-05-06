@@ -4,15 +4,17 @@ import ProductCard from "@/components/productcard";
 import { ChevronRight } from "lucide-react";
 
 interface MenuSectionProps {
+  id: string;    // Add this
   title: string;
   products: any[];
 }
 
-export default function MenuSection({ title, products }: MenuSectionProps) {
-  const visibleProducts = products.slice(0, 10);
+
+export default function MenuSection({ id, title, products }: MenuSectionProps) {
+  const visibleProducts = products.slice(0,8);
 
   return (
-    <section className="w-full mx-auto px-4 md:px-12 pt-6 pb-8 md:pt-8 md:pb-10">
+    <section id={id} className="w-[1290px] mx-auto px-4 md:px-12 pt-6 pb-8 md:pt-8 md:pb-10">
       {/* Header */}
       <div className="flex items-center justify-between mb-5 md:mb-6">
         <div className="flex items-baseline gap-3">
@@ -51,23 +53,28 @@ export default function MenuSection({ title, products }: MenuSectionProps) {
       </div>
 
       {/* Grid */}
-      <div
-        className="
-          grid grid-cols-2 sm:grid-cols-2
-          md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5
-          gap-3 md:gap-4
-          auto-rows-fr
-        "
-      >
-        {visibleProducts.map((product, index) => (
-          <div
-            key={product.id}
-            className={`h-full ${index >= 4 ? "hidden md:block" : "block"}`}
-          >
-            <ProductCard product={product} />
-          </div>
-        ))}
-      </div>
+  <div
+  className="
+    grid grid-cols-2 
+    md:grid-cols-3 lg:grid-cols-4 
+    gap-3 md:gap-4
+    auto-rows-fr
+  "
+>
+  {/* 1. Use slice(0, 8) to limit the total items rendered to 8 */}
+  {visibleProducts.slice(0, 8).map((product, index) => (
+    <div
+      key={product.id}
+      className={`h-full ${
+        /* 2. Hide items 5 through 8 on mobile (index 4 to 7), 
+           show them only from md (desktop) up */
+        index >= 4 ? "hidden md:block" : "block"
+      }`}
+    >
+      <ProductCard product={product} />
+    </div>
+  ))}
+</div>
     </section>
   );
 }

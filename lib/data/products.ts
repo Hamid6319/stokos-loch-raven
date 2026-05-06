@@ -1,6 +1,7 @@
 export const PRODUCTS = [
   {
     id: 1,
+    category: "pizzas",
     title: "Tomato & Cheese Pizza",
     price: "10.99",
     oldPrice: null,
@@ -15,6 +16,7 @@ export const PRODUCTS = [
   },
   {
     id: 2,
+    category: "pizzas",
     title: "Honey BBQ Chicken Pizza",
     price: "12.99",
     image: "/images/pizza1.jpeg",
@@ -28,6 +30,7 @@ export const PRODUCTS = [
   },
   {
     id: 3,
+    category: "pizzas",
     title: "Buffalo Chicken Pizza",
     price: "12.99",
     image: "/images/pizza1.jpeg",
@@ -41,6 +44,7 @@ export const PRODUCTS = [
   },
   {
     id: 4,
+    category: "pizzas",
     title: "Stoko's Deluxe Pizza",
     price: "16.98",
     oldPrice: null,
@@ -56,6 +60,7 @@ export const PRODUCTS = [
 
     {
     id: 5,
+    category: "pizzas",
     title: "Greek Deluxe Pizza",
     price: "15.99",
     oldPrice: null,
@@ -71,6 +76,7 @@ export const PRODUCTS = [
 
       {
     id: 6,
+    category: "pizzas",
     title: "Veggie Deluxe Pizza",
     price: "16.98",
     oldPrice: null,
@@ -86,6 +92,7 @@ export const PRODUCTS = [
 
        {
     id: 7,
+    category: "pizzas",
     title: "Meat Deluxe Pizza",
     price: "17.98",
     oldPrice: null,
@@ -101,6 +108,7 @@ export const PRODUCTS = [
 
        {
     id: 8,
+    category: "pizzas",
     title: "Cheesesteak Pizza",
     price: "12.99",
     oldPrice: null,
@@ -118,6 +126,7 @@ export const PRODUCTS = [
 
        {
     id: 9,
+    category: "pizzas",
     title: "Chicken Alfredo Pizza",
     price: "17.98",
     oldPrice: null,
@@ -133,6 +142,7 @@ export const PRODUCTS = [
 
        {
     id: 10,
+    category: "pizzas",
     title: "Hawaiian Pizza",
     price: "13.99",
     oldPrice: null,

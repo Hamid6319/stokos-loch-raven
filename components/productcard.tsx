@@ -56,7 +56,7 @@ export default function ProductCard({ product }: any) {
           <h3
             className="
               text-black dark:text-white
-              text-[14px]  sm:text-sm md:text-lg
+              text-[14px]  sm:text-sm md:text-sm 
               font-black uppercase tracking-tight leading-tight
               group-hover:text-[#DA3327]
               transition-colors
@@ -73,7 +73,7 @@ export default function ProductCard({ product }: any) {
             className="
               hidden md:block
               text-zinc-600 dark:text-zinc-400
-              text-[16px]
+              text-[14px]
               mt-2
               leading-relaxed
               line-clamp-3
@@ -93,7 +93,7 @@ export default function ProductCard({ product }: any) {
 
               <span
                 className="
-                  text-lg sm:text-base md:text-3xl
+                  text-lg sm:text-base md:text-2xl
                   font-black leading-none tracking-tighter
                   text-black dark:text-white
                 "
@@ -109,7 +109,7 @@ export default function ProductCard({ product }: any) {
               }}
               className="
                 shrink-0
-                w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12
+                w-9 h-9 sm:w-10 sm:h-10 md:w-9 md:h-9
                 rounded-full
                 bg-[#DA3327] text-white
                 border border-zinc-300 dark:border-zinc-800
