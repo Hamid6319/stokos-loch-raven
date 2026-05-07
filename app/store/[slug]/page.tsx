@@ -11,6 +11,7 @@ import { notFound } from "next/navigation";
 import StartOrder from "@/components/startorder";
 import Footer from "@/components/footer";
 import BackToTop from "@/components/backtotop";
+import DealsSection from "@/components/dealssection";
 
 
 type StorePageProps = {
@@ -34,6 +35,10 @@ export default async function StorePage({ params }: StorePageProps) {
         <StartOrder />
       <Hero />
       <Categories />
+
+
+
+      <DealsSection />
 
       <div className="flex flex-col pb-20">
         <MenuSection

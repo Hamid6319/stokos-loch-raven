@@ -48,7 +48,7 @@ export default function Hero() {
 
   return (
     <div className="w-full px-2 md:px-12 py-2 md:py-4 flex justify-center">
-      <div className="relative w-full max-w-[1600px] aspect-[25/9] md:aspect-[21/8] lg:aspect-[25/9] overflow-hidden rounded-[1rem] md:rounded-[1.4rem] shadow-2xl bg-transparent">
+      <div className="relative w-full max-w-[1600px] aspect-[25/9] md:aspect-[21/8] lg:aspect-[25/9] overflow-hidden rounded-[1rem] md:rounded-[1.4rem]  bg-transparent">
         <AnimatePresence initial={false}>
           <motion.div
             key={`${currentIndex}-${isMobile}`}

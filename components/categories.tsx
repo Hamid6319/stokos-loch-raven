@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 
 const CATEGORIES = [
   { id: "trending", name: "Popular Menu Items", special: true },
   { id: "breakfast", name: "Breakfast (served until 11am)" },
-  { id: "coupons", name: "Menu Coupons" },
+  { id: "deals", name: "Menu Coupons" },
   { id: "salads", name: "Fresh Salads" },
   { id: "hot-subs", name: "Hot Subs" },
   { id: "cold-subs", name: "Cold Sub" },
@@ -34,33 +34,44 @@ export default function Categories() {
   const [active, setActive] = useState("trending");
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const handleCategoryClick = (id: string, e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleCategoryClick = (
+    id: string,
+    e: React.MouseEvent<HTMLButtonElement>
+  ) => {
     setActive(id);
-    
-    // 1. Scroll the Category Bar horizontally
+
     const target = e.currentTarget;
     const container = scrollRef.current;
+
     if (container) {
-      const scrollPos = target.offsetLeft - container.offsetWidth / 2 + target.offsetWidth / 2;
-      container.scrollTo({ left: scrollPos, behavior: "smooth" });
+      const scrollPos =
+        target.offsetLeft - container.offsetWidth / 2 + target.offsetWidth / 2;
+
+      container.scrollTo({
+        left: scrollPos,
+        behavior: "smooth",
+      });
     }
 
-    // 2. Scroll the Page to the correct section
     const section = document.getElementById(id);
+
     if (section) {
-      // Offset for the sticky header
-      const yOffset = -140; 
+      const yOffset = -150;
       const y = section.getBoundingClientRect().top + window.pageYOffset + yOffset;
-      window.scrollTo({ top: y, behavior: "smooth" });
+
+      window.scrollTo({
+        top: y,
+        behavior: "smooth",
+      });
     }
   };
 
   return (
-    <div className="w-full  top-[125px] md:top-[68px] z-30 bg-white dark:bg-black border-b border-zinc-200 dark:border-zinc-800 transition-colors md:py-2">
-      <div className="md:w-[1600px] mx-auto md:px-0 px-4">
+    <div className="top-[125px] z-30 w-full border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-black md:top-[82px]">
+      <div className="mx-auto max-w-[1600px] px-4 md:px-0">
         <div
           ref={scrollRef}
-          className="flex items-center gap-2.5 md:gap-3 overflow-x-auto no-scrollbar flex-nowrap scroll-smooth py-4"
+          className="no-scrollbar flex flex-nowrap items-center gap-2.5 overflow-x-auto scroll-smooth py-4 md:gap-3"
         >
           {CATEGORIES.map((cat) => {
             const isActive = active === cat.id;
@@ -68,16 +79,15 @@ export default function Categories() {
             return (
               <button
                 key={cat.id}
+                type="button"
                 onClick={(e) => handleCategoryClick(cat.id, e)}
                 className={`
-                  flex-shrink-0 whitespace-nowrap px-5 md:px-7 py-2 md:py-2.5 rounded-full
-                  text-[11px] md:text-sm font-semibold transition-all duration-200
-                  outline-none relative
-                  ${isActive ? "z-10" : ""}
+                  relative flex-shrink-0 whitespace-nowrap rounded-full px-5 py-2
+                  text-[11px] font-semibold outline-none md:px-7 md:py-2.5 md:text-sm
                   ${
                     isActive
                       ? "bg-[#DA3327] text-white"
-                      : "bg-zinc-100 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800"
+                      : "bg-zinc-100 text-zinc-800 hover:bg-zinc-200 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800"
                   }
                 `}
               >
@@ -85,7 +95,8 @@ export default function Categories() {
               </button>
             );
           })}
-          <div className="flex-shrink-0 w-6 h-1" />
+
+          <div className="h-1 w-6 flex-shrink-0" />
         </div>
       </div>
     </div>

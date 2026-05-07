@@ -48,13 +48,13 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="top-0 z-50 w-full bg-green-800 text-white shadow-md dark:bg-black border-b border-white/20">
+      <header className="top-0 z-50 w-full bg-green-800 text-white shadow-md dark:bg-black border-b border-zinc-800  dark:border-zinc-800 transition-colors">
         <div className="mx-auto w-full max-w-[1600px] px-4 md:px-6">
-          
-          {/* Main Row */}
+
+          {/* Top Row */}
           <div className="relative flex min-h-[72px] items-center justify-between gap-4 lg:h-[82px]">
-            
-            {/* Desktop Nav */}
+
+            {/* Desktop Links */}
             <nav className="hidden lg:flex items-center gap-8 text-sm uppercase tracking-wide">
               <Link href="/" className={navClass(pathname === "/")}>
                 Home
@@ -93,9 +93,9 @@ export default function Navbar() {
 
             {/* Right Actions */}
             <div className="ml-auto flex items-center gap-3 md:gap-4">
-              
-              {/* Search Desktop */}
-              <div className="hidden md:flex items-center gap-2 rounded-full border border-white/20 bg-white/15 px-4 py-2">
+
+              {/* Desktop Search */}
+              <div className="hidden md:flex items-center gap-2 rounded-full   border-white/20 bg-white/15 px-4 py-2 border-b">
                 <Search size={17} />
                 <input
                   type="text"
@@ -111,7 +111,6 @@ export default function Navbar() {
                 Sign In
               </button>
 
-              {/* Working Toggle */}
               <button
                 type="button"
                 onClick={toggleTheme}
@@ -135,8 +134,8 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Mobile Links */}
-          <nav className="flex lg:hidden w-full items-center justify-start gap-7 overflow-x-auto border-t border-white/15 py-3 text-xs uppercase no-scrollbar">
+          {/* Mobile Links - Full Width Line */}
+          <nav className="-mx-4 flex w-auto items-center justify-start gap-7 overflow-x-auto border-t border-white/20 px-4 py-3 text-xs uppercase no-scrollbar md:-mx-6 md:px-6 lg:hidden">
             <Link href="/" className={navClass(pathname === "/")}>
               Home
             </Link>
@@ -162,7 +161,7 @@ export default function Navbar() {
         </div>
       </header>
 
-      {/* Floating Checkout */}
+      {/* Floating Cart */}
       <button
         type="button"
         className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#DA3327] text-white shadow-2xl transition hover:scale-105 active:scale-95 md:h-16 md:w-16"
