@@ -36,16 +36,17 @@ export default function Hero() {
     };
   }, []);
 
-  // Use a transparent background for the placeholder to avoid the "box" look
-  if (!isLoaded) return <div className="w-full aspect-[1/1.1] md:aspect-[25/9] rounded-[1.4rem] bg-transparent" />;
+  // // Use a transparent background for the placeholder to avoid the "box" look
+  // if (!isLoaded) return <div className="w-full aspect-[1/1.1] md:aspect-[25/9] rounded-[1.4rem] bg-transparent" />;
 
   return (
-    <div className="w-full px-2 md:px-12 py-2 md:py-4">
+    <div className="w-full px-2 md:px-12 py-2 md:py-4 flex justify-center">
+
       {/* 
           Removing bg-zinc-900 here prevents that "dark background" from 
           showing through during the image fade.
       */}
-      <div className="relative w-full aspect-[1/1.1] md:aspect-[21/8] lg:aspect-[25/9] overflow-hidden rounded-[1.4rem] shadow-2xl bg-transparent">
+      <div className="relative w-[1600px] aspect-[1/1.1] md:aspect-[21/8] lg:aspect-[25/9] overflow-hidden rounded-[1.4rem] shadow-2xl bg-transparent">
         
         <AnimatePresence initial={false}>
           <motion.div

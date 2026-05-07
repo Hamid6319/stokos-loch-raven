@@ -1,5 +1,4 @@
 import Navbar from "@/components/navbar";
-import Header from "@/components/header";
 import Hero from "@/components/hero";
 import Categories from "../components/categories";
 import MenuSection from "@/components/menusection";
@@ -7,44 +6,31 @@ import { PRODUCTS } from "@/lib/data/products";
 import { POPULAR_ITEMS } from "@/lib/data/popularitems";
 import { BREAKFAST } from "@/lib/data/breakfast";
 
-
-
 export default function Home() {
   return (
     <main className="bg-white dark:bg-black min-h-screen">
-      <Navbar />
-      <Header />  
-      <Hero />  
+      <Hero />
       <Categories />
-      
-      {/* 
-         Wrapping sections in a container. 
-         Note: The 'id' props must match the 'id's in CATEGORIES array 
-      */}
+
       <div className="flex flex-col pb-20">
-        
-        <MenuSection 
-          id="trending" 
-          title="Popular Menu Items" 
-          products={POPULAR_ITEMS.filter((p: any) => p.category === "trending")} 
+        <MenuSection
+          id="trending"
+          title="Popular Menu Items"
+          products={POPULAR_ITEMS.filter((p: any) => p.category === "trending")}
         />
 
-        <MenuSection 
-          id="pizzas" 
-          title="Pizzas" 
-         products={PRODUCTS.filter((p: any) => p.category === "pizzas")}
+        <MenuSection
+          id="pizzas"
+          title="Pizzas"
+          products={PRODUCTS.filter((p: any) => p.category === "pizzas")}
         />
 
-
-    <MenuSection
-  id="breakfast"
-  title="Breakfast"
-  subtitle="served until 11am"
-  products={BREAKFAST.filter((p: any) => p.category === "breakfast")}
-/>
-
-        {/* Add more sections as needed matching the IDs in your Categories list */}
-        
+        <MenuSection
+          id="breakfast"
+          title="Breakfast"
+          subtitle="served until 11am"
+          products={BREAKFAST.filter((p: any) => p.category === "breakfast")}
+        />
       </div>
     </main>
   );

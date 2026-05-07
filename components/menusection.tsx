@@ -16,12 +16,16 @@ export default function MenuSection({
   subtitle,
   products,
 }: MenuSectionProps) {
-  const visibleProducts = products.slice(0, 8);
+  const visibleProducts = products.slice(0, 10);
 
   return (
     <section
       id={id}
-      className="w-full max-w-[1290px] mx-auto px-4 md:px-12 pt-6 pb-8 md:pt-8 md:pb-10"
+      className="
+        w-full md:w-[1600px] mx-auto
+        px-4 md:px-0
+        pt-6 pb-8 md:pt-8 md:pb-10
+      "
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-5 md:mb-6">
@@ -41,7 +45,7 @@ export default function MenuSection({
             <span
               className="
                 text-black dark:text-white
-                text-xs md:text-3xl
+                text-xs md:text-sm
                 font-bold
               "
             >
@@ -59,7 +63,6 @@ export default function MenuSection({
           </span>
         </div>
 
-        {/* Button with Icon */}
         <button
           className="
             text-black dark:text-white
@@ -72,19 +75,24 @@ export default function MenuSection({
         </button>
       </div>
 
-      {/* Grid */}
+      {/* Grid - small cards inside 1600px width */}
       <div
         className="
-          grid grid-cols-2
-          md:grid-cols-3 lg:grid-cols-4
+          grid
+          grid-cols-2
+          sm:grid-cols-[repeat(auto-fill,minmax(230px,280px))]
+          md:grid-cols-[repeat(auto-fill,minmax(250px,300px))]
+          justify-start
           gap-3 md:gap-4
-          auto-rows-fr
         "
       >
         {visibleProducts.map((product, index) => (
           <div
             key={product.id}
-            className={`h-full ${index >= 4 ? "hidden md:block" : "block"}`}
+            className={`
+              w-full h-full
+              ${index >= 4 ? "hidden md:block" : "block"}
+            `}
           >
             <ProductCard product={product} />
           </div>

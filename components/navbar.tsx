@@ -1,108 +1,148 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Menu, Home, MapPin, Info, Phone, Moon, Sun, X } from "lucide-react";
-import { FaFacebookF, FaInstagram, FaWhatsapp } from "react-icons/fa";
+import { useEffect, useState } from "react";
 import Image from "next/image";
+import { Search, ShoppingCart, Moon, Sun } from "lucide-react";
 
 export default function Navbar() {
-  const [open, setOpen] = useState(false);
-  const [isDark, setIsDark] = useState(true);
+  const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
-    // Check current state on load
-    const isDarkMode = document.documentElement.classList.contains("dark");
-    setIsDark(isDarkMode);
+    setIsDark(document.documentElement.classList.contains("dark"));
   }, []);
 
   const toggleTheme = () => {
     const root = document.documentElement;
-    if (root.classList.contains("dark")) {
-      root.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-      setIsDark(false);
-    } else {
-      root.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-      setIsDark(true);
-    }
+    const nextDark = !root.classList.contains("dark");
+
+    root.classList.toggle("dark", nextDark);
+    localStorage.setItem("theme", nextDark ? "dark" : "light");
+    setIsDark(nextDark);
   };
 
   return (
     <>
-      {/* Desktop Mini Sidebar */}
-      <div className="hidden lg:flex fixed left-0 top-0 h-full w-[80px] custom-nav border-r flex-col items-center py-6 z-50 transition-colors">
-        <button onClick={() => setOpen(true)} className="mb-8 p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors">
-          <Menu size={26} />
-        </button>
+      <header className="top-0 z-50 w-full bg-green-800 text-white shadow-md dark:bg-black">
+        <div className="mx-auto w-full max-w-[1600px] px-4 md:px-6">
 
-        <div className="flex flex-col gap-10 items-center opacity-60">
-          <Home className="cursor-pointer hover:opacity-100 transition-opacity" />
-          <MapPin className="cursor-pointer hover:opacity-100 transition-opacity" />
-          <Info className="cursor-pointer hover:opacity-100 transition-opacity" />
-          <Phone className="cursor-pointer hover:opacity-100 transition-opacity" />
-        </div>
+          {/* Desktop Navbar */}
+          <div className="hidden lg:flex relative h-[82px] items-center justify-between">
+            <nav className="flex items-center gap-8 text-sm font-extrabold uppercase tracking-wide">
+              <a href="/" className="hover:text-green-200">Home</a>
+              <a href="#menu" className="hover:text-green-200">Menu</a>
+              <a href="#deals" className="hover:text-green-200">Deals</a>
+              <a href="#contact" className="hover:text-green-200">Contact Us</a>
+            </nav>
 
-        <div className="mt-auto mb-6">
-          <button onClick={toggleTheme} className="p-3 rounded-full border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all active:scale-90">
-            {isDark ? <Sun size={20} className="text-white-500" /> : <Moon size={20} />}
-          </button>
-        </div>
-      </div>
+            <div className="absolute left-1/2 -translate-x-1/2">
+              <Image
+                src="/images/newstokoslogo.png"
+                alt="Stoko's Logo"
+                width={170}
+                height={70}
+                priority
+                className="h-14 w-auto object-contain"
+              />
+            </div>
 
-      {/* Expanded Menu (Drawer) */}
-      <div className={`fixed top-0 left-0 h-full w-[310px] custom-nav border-r shadow-2xl z-[1000] transition-transform duration-500 ease-in-out ${open ? "translate-x-0" : "-translate-x-full"} dark:shadow-[15px_0_50px_rgba(0,0,0,0.8)]`}>
-        <div className="flex flex-col h-full p-6">
-          <div className="flex justify-end">
-             <button onClick={() => setOpen(false)} className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-zinc-500"><X /></button>
-          </div>
-
-          <div className="px-6 py-8 flex justify-center">
-            <Image src="/images/Stokos-logo.png" alt="Logo" width={250} height={250} className="w-auto h-34 object-contain" />
-          </div>
-
-          <nav className="flex flex-col gap-6 text-lg font-bold mt-4">
-            <a className="flex items-center gap-5 cursor-pointer hover:translate-x-2 transition-transform"><Home size={22} className="text-zinc-500"/> Home</a>
-            <a className="flex items-center gap-5 cursor-pointer hover:translate-x-2 transition-transform"><MapPin size={22} className="text-zinc-500"/> Location</a>
-            <a className="flex items-center gap-5 cursor-pointer hover:translate-x-2 transition-transform"><Info size={22} className="text-zinc-500"/> Our Story</a>
-            <a className="flex items-center gap-5 cursor-pointer hover:translate-x-2 transition-transform"><Phone size={22} className="text-zinc-500"/> Contact</a>
-          </nav>
-
-          <div className="mt-auto">
-            {/* Toggle Button in Drawer - Colors fixed for both modes */}
-            <button 
-              onClick={toggleTheme} 
-              className={`flex items-center justify-between w-full p-4 rounded-2xl transition-all border
-                ${isDark ? 'bg-zinc-900 border-zinc-800 text-white' : 'bg-zinc-100 border-zinc-200 text-black'}`}
-            >
-              <span className="font-bold">{isDark ? "Light Mode" : "Dark Mode"}</span>
-              <div className={`p-2 rounded-lg ${isDark ? 'bg-zinc-800' : 'bg-white shadow-sm'}`}>
-                {isDark ? <Sun size={18} className="text-white-500" /> : <Moon size={18} className="text-zinc-600" />}
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 rounded-full border border-white/20 bg-white/15 px-4 py-2">
+                <Search size={17} />
+                <input
+                  type="text"
+                  placeholder="Search menu..."
+                  className="w-[190px] bg-transparent text-sm text-white placeholder:text-white/70 outline-none"
+                />
               </div>
-            </button>
 
-            <div className="mt-8 flex gap-6 justify-center text-xl text-zinc-500">
-              <FaFacebookF className="hover:text-blue-600 cursor-pointer transition-colors" />
-              <FaInstagram className="hover:text-pink-600 cursor-pointer transition-colors" />
-              <FaWhatsapp className="hover:text-green-600 cursor-pointer transition-colors" />
+              <button className="rounded-full bg-white px-5 py-2 text-sm font-bold text-green-800 hover:bg-green-100">
+                Sign In
+              </button>
+
+              <button
+                onClick={toggleTheme}
+                className="relative flex h-9 w-[70px] items-center rounded-full border border-white/25 bg-white/20 px-1"
+              >
+                <span
+                  className={`absolute flex h-7 w-7 items-center justify-center rounded-full bg-white transition-all duration-300 ${
+                    isDark ? "translate-x-[34px]" : "translate-x-0"
+                  }`}
+                >
+                  {isDark ? (
+                    <Moon size={15} className="text-black" />
+                  ) : (
+                    <Sun size={15} className="text-green-800" />
+                  )}
+                </span>
+              </button>
+            </div>
+          </div>
+
+          {/* Mobile / Tablet Navbar */}
+          <div className="flex lg:hidden flex-col">
+
+            {/* Top Row */}
+            <div className="flex h-[68px] items-center justify-between">
+              <Image
+                src="/images/newstokoslogo.png"
+                alt="Stoko's Logo"
+                width={135}
+                height={55}
+                priority
+                className="h-11 w-auto object-contain"
+              />
+
+              <div className="flex items-center gap-3">
+                <button className="rounded-full bg-white px-4 py-2 text-xs font-bold text-green-800">
+                  Sign In
+                </button>
+
+                <button
+                  onClick={toggleTheme}
+                  className="relative flex h-9 w-[64px] items-center rounded-full border border-white/25 bg-white/20 px-1"
+                >
+                  <span
+                    className={`absolute flex h-7 w-7 items-center justify-center rounded-full bg-white transition-all duration-300 ${
+                      isDark ? "translate-x-[28px]" : "translate-x-0"
+                    }`}
+                  >
+                    {isDark ? (
+                      <Moon size={14} className="text-black" />
+                    ) : (
+                      <Sun size={14} className="text-green-800" />
+                    )}
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {/* Navigation Row */}
+            <nav className="flex items-center justify-center gap-6 border-t border-white/15 py-3 text-xs font-extrabold uppercase">
+              <a href="/">Home</a>
+              <a href="#menu">Menu</a>
+              <a href="#deals">Deals</a>
+              <a href="#contact">Contact</a>
+            </nav>
+
+            {/* Search Row */}
+            <div className="pb-4">
+              <div className="hidden flex w-full items-center gap-2 rounded-full border border-white/20 bg-white/15 px-4 py-2">
+                <Search size={16} />
+                <input
+                  type="text"
+                  placeholder="Search menu..."
+                  className="w-full bg-transparent text-sm text-white placeholder:text-white/70 outline-none"
+                />
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* Overlay */}
-      {open && <div onClick={() => setOpen(false)} className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[999] transition-opacity" />}
-
-      {/* Mobile Bottom Nav */}
-      <div className="lg:hidden fixed bottom-0 left-0 w-full custom-nav border-t flex justify-around items-center py-4 z-50">
-        <Home className="text-zinc-500" />
-        <MapPin className="text-zinc-500" />
-        <button onClick={() => setOpen(true)} className="bg-green-500 text-white w-14 h-14 rounded-full flex items-center justify-center -mt-10 shadow-xl border-4 border-white dark:border-[#050505] active:scale-90 transition-all">
-          <Menu size={24} />
-        </button>
-        <Info className="text-zinc-500" />
-        <Phone className="text-zinc-500" />
-      </div>
+      {/* Floating Checkout */}
+      <button className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#DA3327] text-white shadow-2xl transition hover:scale-105 active:scale-95 dark:bg-[#DA3327] dark:text-white md:h-16 md:w-16">
+        <ShoppingCart size={24} />
+      </button>
     </>
   );
 }

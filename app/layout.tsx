@@ -21,26 +21,23 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      
-      {/* ✅ Theme script BEFORE body (no flicker) */}
-      <body className={`${jakarta.variable} font-sans min-h-screen antialiased`}>
-        
-    <script
-  dangerouslySetInnerHTML={{
-    __html: `
-      (function () {
-        try {
-          document.documentElement.classList.remove("dark");
-          localStorage.setItem("theme", "light");
-        } catch (e) {}
-      })();
-    `,
-  }}
-/>
+      <body className={`${jakarta.variable} font-sans min-h-screen antialiased bg-white dark:bg-black`}>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function () {
+                try {
+                  document.documentElement.classList.remove("dark");
+                  localStorage.setItem("theme", "light");
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
 
         <Navbar />
 
-        <main className="flex-1 lg:ml-[80px] pb-[80px] lg:pb-0 min-h-screen">
+        <main className="min-h-screen pb-[80px]">
           {children}
         </main>
       </body>

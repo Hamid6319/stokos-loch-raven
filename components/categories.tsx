@@ -56,8 +56,8 @@ export default function Categories() {
   };
 
   return (
-    <div className="w-full  sticky top-[68px] z-30 bg-white dark:bg-black border-b border-zinc-200 dark:border-zinc-800 transition-colors">
-      <div className="w-[1290px] mx-auto md:px-12 px-4">
+    <div className="w-full  top-[125px] md:top-[68px] z-30 bg-white dark:bg-black border-b border-zinc-200 dark:border-zinc-800 transition-colors md:py-2">
+      <div className="md:w-[1600px] mx-auto md:px-0 px-4">
         <div
           ref={scrollRef}
           className="flex items-center gap-2.5 md:gap-3 overflow-x-auto no-scrollbar flex-nowrap scroll-smooth py-4"

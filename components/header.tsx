@@ -5,8 +5,8 @@ import { Search, Flame, ShoppingBag } from "lucide-react";
 
 export default function Header() {
   return (
-    <header className="top-0 sticky z-40 w-full custom-nav border-b px-4 py-3 md:py-4">
-      <div className="flex items-center justify-between w-[1290px] md:px-12 px-2 mx-auto">
+    <header className="top-0 sticky z-40 w-full   px-4 py-3 md:py-4 bg-green-800  dark:bg-black dark:border-b dark:border-zinc-800 transition-colors">
+      <div className="flex items-center justify-between md:w-[1600px] md:px-2 px-2 mx-auto">
         
         {/* LEFT: Logo only */}
         <div className="flex items-center">
