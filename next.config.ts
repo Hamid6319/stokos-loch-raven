@@ -26,9 +26,14 @@ const nextConfig: NextConfig = {
         hostname: "media.istockphoto.com",
       },
 
+       {
+        protocol: "https",
+        hostname: "static.vecteezy.com",
+      },
 
 
-    
+
+
     ],
   },
 

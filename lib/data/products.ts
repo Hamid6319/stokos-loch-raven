@@ -5,7 +5,7 @@ export const PRODUCTS = [
     title: "Tomato & Cheese Pizza",
     price: "10.99",
     oldPrice: null,
-    image: "/images/pizza1.jpeg",
+    image: "https://static.vecteezy.com/system/resources/previews/052/292/191/non_2x/aerial-view-of-a-giant-pizza-topped-with-fresh-tomatoes-and-melted-cheese-png.png",
     badge: "Best Seller",
     description: "Classic cheese or create your own pizza.",
     sizes: [
