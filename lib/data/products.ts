@@ -5,7 +5,7 @@ export const PRODUCTS = [
     title: "Tomato & Cheese Pizza",
     price: "10.99",
     oldPrice: null,
-    image: "https://static.vecteezy.com/system/resources/previews/052/292/191/non_2x/aerial-view-of-a-giant-pizza-topped-with-fresh-tomatoes-and-melted-cheese-png.png",
+    image: "/images/cheeztamato.jpg",
     badge: "Best Seller",
     description: "Classic cheese or create your own pizza.",
     sizes: [
@@ -19,7 +19,7 @@ export const PRODUCTS = [
     category: "pizzas",
     title: "Honey BBQ Chicken Pizza",
     price: "12.99",
-    image: "/images/pizza1.jpeg",
+    image: "/images/bbqpizza.png",
     badge: null,
     description: "Topped with BBQ sauce, mozzarella, and chicken meat.",
     sizes: [
@@ -33,7 +33,7 @@ export const PRODUCTS = [
     category: "pizzas",
     title: "Buffalo Chicken Pizza",
     price: "12.99",
-    image: "/images/pizza1.jpeg",
+    image: "/images/buffalopizza.png",
     badge: null,
     description: "Crispy chicken strips, our own wing sauce, bleu cheese, and mozzarella cheese.",
     sizes: [
@@ -48,7 +48,7 @@ export const PRODUCTS = [
     title: "Stoko's Deluxe Pizza",
     price: "16.98",
     oldPrice: null,
-    image: "/images/pizza1.jpeg",
+    image: "/images/stokosdeluxepizza.png",
     badge: null,
     description: "Pepperoni, sausage, ground beef, ham, bacon, mushrooms, green peppers, onions, and black olives.",
     sizes: [
@@ -64,7 +64,7 @@ export const PRODUCTS = [
     title: "Greek Deluxe Pizza",
     price: "15.99",
     oldPrice: null,
-    image: "/images/pizza1.jpeg",
+    image: "/images/greekpizza.jpg",
     badge: null,
     description: "Feta cheese, gyro meat, extra cheese, tomatoes, green peppers, onions, black olives.",
     sizes: [
@@ -80,7 +80,7 @@ export const PRODUCTS = [
     title: "Veggie Deluxe Pizza",
     price: "16.98",
     oldPrice: null,
-    image: "/images/pizza1.jpeg",
+    image: "/images/vagetablepizza.jpg",
     badge: null,
     description: "Mushrooms, onions, green peppers, black olives, tomatoes, and extra cheese.",
     sizes: [
@@ -96,7 +96,7 @@ export const PRODUCTS = [
     title: "Meat Deluxe Pizza",
     price: "17.98",
     oldPrice: null,
-    image: "/images/pizza1.jpeg",
+    image: "/images/meatpizza.jpg",
     badge: null,
     description: "",
     sizes: [
@@ -112,7 +112,7 @@ export const PRODUCTS = [
     title: "Cheesesteak Pizza",
     price: "12.99",
     oldPrice: null,
-    image: "/images/pizza1.jpeg",
+    image: "/images/cheesestreakpizza.jpg",
     badge: null,
     description: "Mushrooms, onions, green peppers, black olives, tomatoes, and extra cheese.",
     sizes: [
@@ -130,7 +130,7 @@ export const PRODUCTS = [
     title: "Chicken Alfredo Pizza",
     price: "17.98",
     oldPrice: null,
-    image: "/images/pizza1.jpeg",
+    image: "/images/chickenalfredopizza1.jpg",
     badge: null,
     description: "Grilled chicken breast, fresh garlic and Alfredo sauce topped with mozzarella cheese.",
     sizes: [
@@ -146,7 +146,7 @@ export const PRODUCTS = [
     title: "Hawaiian Pizza",
     price: "13.99",
     oldPrice: null,
-    image: "/images/pizza1.jpeg",
+    image: "/images/hawaiianpizza.jpg",
     badge: null,
     description: "Pineapple, imported ham.",
     sizes: [
