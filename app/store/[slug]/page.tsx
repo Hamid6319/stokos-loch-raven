@@ -1,0 +1,57 @@
+
+import Navbar from "@/components/navbar";
+import Hero from "@/components/hero";
+import Categories from "@/components/categories";
+import MenuSection from "@/components/menusection";
+import { PRODUCTS } from "@/lib/data/products";
+import { POPULAR_ITEMS } from "@/lib/data/popularitems";
+import { BREAKFAST } from "@/lib/data/breakfast";
+import { STORES } from "@/lib/data/stores";
+import { notFound } from "next/navigation";
+import StartOrder from "@/components/startorder";
+
+type StorePageProps = {
+  params: Promise<{
+    slug: string;
+  }>;
+};
+
+export default async function StorePage({ params }: StorePageProps) {
+  const { slug } = await params;
+
+  const store = STORES.find((store) => store.slug === slug);
+
+  if (!store) {
+    notFound();
+  }
+
+  return (
+    <main className="bg-white dark:bg-black min-h-screen">
+        <Navbar />
+        <StartOrder />
+      <Hero />
+      <Categories />
+
+      <div className="flex flex-col pb-20">
+        <MenuSection
+          id="trending"
+          title="Popular Menu Items"
+          products={POPULAR_ITEMS.filter((p: any) => p.category === "trending")}
+        />
+
+        <MenuSection
+          id="pizzas"
+          title="Pizzas"
+          products={PRODUCTS.filter((p: any) => p.category === "pizzas")}
+        />
+
+        <MenuSection
+          id="breakfast"
+          title="Breakfast"
+          subtitle="served until 11am"
+          products={BREAKFAST.filter((p: any) => p.category === "breakfast")}
+        />
+      </div>
+    </main>
+  );
+}

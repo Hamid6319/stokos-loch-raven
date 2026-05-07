@@ -1,37 +1,5 @@
-import Navbar from "@/components/navbar";
-import Hero from "@/components/hero";
-import Categories from "../components/categories";
-import MenuSection from "@/components/menusection";
-import { PRODUCTS } from "@/lib/data/products";
-import { POPULAR_ITEMS } from "@/lib/data/popularitems";
-import { BREAKFAST } from "@/lib/data/breakfast";
+import { redirect } from "next/navigation";
 
-export default function Home() {
-  return (
-    <main className="bg-white dark:bg-black min-h-screen">
-      <Hero />
-      <Categories />
-
-      <div className="flex flex-col pb-20">
-        <MenuSection
-          id="trending"
-          title="Popular Menu Items"
-          products={POPULAR_ITEMS.filter((p: any) => p.category === "trending")}
-        />
-
-        <MenuSection
-          id="pizzas"
-          title="Pizzas"
-          products={PRODUCTS.filter((p: any) => p.category === "pizzas")}
-        />
-
-        <MenuSection
-          id="breakfast"
-          title="Breakfast"
-          subtitle="served until 11am"
-          products={BREAKFAST.filter((p: any) => p.category === "breakfast")}
-        />
-      </div>
-    </main>
-  );
+export default function Page() {
+  redirect("/store/towson");
 }
