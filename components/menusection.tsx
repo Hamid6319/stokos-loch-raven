@@ -33,7 +33,7 @@ export default function MenuSection({
           <h2
             className="
               text-black dark:text-white
-              text-3xl md:text-4xl
+              text-2xl md:text-4xl
               font-black uppercase tracking-wide
               ml-1 leading-tight
             "

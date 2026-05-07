@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
-import Navbar from "../components/navbar";
+
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800" ],
+  weight: ["400", "500", "600", "700", "800"],
   variable: "--font-jakarta",
 });
 
@@ -22,13 +22,13 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${jakarta.variable} font-sans min-h-screen antialiased bg-white dark:bg-black`}
+        className={`${jakarta.variable} min-h-screen bg-white font-sans antialiased dark:bg-black`}
       >
-        
-
-        <main className="min-h-screen pb-[80px]">
+        <main className="min-h-screen">
           {children}
         </main>
+
+       
       </body>
     </html>
   );
