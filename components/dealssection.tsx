@@ -8,7 +8,7 @@ import { useRef } from "react";
 const deals = [
   {
     href: "/store/towson?deal=family-pizza-combo",
-    image: "/images/Deal1.png",
+    image: "/images/deal1.png",
   },
   {
     href: "/store/towson?deal=local-store-coupons",
