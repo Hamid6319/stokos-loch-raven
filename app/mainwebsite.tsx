@@ -1,4 +1,4 @@
-export default function mainwebsite() {
+export default function MainWebsite() {
   return (
     <main className="min-h-screen bg-white dark:bg-black">
       <section className="px-6 py-20 text-center">
