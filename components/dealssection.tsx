@@ -33,17 +33,20 @@ export default function DealsSection() {
   const scroll = (direction: "left" | "right") => {
     if (!sliderRef.current) return;
 
+    const scrollAmount = sliderRef.current.clientWidth * 0.85;
+
     sliderRef.current.scrollBy({
-      left: direction === "left" ? -420 : 420,
+      left: direction === "left" ? -scrollAmount : scrollAmount,
       behavior: "smooth",
     });
   };
 
   return (
-    <section id="deals" className="w-full py-6 md:py-10">
+    <section id="deals" className="w-full py-5 md:py-10">
       <div className="mx-auto max-w-[1600px] px-4 md:px-0">
-        <div className="mb-5 flex items-center justify-between">
-          <h2 className="text-2xl font-black uppercase tracking-tight text-black dark:text-white md:text-4xl">
+        {/* Header */}
+        <div className="mb-4 flex items-center justify-between md:mb-6">
+          <h2 className="text-[26px] font-black uppercase leading-none tracking-tight text-black dark:text-white md:text-4xl">
             Explore More Deals
           </h2>
 
@@ -66,22 +69,40 @@ export default function DealsSection() {
           </div>
         </div>
 
+        {/* Slider */}
         <div
           ref={sliderRef}
-          className="no-scrollbar flex gap-4 overflow-x-auto scroll-smooth pb-2 md:gap-6"
+          className="
+            no-scrollbar
+            flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth pb-2
+            md:gap-6
+          "
         >
           {deals.map((deal, index) => (
             <Link
               key={index}
               href={deal.href}
-              className="relative block h-[170px] min-w-[88%] overflow-hidden rounded-2xl bg-zinc-100 transition hover:scale-[1.01] active:scale-[0.99] md:h-[300px] md:min-w-[620px] lg:min-w-[680px]"
+              className="
+                relative block shrink-0 snap-start overflow-hidden
+                rounded-2xl bg-black shadow-sm transition
+                active:scale-[0.98] md:hover:scale-[1.01]
+
+                w-[88vw] aspect-[2/1]
+                sm:w-[430px]
+                md:h-[300px] md:w-[620px] md:aspect-auto
+                lg:w-[680px]
+              "
             >
               <Image
                 src={deal.image}
                 alt={`Deal ${index + 1}`}
                 fill
-                className="object-cover object-center"
-                sizes="(max-width: 768px) 90vw, 680px"
+                priority={index === 0}
+                className="
+                  object-contain object-center
+                  md:object-cover
+                "
+                sizes="(max-width: 640px) 88vw, (max-width: 768px) 430px, 680px"
               />
             </Link>
           ))}

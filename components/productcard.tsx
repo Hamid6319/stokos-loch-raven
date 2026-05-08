@@ -56,8 +56,8 @@ export default function ProductCard({ product }: any) {
          <h3
   className="
     text-black dark:text-white
-    text-[12px] sm:text-[13px] md:text-[13px]
-    font-black uppercase tracking-tight
+    text-[14px] sm:text-[14px] md:text-[16px]
+    font-black uppercase tracking-wide
     leading-[1.25]
     group-hover:text-[#DA3327]
     transition-colors
