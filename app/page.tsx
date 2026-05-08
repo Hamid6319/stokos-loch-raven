@@ -8,8 +8,8 @@
 // }
 
 
-import MainWebsite from "./mainwebsite";
+import mainwebsite from "./mainwebsite";
 
 export default function Page() {
-  return <MainWebsite />;
+  return <mainwebsite />;
 }
