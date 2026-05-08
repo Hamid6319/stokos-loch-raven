@@ -1,15 +1,10 @@
-import MainWebsite from "./mainwebsite";
+
+import { redirect } from "next/navigation";
+
 
 export default function Page() {
-  return <MainWebsite />;
+   redirect("/store/towson");
+
+ 
 }
-
-// import { redirect } from "next/navigation";
-// import MainWebsite from "./mainwebsite";
-
-// export default function Page() {
-//   // redirect("/store/towson");
-
-//   return <MainWebsite />;
-// }
 
