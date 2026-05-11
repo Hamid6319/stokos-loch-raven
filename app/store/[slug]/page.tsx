@@ -14,7 +14,6 @@ import BackToTop from "@/components/backtotop";
 import DealsSection from "@/components/dealssection";
 import CartSidebar from "@/components/CartSidebar";
 
-
 type StorePageProps = {
   params: Promise<{
     slug: string;
@@ -32,6 +31,7 @@ export default async function StorePage({ params }: StorePageProps) {
 
   return (
     <main className="bg-white dark:bg-black min-h-screen">
+    
         <Navbar />
         <CartSidebar />
         <StartOrder />

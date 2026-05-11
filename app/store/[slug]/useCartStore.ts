@@ -23,6 +23,7 @@ interface CartStore {
   addItem: (item: CartItem) => void;
   removeItem: (cartId: string) => void;
   toggleCart: () => void;
+  closeCart: () => void;
   clearCart: () => void;
 }
 
@@ -33,22 +34,33 @@ export const useCartStore = create<CartStore>()(
       isCartOpen: false,
 
       toggleCart: () =>
-        set((state) => ({ isCartOpen: !state.isCartOpen })),
+        set((state) => ({
+          isCartOpen: !state.isCartOpen,
+        })),
+
+      closeCart: () =>
+        set({
+          isCartOpen: false,
+        }),
 
       addItem: (item) =>
         set((state) => {
           const existingIndex = state.cart.findIndex(
-            (i) => i.cartId === item.cartId
+            (cartItem) => cartItem.cartId === item.cartId
           );
 
           if (existingIndex > -1) {
             const newCart = [...state.cart];
+
             newCart[existingIndex] = {
               ...newCart[existingIndex],
               quantity: newCart[existingIndex].quantity + item.quantity,
             };
 
-            return { cart: newCart, isCartOpen: true };
+            return {
+              cart: newCart,
+              isCartOpen: true,
+            };
           }
 
           return {
@@ -59,11 +71,19 @@ export const useCartStore = create<CartStore>()(
 
       removeItem: (cartId) =>
         set((state) => ({
-          cart: state.cart.filter((i) => i.cartId !== cartId),
+          cart: state.cart.filter((item) => item.cartId !== cartId),
         })),
 
-      clearCart: () => set({ cart: [] }),
+      clearCart: () =>
+        set({
+          cart: [],
+        }),
     }),
-    { name: "stokos-cart" }
+    {
+      name: "stokos-cart",
+      partialize: (state) => ({
+        cart: state.cart,
+      }),
+    }
   )
 );
