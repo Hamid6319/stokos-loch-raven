@@ -12,7 +12,7 @@ import StartOrder from "@/components/startorder";
 import Footer from "@/components/footer";
 import BackToTop from "@/components/backtotop";
 import DealsSection from "@/components/dealssection";
-import CartSidebar from "@/components/CartSidebar";
+import CartSidebar from "@/components/cartsidebar";
 
 type StorePageProps = {
   params: Promise<{

@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Search, ShoppingCart, Moon, Sun } from "lucide-react";
-import { useCartStore } from "@/app/store/[slug]/useCartStore";
+import { useCartStore } from "@/app/store/[slug]/usecartstore";
 
 export default function Navbar() {
   const pathname = usePathname();

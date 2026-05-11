@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { useCartStore, CartItem } from "@/app/store/[slug]/useCartStore";
+import { useCartStore, CartItem } from "@/app/store/[slug]/usecartstore";
 import { X, Trash2, ShoppingBag, ArrowRight } from "lucide-react";
 import Image from "next/image";
 

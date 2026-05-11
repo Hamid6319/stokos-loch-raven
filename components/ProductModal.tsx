@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { X, Plus, Minus } from "lucide-react";
-import { useCartStore, CartItem } from "@/app/store/[slug]/useCartStore";
+import { useCartStore, CartItem } from "@/app/store/[slug]/usecartstore";
 
 interface ProductModalProps {
   product: any;
