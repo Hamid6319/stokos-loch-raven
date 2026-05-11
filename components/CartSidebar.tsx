@@ -6,6 +6,7 @@ import { useCartStore, CartItem } from "@/app/store/[slug]/usecartstore";
 import { X, Trash2, ShoppingBag, ArrowRight } from "lucide-react";
 import Image from "next/image";
 
+
 const upsellByCategory: Record<string, CartItem[]> = {
   pizzas: [
     {
