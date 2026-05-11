@@ -21,10 +21,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
+      <body
+        className={`${jakarta.variable} min-h-screen bg-white font-sans antialiased dark:bg-black`}
+      >
         <Script
           id="stripe-back-fix"
-          strategy="beforeInteractive"
+          strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: `
               window.addEventListener("pageshow", function (event) {
@@ -38,11 +40,7 @@ export default function RootLayout({
             `,
           }}
         />
-      </head>
 
-      <body
-        className={`${jakarta.variable} min-h-screen bg-white font-sans antialiased dark:bg-black`}
-      >
         <main className="min-h-screen">{children}</main>
       </body>
     </html>
