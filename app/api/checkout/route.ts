@@ -7,11 +7,8 @@ export async function POST(req: Request) {
   try {
     const { items, slug } = await req.json();
 
-    if (!items || items.length === 0) {
-      return NextResponse.json(
-        { error: "Cart is empty" },
-        { status: 400 }
-      );
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
     }
 
     const origin =
@@ -59,6 +56,15 @@ export async function POST(req: Request) {
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
+
+      // Force only USD. No PKR currency selector.
+      adaptive_pricing: {
+        enabled: false,
+      },
+
+      // Optional: keeps checkout cleaner for demo
+      payment_method_types: ["card"],
+
       line_items: lineItems,
 
       success_url: `${cleanOrigin}/store/${slug}/success`,
