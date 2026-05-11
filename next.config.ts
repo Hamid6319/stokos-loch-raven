@@ -37,6 +37,23 @@ const nextConfig: NextConfig = {
       },
 
 
+         {
+        protocol: "https",
+        hostname: "recipesfromapantry.com",
+      },
+
+
+         {
+        protocol: "https",
+        hostname: "seasonandthyme.com",
+      },
+
+  {
+        protocol: "https",
+        hostname: "www.savingdessert.com",
+      },
+
+
 
 
 

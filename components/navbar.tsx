@@ -5,10 +5,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Search, ShoppingCart, Moon, Sun } from "lucide-react";
+import { useCartStore } from "@/app/store/[slug]/useCartStore";
 
 export default function Navbar() {
   const pathname = usePathname();
   const [isDark, setIsDark] = useState(false);
+
+  const { cart, toggleCart } = useCartStore();
+
+  const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
@@ -48,13 +53,9 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="top-0 z-50 w-full bg-green-800 text-white shadow-md dark:bg-black border-b border-zinc-800  dark:border-zinc-800 transition-colors">
+      <header className="top-0 z-50 w-full bg-green-800 text-white shadow-md dark:bg-black border-b border-zinc-800 transition-colors">
         <div className="mx-auto w-full max-w-[1600px] px-4 md:px-6">
-
-          {/* Top Row */}
           <div className="relative flex min-h-[72px] items-center justify-between gap-4 lg:h-[82px]">
-
-            {/* Desktop Links */}
             <nav className="hidden lg:flex items-center gap-8 text-sm uppercase tracking-wide">
               <Link href="/" className={navClass(pathname === "/")}>
                 Home
@@ -79,7 +80,6 @@ export default function Navbar() {
               </Link>
             </nav>
 
-            {/* Logo */}
             <Link href="/" className="lg:absolute lg:left-1/2 lg:-translate-x-1/2">
               <Image
                 src="/images/newstokoslogo.png"
@@ -91,11 +91,8 @@ export default function Navbar() {
               />
             </Link>
 
-            {/* Right Actions */}
             <div className="ml-auto flex items-center gap-3 md:gap-4">
-
-              {/* Desktop Search */}
-              <div className="hidden md:flex items-center gap-2 rounded-full   border-white/20 bg-white/15 px-4 py-2 border-b">
+              <div className="hidden md:flex items-center gap-2 rounded-full border-white/20 bg-white/15 px-4 py-2 border-b">
                 <Search size={17} />
                 <input
                   type="text"
@@ -134,7 +131,6 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Mobile Links - Full Width Line */}
           <nav className="-mx-4 flex w-auto items-center justify-start gap-7 overflow-x-auto border-t border-white/20 px-4 py-3 text-xs uppercase no-scrollbar md:-mx-6 md:px-6 lg:hidden">
             <Link href="/" className={navClass(pathname === "/")}>
               Home
@@ -164,9 +160,16 @@ export default function Navbar() {
       {/* Floating Cart */}
       <button
         type="button"
+        onClick={toggleCart}
         className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#DA3327] text-white shadow-2xl transition hover:scale-105 active:scale-95 md:h-16 md:w-16"
       >
         <ShoppingCart size={24} />
+
+        {cartCount > 0 && (
+          <span className="absolute -top-2 -right-2 flex h-6 min-w-6 items-center justify-center rounded-full bg-black dark:bg-green-500 dark:text-white px-2 text-xs font-black text-white">
+            {cartCount}
+          </span>
+        )}
       </button>
     </>
   );

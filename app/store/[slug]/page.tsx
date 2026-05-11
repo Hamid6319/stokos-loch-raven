@@ -12,6 +12,7 @@ import StartOrder from "@/components/startorder";
 import Footer from "@/components/footer";
 import BackToTop from "@/components/backtotop";
 import DealsSection from "@/components/dealssection";
+import CartSidebar from "@/components/CartSidebar";
 
 
 type StorePageProps = {
@@ -32,6 +33,7 @@ export default async function StorePage({ params }: StorePageProps) {
   return (
     <main className="bg-white dark:bg-black min-h-screen">
         <Navbar />
+        <CartSidebar />
         <StartOrder />
       <Hero />
       <Categories />
