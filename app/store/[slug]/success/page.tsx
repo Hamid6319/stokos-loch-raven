@@ -25,14 +25,27 @@ export default function SuccessPage() {
 
   useEffect(() => {
     setOrderNumber(`STK-${Math.floor(100000 + Math.random() * 900000)}`);
+
     clearCart();
+
+    localStorage.removeItem("stokos_order_type");
+    localStorage.removeItem("stokos_delivery_address");
+    localStorage.removeItem("stokos_order_day");
+    localStorage.removeItem("stokos_order_time");
+
+    localStorage.removeItem("cart");
+    localStorage.removeItem("stokos-cart");
+    localStorage.removeItem("cart-storage");
+
+    sessionStorage.removeItem("stripe_checkout_started");
+
+    window.dispatchEvent(new Event("stokos-order-updated"));
   }, [clearCart]);
 
   return (
     <main className="min-h-screen bg-[#fafafa] px-4 py-10 text-black dark:bg-black dark:text-white">
       <div className="mx-auto flex min-h-[calc(100vh-80px)] max-w-5xl items-center justify-center">
         <div className="w-full overflow-hidden rounded-[32px] border border-zinc-200 bg-white shadow-2xl dark:border-zinc-800 dark:bg-[#111]">
-          {/* Top Success Area */}
           <div className="bg-gradient-to-br from-green-50 to-white px-6 py-10 text-center dark:from-green-950/30 dark:to-[#111] md:px-12">
             <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-green-100 text-green-600 dark:bg-green-900/40">
               <CheckCircle2 size={46} strokeWidth={2.5} />
@@ -57,7 +70,6 @@ export default function SuccessPage() {
             </div>
           </div>
 
-          {/* Details */}
           <div className="grid border-t border-zinc-200 dark:border-zinc-800 md:grid-cols-3">
             <div className="border-b border-zinc-200 p-6 dark:border-zinc-800 md:border-b-0 md:border-r">
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-100 dark:bg-zinc-900">
@@ -97,20 +109,19 @@ export default function SuccessPage() {
               </h3>
 
               <p className="text-sm leading-6 text-zinc-500">
-                Please keep this confirmation page available when collecting
-                your order.
+                Your active cart and order preference have been cleared after
+                successful payment.
               </p>
             </div>
           </div>
 
-          {/* Actions */}
           <div className="flex flex-col gap-4 border-t border-zinc-200 bg-zinc-50 p-6 dark:border-zinc-800 dark:bg-black md:flex-row md:items-center md:justify-between">
             <div>
               <h4 className="text-sm font-black uppercase">
                 Thanks for ordering from Stoko&apos;s
               </h4>
               <p className="mt-1 text-xs text-zinc-500">
-                Your cart has been cleared after successful payment.
+                Start a new order anytime from the menu page.
               </p>
             </div>
 

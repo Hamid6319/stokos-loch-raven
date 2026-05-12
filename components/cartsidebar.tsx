@@ -3,9 +3,18 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useCartStore, CartItem } from "@/app/store/[slug]/usecartstore";
-import { X, Trash2, ShoppingBag, ArrowRight } from "lucide-react";
+import {
+  X,
+  Trash2,
+  ShoppingBag,
+  ArrowRight,
+  Truck,
+  Store,
+  Clock,
+  MapPin,
+  PencilLine,
+} from "lucide-react";
 import Image from "next/image";
-
 
 const upsellByCategory: Record<string, CartItem[]> = {
   pizzas: [
@@ -105,8 +114,30 @@ export default function CartSidebar() {
 
   const [loading, setLoading] = useState(false);
 
+  const [orderType, setOrderType] = useState<string | null>(null);
+  const [deliveryAddress, setDeliveryAddress] = useState<string | null>(null);
+  const [orderDay, setOrderDay] = useState<string | null>(null);
+  const [orderTime, setOrderTime] = useState<string | null>(null);
+
   const { cart, isCartOpen, toggleCart, closeCart, removeItem, addItem } =
     useCartStore();
+
+  useEffect(() => {
+    const loadOrderInfo = () => {
+      setOrderType(localStorage.getItem("stokos_order_type"));
+      setDeliveryAddress(localStorage.getItem("stokos_delivery_address"));
+      setOrderDay(localStorage.getItem("stokos_order_day"));
+      setOrderTime(localStorage.getItem("stokos_order_time"));
+    };
+
+    loadOrderInfo();
+
+    window.addEventListener("stokos-order-updated", loadOrderInfo);
+
+    return () => {
+      window.removeEventListener("stokos-order-updated", loadOrderInfo);
+    };
+  }, []);
 
   useEffect(() => {
     const resetLoading = () => {
@@ -120,6 +151,14 @@ export default function CartSidebar() {
       window.removeEventListener("pageshow", resetLoading);
     };
   }, [closeCart]);
+
+  const openOrderEditModal = () => {
+    closeCart();
+
+    setTimeout(() => {
+      window.dispatchEvent(new Event("stokos-open-start-order"));
+    }, 80);
+  };
 
   const subtotal = cart.reduce(
     (acc, item) => acc + item.price * item.quantity,
@@ -145,6 +184,16 @@ export default function CartSidebar() {
   const handleStripeCheckout = async () => {
     if (cart.length === 0 || loading) return;
 
+    if (!orderType) {
+      openOrderEditModal();
+      return;
+    }
+
+    if (orderType === "delivery" && !deliveryAddress) {
+      openOrderEditModal();
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -156,6 +205,10 @@ export default function CartSidebar() {
         body: JSON.stringify({
           slug,
           items: cart,
+          orderType,
+          deliveryAddress,
+          orderDay: orderDay || "Today",
+          orderTime: orderTime || "ASAP",
         }),
       });
 
@@ -169,8 +222,8 @@ export default function CartSidebar() {
       }
 
       if (data.url) {
-      sessionStorage.setItem("stripe_checkout_started", "1");
-window.location.assign(data.url);
+        sessionStorage.setItem("stripe_checkout_started", "1");
+        window.location.assign(data.url);
         return;
       }
 
@@ -193,27 +246,91 @@ window.location.assign(data.url);
       )}
 
       <div
-        className={`fixed top-0 right-0 z-[70] h-full w-full sm:max-w-md bg-white dark:bg-[#121212] shadow-2xl transition-transform duration-300 ease-in-out ${
+        className={`fixed right-0 top-0 z-[70] h-full w-full bg-white shadow-2xl transition-transform duration-300 ease-in-out dark:bg-[#121212] sm:max-w-md ${
           isCartOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
         <div className="flex h-full flex-col">
-          <div className="flex items-center justify-between p-4 sm:p-5 border-b dark:border-zinc-800">
-            <h2 className="text-lg sm:text-xl font-black uppercase italic">
+          <div className="flex items-center justify-between border-b p-4 dark:border-zinc-800 sm:p-5">
+            <h2 className="text-lg font-black uppercase italic sm:text-xl">
               Your Order ({cart.length})
             </h2>
 
             <button
+              type="button"
               onClick={toggleCart}
-              className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full"
+              className="rounded-full p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800"
             >
               <X size={24} />
             </button>
           </div>
 
-          <div className="flex-grow overflow-y-auto overflow-x-hidden p-3 sm:p-4 space-y-4 no-scrollbar">
+          <div className="no-scrollbar flex-grow space-y-4 overflow-y-auto overflow-x-hidden p-3 sm:p-4">
+            {orderType ? (
+              <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-800 text-white">
+                      {orderType === "pickup" ? (
+                        <Store size={18} />
+                      ) : (
+                        <Truck size={18} />
+                      )}
+                    </div>
+
+                    <div>
+                      <p className="text-xs font-black uppercase text-zinc-500">
+                        Order Type
+                      </p>
+
+                      <p className="text-sm font-black capitalize text-black dark:text-white">
+                        {orderType === "pickup"
+                          ? "Pickup / Carryout"
+                          : "Delivery"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={openOrderEditModal}
+                    className="flex items-center gap-1 rounded-full border border-zinc-300 px-3 py-1 text-xs font-black text-zinc-700 transition hover:bg-white dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                  >
+                    <PencilLine size={13} />
+                    Edit
+                  </button>
+                </div>
+
+                {deliveryAddress && (
+                  <div className="mt-3 flex gap-2 text-xs text-zinc-500">
+                    <MapPin size={14} className="mt-0.5 shrink-0" />
+                    <span>{deliveryAddress}</span>
+                  </div>
+                )}
+
+                <div className="mt-2 flex gap-2 text-xs text-zinc-500">
+                  <Clock size={14} className="mt-0.5 shrink-0" />
+                  <span>
+                    {orderDay || "Today"} · {orderTime || "ASAP"}
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-yellow-200 bg-yellow-50 p-4 text-sm font-bold text-yellow-800">
+                <p>Please select Delivery or Carryout before checkout.</p>
+
+                <button
+                  type="button"
+                  onClick={openOrderEditModal}
+                  className="mt-3 rounded-full bg-green-800 px-4 py-2 text-xs font-black uppercase text-white"
+                >
+                  Select Now
+                </button>
+              </div>
+            )}
+
             {cart.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-64 text-zinc-400">
+              <div className="flex h-64 flex-col items-center justify-center text-zinc-400">
                 <ShoppingBag size={48} className="mb-4 opacity-20" />
                 <p className="font-bold">Your cart is empty</p>
               </div>
@@ -221,7 +338,7 @@ window.location.assign(data.url);
               cart.map((item, index) => (
                 <div
                   key={`${item.cartId}-${index}`}
-                  className="flex gap-3 sm:gap-4 p-3 border dark:border-zinc-800 rounded-2xl"
+                  className="flex gap-3 rounded-2xl border p-3 dark:border-zinc-800 sm:gap-4"
                 >
                   <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-zinc-100">
                     <Image
@@ -233,12 +350,13 @@ window.location.assign(data.url);
                   </div>
 
                   <div className="min-w-0 flex-grow">
-                    <div className="flex justify-between items-start gap-3">
-                      <h4 className="font-bold text-sm leading-tight">
+                    <div className="flex items-start justify-between gap-3">
+                      <h4 className="text-sm font-bold leading-tight">
                         {item.quantity}x {item.title}
                       </h4>
 
                       <button
+                        type="button"
                         onClick={() => removeItem(item.cartId)}
                         className="text-zinc-400 hover:text-red-500"
                       >
@@ -247,14 +365,14 @@ window.location.assign(data.url);
                     </div>
 
                     {item.size?.label && (
-                      <p className="text-[11px] text-zinc-500 mt-1">
+                      <p className="mt-1 text-[11px] text-zinc-500">
                         Size: {item.size.label}
                       </p>
                     )}
 
                     {item.toppings &&
                       Object.keys(item.toppings).length > 0 && (
-                        <p className="text-[11px] text-zinc-500 mt-1 leading-relaxed">
+                        <p className="mt-1 text-[11px] leading-relaxed text-zinc-500">
                           Toppings:{" "}
                           {Object.entries(item.toppings)
                             .map(([name, side]) => `${name} (${side})`)
@@ -263,18 +381,18 @@ window.location.assign(data.url);
                       )}
 
                     {item.sauces && item.sauces.length > 0 && (
-                      <p className="text-[11px] text-zinc-500 mt-1 leading-relaxed">
+                      <p className="mt-1 text-[11px] leading-relaxed text-zinc-500">
                         Sauces: {item.sauces.join(", ")}
                       </p>
                     )}
 
                     {item.note && (
-                      <p className="text-[11px] text-zinc-500 mt-1">
+                      <p className="mt-1 text-[11px] text-zinc-500">
                         Note: {item.note}
                       </p>
                     )}
 
-                    <p className="font-black mt-2">
+                    <p className="mt-2 font-black">
                       ${(item.price * item.quantity).toFixed(2)}
                     </p>
                   </div>
@@ -286,7 +404,7 @@ window.location.assign(data.url);
               <div className="mt-8 space-y-6">
                 {upsellSections.map((section) => (
                   <div key={section.key}>
-                    <h3 className="text-xs font-black uppercase mb-3 text-zinc-400">
+                    <h3 className="mb-3 text-xs font-black uppercase text-zinc-400">
                       Complete your meal with {section.title}
                     </h3>
 
@@ -294,9 +412,9 @@ window.location.assign(data.url);
                       {section.items.map((up) => (
                         <div
                           key={up.cartId}
-                          className="p-3 border dark:border-zinc-800 rounded-xl bg-zinc-50 dark:bg-zinc-900/50"
+                          className="rounded-xl border bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-900/50"
                         >
-                          <div className="relative h-24 sm:h-28 w-full rounded-lg overflow-hidden mb-3 bg-zinc-100">
+                          <div className="relative mb-3 h-24 w-full overflow-hidden rounded-lg bg-zinc-100 sm:h-28">
                             <Image
                               src={up.image}
                               alt={up.title}
@@ -305,18 +423,19 @@ window.location.assign(data.url);
                             />
                           </div>
 
-                          <div className="text-[12px] font-bold mb-3 line-clamp-2 min-h-[34px]">
+                          <div className="mb-3 min-h-[34px] text-[12px] font-bold line-clamp-2">
                             {up.title}
                           </div>
 
-                          <div className="flex justify-between items-center">
+                          <div className="flex items-center justify-between">
                             <span className="text-sm font-black">
                               ${up.price.toFixed(2)}
                             </span>
 
                             <button
+                              type="button"
                               onClick={() => addItem(up)}
-                              className="bg-[#DA3327] text-white w-8 h-8 rounded-lg text-xs font-black"
+                              className="h-8 w-8 rounded-lg bg-[#DA3327] text-xs font-black text-white"
                             >
                               +
                             </button>
@@ -330,9 +449,9 @@ window.location.assign(data.url);
             )}
           </div>
 
-          <div className="p-4 sm:p-5 border-t dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950">
-            <div className="flex justify-between items-center mb-4">
-              <span className="font-bold text-zinc-500 uppercase text-xs">
+          <div className="border-t bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-950 sm:p-5">
+            <div className="mb-4 flex items-center justify-between">
+              <span className="text-xs font-bold uppercase text-zinc-500">
                 Subtotal
               </span>
 
@@ -342,9 +461,10 @@ window.location.assign(data.url);
             </div>
 
             <button
+              type="button"
               onClick={handleStripeCheckout}
               disabled={loading || cart.length === 0}
-              className="w-full bg-[#DA3327] hover:bg-red-700 text-white h-14 rounded-2xl font-black uppercase italic tracking-tighter flex items-center justify-center gap-3 transition-transform active:scale-95 disabled:opacity-60"
+              className="flex h-14 w-full items-center justify-center gap-3 rounded-2xl bg-[#DA3327] font-black uppercase italic tracking-tighter text-white transition-transform hover:bg-red-700 active:scale-95 disabled:opacity-60"
             >
               {loading ? "Redirecting..." : "Go to Checkout"}
               <ArrowRight size={20} />

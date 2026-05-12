@@ -62,10 +62,6 @@ export default async function StorePage({ params }: StorePageProps) {
           products={BREAKFAST.filter((p: any) => p.category === "breakfast")}
         />
       </div>
-
-
-
-
         <BackToTop />
         <Footer />
     </main>
