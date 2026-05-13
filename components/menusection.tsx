@@ -2,6 +2,7 @@
 
 import ProductCard from "@/components/productcard";
 import { ChevronRight } from "lucide-react";
+import { useSearchStore } from "@/lib/data/useSearchStore";
 
 interface MenuSectionProps {
   id?: string;
@@ -16,7 +17,21 @@ export default function MenuSection({
   subtitle,
   products,
 }: MenuSectionProps) {
-  const visibleProducts = products.slice(0, 10);
+  const { searchQuery } = useSearchStore();
+
+  const normalizedSearch = searchQuery.trim().toLowerCase();
+
+  const filteredProducts = normalizedSearch
+    ? products.filter((product) =>
+        product.title.toLowerCase().includes(normalizedSearch)
+      )
+    : products;
+
+  const visibleProducts = filteredProducts.slice(0, 10);
+
+  if (normalizedSearch && visibleProducts.length === 0) {
+    return null;
+  }
 
   return (
     <section
@@ -63,19 +78,22 @@ export default function MenuSection({
           </span>
         </div>
 
-        <button
-          className="
-            text-black dark:text-white
-            text-sm md:text-lg
-            font-black uppercase tracking-widest
-            transition-all flex items-center gap-1
-          "
-        >
-          ALL <ChevronRight size={20} strokeWidth={4} className="mt-0.5" />
-        </button>
+        {!normalizedSearch && (
+          <button
+            type="button"
+            className="
+              text-black dark:text-white
+              text-sm md:text-lg
+              font-black uppercase tracking-widest
+              transition-all flex items-center gap-1
+            "
+          >
+            ALL <ChevronRight size={20} strokeWidth={4} className="mt-0.5" />
+          </button>
+        )}
       </div>
 
-      {/* Grid - small cards inside 1600px width */}
+      {/* Grid */}
       <div
         className="
           grid
@@ -91,7 +109,7 @@ export default function MenuSection({
             key={product.id}
             className={`
               w-full h-full
-              ${index >= 4 ? "hidden md:block" : "block"}
+              ${!normalizedSearch && index >= 4 ? "hidden md:block" : "block"}
             `}
           >
             <ProductCard product={product} />

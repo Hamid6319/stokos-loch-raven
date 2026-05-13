@@ -115,7 +115,7 @@ export default function StartOrder() {
   const mainButtonClass = (type: OrderType) =>
     `flex h-9 flex-1 items-center justify-center rounded-full px-3 text-[11px] font-black uppercase text-white shadow-md transition active:scale-[0.98] sm:h-10 sm:text-xs md:h-14 md:px-8 md:text-base ${
       orderType === type
-        ? "bg-green-800 hover:bg-green-900"
+        ? "bg-green-600 hover:bg-green-900"
         : "bg-[#DA3327] hover:bg-[#c52d22]"
     }`;
 

@@ -3,17 +3,41 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Search, ShoppingCart, Moon, Sun } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import {
+  Search,
+  ShoppingCart,
+  Moon,
+  Sun,
+  MapPin,
+  ChevronDown,
+  X,
+  Phone,
+  Clock,
+  ExternalLink,
+} from "lucide-react";
 import { useCartStore } from "@/app/store/[slug]/usecartstore";
+import { STORES } from "@/lib/data/stores";
+import { useSearchStore } from "@/lib/data/useSearchStore";
 
 export default function Navbar() {
   const pathname = usePathname();
-  const [isDark, setIsDark] = useState(false);
+  const router = useRouter();
 
-  const { cart, toggleCart } = useCartStore();
+  const [isDark, setIsDark] = useState(false);
+  const [locationOpen, setLocationOpen] = useState(false);
+
+  const { cart, toggleCart, clearCart } = useCartStore();
+  const { searchQuery, setSearchQuery } = useSearchStore();
 
   const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
+
+  const storeSlug = pathname.match(/^\/store\/([^/]+)/)?.[1];
+  const currentStore =
+    STORES.find((store) => store.slug === storeSlug) || STORES[0];
+
+  const isStorePage = pathname.startsWith("/store");
+  const storeMenuUrl = currentStore?.menuUrl || "/store/towson";
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
@@ -42,34 +66,60 @@ export default function Navbar() {
     setIsDark(nextDark);
   };
 
-  const isStorePage = pathname.startsWith("/store");
+  const clearActiveOrderData = () => {
+    localStorage.removeItem("stokos_order_type");
+    localStorage.removeItem("stokos_delivery_address");
+    localStorage.removeItem("stokos_order_day");
+    localStorage.removeItem("stokos_order_time");
+    localStorage.removeItem("stokos_order_store");
+
+    window.dispatchEvent(new Event("stokos-order-updated"));
+  };
+
+  const changeStore = (menuUrl: string, slug: string) => {
+    if (slug !== currentStore.slug) {
+      clearCart();
+      clearActiveOrderData();
+      setSearchQuery("");
+    }
+
+    setLocationOpen(false);
+    router.push(menuUrl);
+  };
 
   const navClass = (active: boolean) =>
     `font-extrabold transition whitespace-nowrap ${
       active
-        ? "text-green-200 border-b-2 border-green-200 pb-1"
+        ? "text-white border-b-2 border-green-200 pb-1"
         : "text-white hover:text-green-200"
     }`;
 
   return (
     <>
-      <header className="top-0 z-50 w-full bg-green-700 text-white shadow-md dark:bg-black border-b border-zinc-800 transition-colors">
+      <header className="sticky top-0 z-50 w-full border-b border-zinc-800 bg-green-600 text-white shadow-md dark:bg-black">
         <div className="mx-auto w-full max-w-[1600px] px-4 md:px-6">
-          <div className="relative flex min-h-[72px] items-center justify-between gap-4 lg:h-[82px]">
-            <nav className="hidden lg:flex items-center gap-8 text-sm uppercase tracking-wide">
+          <div className="relative flex min-h-[76px] items-center justify-between gap-4 lg:h-[86px]">
+            {/* Desktop Navigation */}
+            <nav className="hidden items-center gap-8 text-sm uppercase tracking-wide lg:flex">
               <Link href="/" className={navClass(pathname === "/")}>
                 Home
               </Link>
 
               <Link
-                href={isStorePage ? "#trending" : "/store/towson#trending"}
+                href={
+                  isStorePage
+                    ? `${storeMenuUrl}#trending`
+                    : "/store/towson#trending"
+                }
                 className={navClass(isStorePage)}
               >
                 Menu
               </Link>
 
               <Link
-                href={isStorePage ? "#deals" : "/store/towson#deals"}
+                href={
+                  isStorePage ? `${storeMenuUrl}#deals` : "/store/towson#deals"
+                }
                 className={navClass(false)}
               >
                 Deals
@@ -80,26 +130,44 @@ export default function Navbar() {
               </Link>
             </nav>
 
-            <Link href="/" className="lg:absolute lg:left-1/2 lg:-translate-x-1/2">
+            {/* Logo */}
+            <Link
+              href={storeMenuUrl}
+              className="flex items-center lg:absolute lg:left-1/2 lg:-translate-x-1/2"
+            >
               <Image
                 src="/images/newstokoslogo.png"
                 alt="Stoko's Logo"
                 width={170}
                 height={70}
                 priority
-                className="h-11 w-auto object-contain md:h-14"
+                className="h-10 w-auto object-contain md:h-12"
               />
             </Link>
 
+            {/* Right Actions */}
             <div className="ml-auto flex items-center gap-3 md:gap-4">
-              <div className="hidden md:flex items-center gap-2 rounded-full border-white/20 bg-white/15 px-4 py-2 border-b">
+              <div className="hidden items-center gap-2 rounded-full border border-white/20 bg-white/15 px-4 py-2 md:flex">
                 <Search size={17} />
+
                 <input
                   type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search menu..."
-                  className="w-[190px] bg-transparent text-sm text-white placeholder:text-white/70 outline-none"
+                  className="w-[170px] bg-transparent text-sm text-white placeholder:text-white/70 outline-none lg:w-[190px]"
                 />
               </div>
+
+              <button
+                type="button"
+                onClick={() => setLocationOpen(true)}
+                className="hidden items-center gap-2 rounded-full border border-white/20 bg-white/15 px-4 py-2 text-sm font-black text-white transition hover:bg-white/20 md:flex"
+              >
+                <MapPin size={16} />
+                {currentStore.displayName}
+                <ChevronDown size={15} />
+              </button>
 
               <button
                 type="button"
@@ -131,20 +199,49 @@ export default function Navbar() {
             </div>
           </div>
 
+          {/* Mobile Search + Location */}
+          <div className="flex gap-2 border-t border-white/20 py-3 md:hidden">
+            <div className="flex flex-1 items-center gap-2 rounded-full border border-white/20 bg-white/15 px-3 py-2">
+              <Search size={15} />
+
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search menu..."
+                className="w-full bg-transparent text-xs text-white placeholder:text-white/70 outline-none"
+              />
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setLocationOpen(true)}
+              className="flex items-center gap-1 rounded-full border border-white/20 bg-white/15 px-3 py-2 text-xs font-black text-white"
+            >
+              <MapPin size={14} />
+              {currentStore.displayName}
+            </button>
+          </div>
+
+          {/* Mobile Navigation */}
           <nav className="-mx-4 flex w-auto items-center justify-start gap-7 overflow-x-auto border-t border-white/20 px-4 py-3 text-xs uppercase no-scrollbar md:-mx-6 md:px-6 lg:hidden">
             <Link href="/" className={navClass(pathname === "/")}>
               Home
             </Link>
 
             <Link
-              href={isStorePage ? "#trending" : "/store/towson#trending"}
+              href={
+                isStorePage
+                  ? `${storeMenuUrl}#trending`
+                  : "/store/towson#trending"
+              }
               className={navClass(isStorePage)}
             >
               Menu
             </Link>
 
             <Link
-              href={isStorePage ? "#deals" : "/store/towson#deals"}
+              href={isStorePage ? `${storeMenuUrl}#deals` : "/store/towson#deals"}
               className={navClass(false)}
             >
               Deals
@@ -157,6 +254,129 @@ export default function Navbar() {
         </div>
       </header>
 
+      {/* Overlay */}
+      {locationOpen && (
+        <div
+          className="fixed inset-0 z-[80] bg-black/40 backdrop-blur-sm"
+          onClick={() => setLocationOpen(false)}
+        />
+      )}
+
+      {/* Location Drawer */}
+      <aside
+        className={`fixed right-0 top-3 z-[90] flex h-[calc(100dvh-24px)] w-[92vw] max-w-[420px] flex-col overflow-hidden rounded-l-3xl bg-white shadow-2xl transition-transform duration-300 dark:bg-[#111] md:top-0 md:h-dvh md:max-w-md md:rounded-none ${
+          locationOpen ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        {/* Fixed Header */}
+        <div className="shrink-0 border-b bg-white p-5 dark:border-zinc-800 dark:bg-[#111]">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-black uppercase tracking-tight text-black dark:text-white">
+                Choose Location
+              </h2>
+
+              <p className="mt-1 text-xs text-zinc-500">
+                Select your nearest Stoko&apos;s store.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setLocationOpen(false)}
+              className="rounded-full p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+            >
+              <X size={24} />
+            </button>
+          </div>
+        </div>
+
+        {/* Scrollable Store Cards */}
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4 pb-8">
+          {STORES.map((store) => {
+            const isActive = store.slug === currentStore.slug;
+
+            return (
+              <div
+                key={store.slug}
+                className={`rounded-2xl border p-4 transition ${
+                  isActive
+                    ? "border-green-700 bg-green-50 dark:bg-green-950/20"
+                    : "border-zinc-200 bg-white hover:border-green-500 dark:border-zinc-800 dark:bg-black"
+                }`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h3 className="text-lg font-black text-black dark:text-white">
+                      {store.name}
+                    </h3>
+
+                    <p className="mt-1 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+                      {store.address}
+                      <br />
+                      {store.cityStateZip}
+                    </p>
+                  </div>
+
+                  {isActive && (
+                    <span className="rounded-full bg-green-700 px-3 py-1 text-[10px] font-black uppercase text-white">
+                      Current
+                    </span>
+                  )}
+                </div>
+
+                <div className="mt-4 space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
+                  <div className="flex gap-2">
+                    <Phone size={16} className="mt-0.5 shrink-0" />
+
+                    <a href={`tel:${store.phone}`} className="hover:text-green-700">
+                      {store.phone}
+                    </a>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <Clock size={16} className="mt-0.5 shrink-0" />
+
+                    <span>
+                      {store.hours.map((hour) => (
+                        <span key={hour} className="block">
+                          {hour}
+                        </span>
+                      ))}
+                    </span>
+                  </div>
+
+                  {store.social.google && (
+                    <a
+                      href={store.social.google}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 font-bold text-green-700"
+                    >
+                      View on Google Maps
+                      <ExternalLink size={14} />
+                    </a>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  disabled={isActive}
+                  onClick={() => changeStore(store.menuUrl, store.slug)}
+                  className={`mt-5 h-11 w-full rounded-full text-sm font-black uppercase transition ${
+                    isActive
+                      ? "cursor-default bg-green-700 text-white"
+                      : "bg-[#DA3327] text-white hover:bg-[#c52d22]"
+                  }`}
+                >
+                  {isActive ? "Current Store" : "Order From This Store"}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </aside>
+
       {/* Floating Cart */}
       <button
         type="button"
@@ -166,7 +386,7 @@ export default function Navbar() {
         <ShoppingCart size={24} />
 
         {cartCount > 0 && (
-          <span className="absolute -top-2 -right-2 flex h-6 min-w-6 items-center justify-center rounded-full bg-black dark:bg-green-500 dark:text-white px-2 text-xs font-black text-white">
+          <span className="absolute -right-2 -top-2 flex h-6 min-w-6 items-center justify-center rounded-full bg-black px-2 text-xs font-black text-white dark:bg-green-500">
             {cartCount}
           </span>
         )}
