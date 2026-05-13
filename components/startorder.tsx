@@ -1,18 +1,40 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, Send, ChevronRight } from "lucide-react";
+import { useParams } from "next/navigation";
+import { X, Send, ChevronRight, Clock } from "lucide-react";
+import { STORES } from "@/lib/data/stores";
 
 type OrderType = "pickup" | "delivery";
 
 export default function StartOrder() {
+  const params = useParams();
+  const slugParam = params?.slug;
+  const slug = Array.isArray(slugParam) ? slugParam[0] : slugParam || "towson";
+
+  const store = STORES.find((item) => item.slug === slug) || STORES[0];
+
   const [modalOpen, setModalOpen] = useState(false);
   const [orderType, setOrderType] = useState<OrderType | null>(null);
   const [address, setAddress] = useState("");
   const [day, setDay] = useState("Today");
   const [time, setTime] = useState("ASAP");
 
+  const isOrderLaterOnly =
+    orderType === "delivery" && store.deliveryOrderLaterOnly;
+
   useEffect(() => {
+    const savedStore = localStorage.getItem("stokos_order_store");
+
+    if (savedStore && savedStore !== store.slug) {
+      localStorage.removeItem("stokos_order_type");
+      localStorage.removeItem("stokos_delivery_address");
+      localStorage.removeItem("stokos_order_day");
+      localStorage.removeItem("stokos_order_time");
+      localStorage.removeItem("stokos_order_store");
+      return;
+    }
+
     const savedType = localStorage.getItem("stokos_order_type") as OrderType | null;
     const savedAddress = localStorage.getItem("stokos_delivery_address");
     const savedDay = localStorage.getItem("stokos_order_day");
@@ -22,7 +44,7 @@ export default function StartOrder() {
     if (savedAddress) setAddress(savedAddress);
     if (savedDay) setDay(savedDay);
     if (savedTime) setTime(savedTime);
-  }, []);
+  }, [store.slug]);
 
   useEffect(() => {
     const openStartOrder = () => {
@@ -38,19 +60,44 @@ export default function StartOrder() {
 
   const openModal = (type: OrderType) => {
     setOrderType(type);
+
+    if (type === "delivery" && store.deliveryOrderLaterOnly) {
+      setDay("");
+      setTime("");
+    } else {
+      setDay("Today");
+      setTime("ASAP");
+    }
+
     setModalOpen(true);
+  };
+
+  const handleOrderTypeChange = (type: OrderType) => {
+    setOrderType(type);
+
+    if (type === "delivery" && store.deliveryOrderLaterOnly) {
+      setDay("");
+      setTime("");
+    } else {
+      setDay("Today");
+      setTime("ASAP");
+    }
   };
 
   const updateOrder = () => {
     if (!orderType) return;
+
     if (orderType === "delivery" && !address.trim()) return;
 
+    if (isOrderLaterOnly && (!day || !time)) return;
+
+    localStorage.setItem("stokos_order_store", store.slug);
     localStorage.setItem("stokos_order_type", orderType);
-    localStorage.setItem("stokos_order_day", day);
-    localStorage.setItem("stokos_order_time", time);
+    localStorage.setItem("stokos_order_day", day || "Today");
+    localStorage.setItem("stokos_order_time", time || "ASAP");
 
     if (orderType === "delivery") {
-      localStorage.setItem("stokos_delivery_address", address);
+      localStorage.setItem("stokos_delivery_address", address.trim());
     } else {
       localStorage.removeItem("stokos_delivery_address");
     }
@@ -60,7 +107,10 @@ export default function StartOrder() {
   };
 
   const canContinue =
-    orderType === "pickup" || (orderType === "delivery" && address.trim().length > 0);
+    orderType === "pickup" ||
+    (orderType === "delivery" &&
+      address.trim().length > 0 &&
+      (!isOrderLaterOnly || (day && time)));
 
   const mainButtonClass = (type: OrderType) =>
     `flex h-9 flex-1 items-center justify-center rounded-full px-3 text-[11px] font-black uppercase text-white shadow-md transition active:scale-[0.98] sm:h-10 sm:text-xs md:h-14 md:px-8 md:text-base ${
@@ -70,7 +120,7 @@ export default function StartOrder() {
     }`;
 
   const modalButtonClass = (type: OrderType) =>
-    `flex items-center justify-between rounded border px-3 py-2 text-left font-black transition ${
+    `flex min-h-[42px] items-center justify-between rounded border px-3 py-2 text-left font-black transition ${
       orderType === type
         ? "border-green-700 bg-green-50 ring-2 ring-green-700"
         : "border-zinc-300 bg-white hover:border-green-500"
@@ -126,7 +176,7 @@ export default function StartOrder() {
 
               <div className="mt-5">
                 <h4 className="text-xl font-black text-black">Stoko&apos;s</h4>
-                <p className="mt-1 text-base text-zinc-700">Towson</p>
+                <p className="mt-1 text-base text-zinc-700">{store.displayName}</p>
               </div>
 
               <div className="mt-4 border-t border-zinc-200" />
@@ -136,7 +186,7 @@ export default function StartOrder() {
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
-                  onClick={() => setOrderType("pickup")}
+                  onClick={() => handleOrderTypeChange("pickup")}
                   className={modalButtonClass("pickup")}
                 >
                   <span className="text-green-700">Pickup</span>
@@ -148,28 +198,46 @@ export default function StartOrder() {
                         : "border-green-700 text-green-700"
                     }`}
                   >
-                    30m
+                    {store.pickupTime}
                   </span>
                 </button>
 
                 <button
                   type="button"
-                  onClick={() => setOrderType("delivery")}
+                  onClick={() => handleOrderTypeChange("delivery")}
                   className={modalButtonClass("delivery")}
                 >
                   <span className="text-green-700">Delivery</span>
 
-                  <span
-                    className={`rounded-full border px-2 py-1 text-xs ${
-                      orderType === "delivery"
-                        ? "border-green-700 bg-green-700 text-white"
-                        : "border-green-700 text-green-700"
-                    }`}
-                  >
-                    55m
-                  </span>
+                  {store.deliveryOrderLaterOnly ? (
+                    <span
+                      className={`flex items-center gap-1 rounded-full border px-2 py-1 text-xs ${
+                        orderType === "delivery"
+                          ? "border-green-700 bg-green-700 text-white"
+                          : "border-green-700 text-green-700"
+                      }`}
+                    >
+                      <Clock size={12} />
+                    </span>
+                  ) : (
+                    <span
+                      className={`rounded-full border px-2 py-1 text-xs ${
+                        orderType === "delivery"
+                          ? "border-green-700 bg-green-700 text-white"
+                          : "border-green-700 text-green-700"
+                      }`}
+                    >
+                      {store.deliveryTime}
+                    </span>
+                  )}
                 </button>
               </div>
+
+              {orderType === "delivery" && store.deliveryOrderLaterOnly && (
+                <p className="mt-1 text-center text-xs text-zinc-500">
+                  Order Later Only <Clock size={12} className="inline-block" />
+                </p>
+              )}
 
               {orderType === "delivery" && (
                 <div className="mt-6 flex overflow-hidden rounded border border-zinc-300">
@@ -192,25 +260,60 @@ export default function StartOrder() {
               <div className="mt-6 grid grid-cols-2 gap-2">
                 <select
                   value={day}
-                  onChange={(e) => setDay(e.target.value)}
+                  onChange={(e) => {
+                    setDay(e.target.value);
+                    if (store.deliveryOrderLaterOnly && orderType === "delivery") {
+                      setTime("");
+                    }
+                  }}
                   className="h-10 rounded border border-zinc-300 px-3 text-sm font-semibold outline-none"
                 >
-                  <option>Today</option>
-                  <option>Tomorrow</option>
+                  {isOrderLaterOnly ? (
+                    <>
+                      <option value="">Select a Date</option>
+                      <option value="Today">Today</option>
+                      <option value="Tomorrow">Tomorrow</option>
+                    </>
+                  ) : (
+                    <>
+                      <option value="Today">Today</option>
+                      <option value="Tomorrow">Tomorrow</option>
+                    </>
+                  )}
                 </select>
 
                 <select
                   value={time}
+                  disabled={isOrderLaterOnly && !day}
                   onChange={(e) => setTime(e.target.value)}
-                  className="h-10 rounded border border-zinc-300 px-3 text-sm font-semibold outline-none"
+                  className="h-10 rounded border border-zinc-300 px-3 text-sm font-semibold outline-none disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-400"
                 >
-                  <option>ASAP</option>
-                  <option>12:00 PM</option>
-                  <option>12:30 PM</option>
-                  <option>1:00 PM</option>
-                  <option>1:30 PM</option>
+                  {isOrderLaterOnly ? (
+                    <>
+                      <option value="">Select a Time</option>
+                      <option value="12:00 PM">12:00 PM</option>
+                      <option value="12:30 PM">12:30 PM</option>
+                      <option value="1:00 PM">1:00 PM</option>
+                      <option value="1:30 PM">1:30 PM</option>
+                      <option value="2:00 PM">2:00 PM</option>
+                    </>
+                  ) : (
+                    <>
+                      <option value="ASAP">ASAP</option>
+                      <option value="12:00 PM">12:00 PM</option>
+                      <option value="12:30 PM">12:30 PM</option>
+                      <option value="1:00 PM">1:00 PM</option>
+                      <option value="1:30 PM">1:30 PM</option>
+                    </>
+                  )}
                 </select>
               </div>
+
+              {isOrderLaterOnly && !day && (
+                <p className="mt-2 text-center text-xs text-zinc-500">
+                  Select a date first
+                </p>
+              )}
             </div>
 
             <button
@@ -228,9 +331,11 @@ export default function StartOrder() {
                   ? "Select Pickup or Delivery"
                   : orderType === "pickup"
                   ? "Update Your Pickup Order"
-                  : address.trim()
-                  ? "Update Your Delivery Order"
-                  : "Enter Your Delivery Address to Continue"}
+                  : !address.trim()
+                  ? "Enter Your Delivery Address to Continue"
+                  : isOrderLaterOnly && (!day || !time)
+                  ? "Select Delivery Date & Time to Continue"
+                  : "Update Your Delivery Order"}
               </span>
 
               <ChevronRight size={26} />

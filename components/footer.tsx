@@ -1,17 +1,21 @@
 import Link from "next/link";
 import { MapPin, Phone, Mail, Clock } from "lucide-react";
 import Image from "next/image";
+import type { Store } from "@/lib/data/stores";
+import { STORES } from "@/lib/data/stores";
 
-export default function Footer() {
+type FooterProps = {
+  store: Store;
+};
+
+export default function Footer({ store }: FooterProps) {
   return (
     <footer className="w-full bg-green-800 text-white dark:bg-black">
       <div className="mx-auto max-w-[1600px] px-4 py-10 md:px-6 md:py-14">
-        
-        {/* Top Section */}
         <div className="grid gap-10 md:grid-cols-4 md:items-start">
           
           {/* Brand */}
-          <div className="pt-1 md:pt-[-2px]">
+          <div className="pt-1">
             <Link href="/" className="inline-flex">
               <Image
                 src="/images/newstokoslogo.png"
@@ -28,11 +32,47 @@ export default function Footer() {
             </p>
 
             <Link
-              href="/store/towson"
+              href={store.menuUrl}
               className="mt-6 inline-flex rounded-full bg-[#DA3327] px-6 py-3 text-sm font-black uppercase text-white transition hover:bg-[#c52d22]"
             >
               Start Order
             </Link>
+
+            {/* Social Icons */}
+            <div className="mt-5 flex items-center gap-3">
+              {store.social.facebook && (
+                <a
+                  href={store.social.facebook}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-sm font-black text-blue-700 transition hover:scale-105"
+                >
+                  f
+                </a>
+              )}
+
+              {store.social.yelp && (
+                <a
+                  href={store.social.yelp}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-xs font-black text-red-600 transition hover:scale-105"
+                >
+                  Yelp
+                </a>
+              )}
+
+              {store.social.google && (
+                <a
+                  href={store.social.google}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-sm font-black text-green-700 transition hover:scale-105"
+                >
+                  G
+                </a>
+              )}
+            </div>
           </div>
 
           {/* Quick Links */}
@@ -42,10 +82,18 @@ export default function Footer() {
             </h3>
 
             <ul className="mt-5 space-y-3 text-sm text-white/75">
-              <li><Link href="/" className="hover:text-white">Home</Link></li>
-              <li><Link href="/store/towson#trending" className="hover:text-white">Menu</Link></li>
-              <li><Link href="/store/towson#deals" className="hover:text-white">Deals</Link></li>
-              <li><Link href="/contact" className="hover:text-white">Contact Us</Link></li>
+              <li>
+                <Link href="/" className="hover:text-white">Home</Link>
+              </li>
+              <li>
+                <Link href={`${store.menuUrl}#trending`} className="hover:text-white">Menu</Link>
+              </li>
+              <li>
+                <Link href={`${store.menuUrl}#deals`} className="hover:text-white">Deals</Link>
+              </li>
+              <li>
+                <Link href="/contact" className="hover:text-white">Contact Us</Link>
+              </li>
             </ul>
           </div>
 
@@ -56,9 +104,18 @@ export default function Footer() {
             </h3>
 
             <ul className="mt-5 space-y-3 text-sm text-white/75">
-              <li><Link href="/store/towson" className="hover:text-white">Towson Store</Link></li>
-              <li><Link href="/store/york" className="hover:text-white">York Store</Link></li>
-              <li><Link href="/store/liberty" className="hover:text-white">Liberty Store</Link></li>
+              {STORES.map((item) => (
+                <li key={item.slug}>
+                  <Link
+                    href={item.menuUrl}
+                    className={`hover:text-white ${
+                      item.slug === store.slug ? "font-black text-white" : ""
+                    }`}
+                  >
+                    {item.displayName} Store
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -71,22 +128,36 @@ export default function Footer() {
             <ul className="mt-5 space-y-4 text-sm text-white/75">
               <li className="flex gap-3">
                 <MapPin size={18} className="mt-0.5 shrink-0 text-white" />
-                <span>Choose your nearest Stoko&apos;s location.</span>
+                <span>
+                  {store.address}
+                  <br />
+                  {store.cityStateZip}
+                </span>
               </li>
 
               <li className="flex gap-3">
                 <Phone size={18} className="mt-0.5 shrink-0 text-white" />
-                <span>Call your local store</span>
+                <a href={`tel:${store.phone}`} className="hover:text-white">
+                  {store.phone}
+                </a>
               </li>
 
               <li className="flex gap-3">
                 <Mail size={18} className="mt-0.5 shrink-0 text-white" />
-                <span>support@stokos.com</span>
+                <a href={`mailto:${store.email}`} className="hover:text-white">
+                  {store.email}
+                </a>
               </li>
 
               <li className="flex gap-3">
                 <Clock size={18} className="mt-0.5 shrink-0 text-white" />
-                <span>Open daily for pickup and delivery</span>
+                <span>
+                  {store.hours.map((hour) => (
+                    <span key={hour} className="block">
+                      {hour}
+                    </span>
+                  ))}
+                </span>
               </li>
             </ul>
           </div>

@@ -63,7 +63,7 @@ export default async function StorePage({ params }: StorePageProps) {
         />
       </div>
         <BackToTop />
-        <Footer />
+       <Footer store={store} />
     </main>
   );
 }

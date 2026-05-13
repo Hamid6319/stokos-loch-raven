@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useCartStore, CartItem } from "@/app/store/[slug]/usecartstore";
+import { STORES } from "@/lib/data/stores";
 import {
   X,
   Trash2,
@@ -112,12 +113,18 @@ export default function CartSidebar() {
   const slugParam = params?.slug;
   const slug = Array.isArray(slugParam) ? slugParam[0] : slugParam || "towson";
 
+  const currentStore = STORES.find((store) => store.slug === slug) || STORES[0];
+
   const [loading, setLoading] = useState(false);
 
   const [orderType, setOrderType] = useState<string | null>(null);
   const [deliveryAddress, setDeliveryAddress] = useState<string | null>(null);
   const [orderDay, setOrderDay] = useState<string | null>(null);
   const [orderTime, setOrderTime] = useState<string | null>(null);
+  const [orderStoreSlug, setOrderStoreSlug] = useState<string | null>(null);
+
+  const orderStore =
+    STORES.find((store) => store.slug === orderStoreSlug) || currentStore;
 
   const { cart, isCartOpen, toggleCart, closeCart, removeItem, addItem } =
     useCartStore();
@@ -128,6 +135,7 @@ export default function CartSidebar() {
       setDeliveryAddress(localStorage.getItem("stokos_delivery_address"));
       setOrderDay(localStorage.getItem("stokos_order_day"));
       setOrderTime(localStorage.getItem("stokos_order_time"));
+      setOrderStoreSlug(localStorage.getItem("stokos_order_store") || slug);
     };
 
     loadOrderInfo();
@@ -137,7 +145,7 @@ export default function CartSidebar() {
     return () => {
       window.removeEventListener("stokos-order-updated", loadOrderInfo);
     };
-  }, []);
+  }, [slug]);
 
   useEffect(() => {
     const resetLoading = () => {
@@ -209,6 +217,7 @@ export default function CartSidebar() {
           deliveryAddress,
           orderDay: orderDay || "Today",
           orderTime: orderTime || "ASAP",
+          orderStore: orderStore.slug,
         }),
       });
 
@@ -301,14 +310,41 @@ export default function CartSidebar() {
                   </button>
                 </div>
 
-                {deliveryAddress && (
-                  <div className="mt-3 flex gap-2 text-xs text-zinc-500">
+                <div className="mt-4 rounded-xl bg-white p-3 dark:bg-black">
+                  <p className="text-[11px] font-black uppercase text-zinc-500">
+                    {orderType === "pickup"
+                      ? "Pickup Store"
+                      : "Ordering From"}
+                  </p>
+
+                  <p className="mt-1 text-sm font-black text-black dark:text-white">
+                    {orderStore.name}
+                  </p>
+
+                  <div className="mt-2 flex gap-2 text-xs leading-5 text-zinc-500">
                     <MapPin size={14} className="mt-0.5 shrink-0" />
-                    <span>{deliveryAddress}</span>
+                    <span>
+                      {orderStore.address}
+                      <br />
+                      {orderStore.cityStateZip}
+                    </span>
+                  </div>
+                </div>
+
+                {orderType === "delivery" && deliveryAddress && (
+                  <div className="mt-3 rounded-xl bg-white p-3 dark:bg-black">
+                    <p className="text-[11px] font-black uppercase text-zinc-500">
+                      Delivery Address
+                    </p>
+
+                    <div className="mt-2 flex gap-2 text-xs leading-5 text-zinc-500">
+                      <MapPin size={14} className="mt-0.5 shrink-0" />
+                      <span>{deliveryAddress}</span>
+                    </div>
                   </div>
                 )}
 
-                <div className="mt-2 flex gap-2 text-xs text-zinc-500">
+                <div className="mt-3 flex gap-2 text-xs text-zinc-500">
                   <Clock size={14} className="mt-0.5 shrink-0" />
                   <span>
                     {orderDay || "Today"} · {orderTime || "ASAP"}
@@ -317,7 +353,7 @@ export default function CartSidebar() {
               </div>
             ) : (
               <div className="rounded-2xl border border-yellow-200 bg-yellow-50 p-4 text-sm font-bold text-yellow-800">
-                <p>Please select Delivery or Carryout before checkout.</p>
+                <p>Please select Delivery or Pickup before checkout.</p>
 
                 <button
                   type="button"
@@ -345,6 +381,7 @@ export default function CartSidebar() {
                       src={item.image}
                       alt={item.title}
                       fill
+                      sizes="80px"
                       className="object-cover"
                     />
                   </div>
@@ -419,6 +456,7 @@ export default function CartSidebar() {
                               src={up.image}
                               alt={up.title}
                               fill
+                              sizes="180px"
                               className="object-cover"
                             />
                           </div>

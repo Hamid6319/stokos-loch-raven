@@ -39,6 +39,9 @@ export async function POST(req: Request) {
 
     const cleanOrigin = origin.replace(/\/$/, "");
 
+    const formattedDay = orderDay || "Today";
+    const formattedTime = orderTime || "ASAP";
+
     const lineItems = items.map((item: any) => {
       const descriptionParts: string[] = [];
 
@@ -62,23 +65,12 @@ export async function POST(req: Request) {
         descriptionParts.push(`Note: ${item.note}`);
       }
 
-      descriptionParts.push(
-        `Order Type: ${orderType === "pickup" ? "Pickup / Carryout" : "Delivery"}`
-      );
-
-      if (deliveryAddress) {
-        descriptionParts.push(`Address: ${deliveryAddress}`);
-      }
-
-      descriptionParts.push(`Day: ${orderDay || "Today"}`);
-      descriptionParts.push(`Time: ${orderTime || "ASAP"}`);
-
       return {
         price_data: {
           currency: "usd",
           product_data: {
             name: item.title,
-            description: descriptionParts.join(" | "),
+            description: descriptionParts.join(" | ") || undefined,
           },
           unit_amount: Math.round(Number(item.price) * 100),
         },
@@ -101,8 +93,8 @@ export async function POST(req: Request) {
         store: slug || "towson",
         orderType,
         deliveryAddress: deliveryAddress || "",
-        orderDay: orderDay || "Today",
-        orderTime: orderTime || "ASAP",
+        orderDay: formattedDay,
+        orderTime: formattedTime,
       },
 
       success_url: `${cleanOrigin}/store/${slug || "towson"}/success?session_id={CHECKOUT_SESSION_ID}`,
