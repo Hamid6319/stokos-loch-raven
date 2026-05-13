@@ -96,7 +96,7 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full border-b border-zinc-800 bg-green-600 text-white shadow-md dark:bg-black">
+      <header className="top-0 z-50 w-full border-b border-zinc-800 bg-green-600 text-white shadow-md dark:bg-black">
         <div className="mx-auto w-full max-w-[1600px] px-4 md:px-6">
           <div className="relative flex min-h-[76px] items-center justify-between gap-4 lg:h-[86px]">
             {/* Desktop Navigation */}
