@@ -38,7 +38,7 @@ export default function Hero() {
 
     const timer = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % images.length);
-    }, 3000);
+    }, 6000);
 
     return () => {
       clearInterval(timer);
