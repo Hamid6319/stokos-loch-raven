@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import {
@@ -26,6 +26,20 @@ type StripeItem = {
   quantity: number;
   amount: number;
   currency: string;
+};
+
+type FullOrderItem = {
+  name: string;
+  quantity: number;
+  amount: number;
+  currency: string;
+  size?: {
+    label?: string;
+    price?: number;
+  };
+  toppings?: Record<string, string>;
+  sauces?: string[];
+  note?: string;
 };
 
 const saveOrderForAdmin = (order: any) => {
@@ -55,6 +69,80 @@ const saveOrderForAdmin = (order: any) => {
   }
 };
 
+const getCartSnapshotFromStorage = () => {
+  const keys = ["stokos-cart", "cart-storage", "cart"];
+
+  for (const key of keys) {
+    try {
+      const saved = localStorage.getItem(key);
+      if (!saved) continue;
+
+      const parsed = JSON.parse(saved);
+
+      if (Array.isArray(parsed)) return parsed;
+      if (Array.isArray(parsed?.cart)) return parsed.cart;
+      if (Array.isArray(parsed?.items)) return parsed.items;
+      if (Array.isArray(parsed?.state?.cart)) return parsed.state.cart;
+      if (Array.isArray(parsed?.state?.items)) return parsed.state.items;
+    } catch {
+      continue;
+    }
+  }
+
+  return [];
+};
+
+const getSavedAdminOrder = (sessionId: string | null) => {
+  if (!sessionId) return null;
+
+  try {
+    const saved = localStorage.getItem("stokos_admin_orders");
+    const existing = saved ? JSON.parse(saved) : [];
+
+    return existing.find((order: any) => order.id === sessionId) || null;
+  } catch {
+    return null;
+  }
+};
+
+const buildFullItems = (
+  stripeItems: StripeItem[],
+  cartSnapshot: any[],
+  currency: string
+): FullOrderItem[] => {
+  if (cartSnapshot && cartSnapshot.length > 0) {
+    return cartSnapshot.map((item: any, index: number) => {
+      const quantity = Number(item.quantity || 1);
+      const unitPrice = Number(item.price || 0);
+      const stripeAmount = stripeItems[index]?.amount;
+
+      return {
+        name: item.title || item.name || stripeItems[index]?.name || "Item",
+        quantity,
+        amount:
+          typeof stripeAmount === "number" && stripeAmount > 0
+            ? stripeAmount
+            : unitPrice * quantity,
+        currency: stripeItems[index]?.currency || currency || "USD",
+        size: item.size,
+        toppings: item.toppings || {},
+        sauces: item.sauces || [],
+        note: item.note || "",
+      };
+    });
+  }
+
+  return stripeItems.map((item) => ({
+    name: item.name,
+    quantity: item.quantity,
+    amount: item.amount,
+    currency: item.currency,
+    toppings: {},
+    sauces: [],
+    note: "",
+  }));
+};
+
 export default function SuccessPage() {
   const params = useParams();
   const searchParams = useSearchParams();
@@ -63,7 +151,11 @@ export default function SuccessPage() {
   const slug = Array.isArray(slugParam) ? slugParam[0] : slugParam || "towson";
 
   const sessionId = searchParams.get("session_id");
+
+  const cart = useCartStore((state: any) => state.cart || []);
   const clearCart = useCartStore((state) => state.clearCart);
+
+  const cartSnapshotRef = useRef<any[] | null>(null);
 
   const [orderNumber, setOrderNumber] = useState("");
   const [orderType, setOrderType] = useState("");
@@ -77,7 +169,7 @@ export default function SuccessPage() {
   const [paymentStatus, setPaymentStatus] = useState("paid");
   const [amountTotal, setAmountTotal] = useState(0);
   const [currency, setCurrency] = useState("USD");
-  const [items, setItems] = useState<StripeItem[]>([]);
+  const [items, setItems] = useState<FullOrderItem[]>([]);
   const [loadingDetails, setLoadingDetails] = useState(true);
 
   const orderStore =
@@ -103,6 +195,20 @@ export default function SuccessPage() {
     setOrderDay(savedDay);
     setOrderTime(savedTime);
     setOrderStoreSlug(savedStore);
+
+    const cartSnapshot =
+      cartSnapshotRef.current ||
+      (cart.length > 0 ? cart : getCartSnapshotFromStorage());
+
+    cartSnapshotRef.current = cartSnapshot;
+
+    const savedAdminOrder = getSavedAdminOrder(sessionId);
+
+    if (savedAdminOrder?.items?.length > 0) {
+      setItems(savedAdminOrder.items);
+    } else if (cartSnapshot.length > 0) {
+      setItems(buildFullItems([], cartSnapshot, "USD"));
+    }
 
     const loadStripeSession = async () => {
       if (!sessionId) {
@@ -132,13 +238,20 @@ export default function SuccessPage() {
           STORES.find((store) => store.slug === finalStore) ||
           STORES.find((store) => store.slug === slug);
 
+        const finalCurrency = data.currency || "USD";
+        const finalStripeItems = data.items || [];
+        const finalFullItems =
+          savedAdminOrder?.items?.length > 0
+            ? savedAdminOrder.items
+            : buildFullItems(finalStripeItems, cartSnapshot, finalCurrency);
+
         setOrderNumber(finalOrderNumber);
         setCustomerName(data.customerName || "Not provided");
         setCustomerEmail(data.customerEmail || "Not provided");
         setPaymentStatus(data.paymentStatus || "paid");
         setAmountTotal(data.amountTotal || 0);
-        setCurrency(data.currency || "USD");
-        setItems(data.items || []);
+        setCurrency(finalCurrency);
+        setItems(finalFullItems);
 
         setOrderType(finalOrderType);
         setDeliveryAddress(finalAddress);
@@ -160,9 +273,9 @@ export default function SuccessPage() {
           customerEmail: data.customerEmail || "Not provided",
           paymentStatus: data.paymentStatus || "paid",
           amountTotal: data.amountTotal || 0,
-          currency: data.currency || "USD",
+          currency: finalCurrency,
           paymentMethod: "Card via Stripe",
-          items: data.items || [],
+          items: finalFullItems,
         });
       } catch (error) {
         console.error("Failed to load Stripe session:", error);
@@ -172,6 +285,7 @@ export default function SuccessPage() {
     };
 
     loadStripeSession();
+
     clearCart();
 
     setTimeout(() => {
@@ -188,7 +302,7 @@ export default function SuccessPage() {
       sessionStorage.removeItem("stripe_checkout_started");
 
       window.dispatchEvent(new Event("stokos-order-updated"));
-    }, 1000);
+    }, 1200);
   }, [clearCart, sessionId, slug]);
 
   const isDelivery = orderType === "delivery";
@@ -355,7 +469,7 @@ export default function SuccessPage() {
             </div>
           </div>
 
-          {/* Order Items */}
+          {/* Full Order Items */}
           {items.length > 0 && (
             <div className="px-6 pb-6 md:px-8">
               <div className="rounded-3xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-black">
@@ -366,32 +480,89 @@ export default function SuccessPage() {
 
                   <div>
                     <p className="text-xs font-black uppercase tracking-wide text-zinc-500">
-                      Order Details
+                      Full Order Details
                     </p>
 
                     <p className="text-sm font-semibold text-zinc-500">
-                      Items included in this order
+                      Items, size, toppings, sauces, and special instructions
                     </p>
                   </div>
                 </div>
 
-                <div className="divide-y divide-zinc-200 dark:divide-zinc-800">
-                  {items.map((item, index) => (
-                    <div
-                      key={`${item.name}-${index}`}
-                      className="flex items-center justify-between gap-4 py-3"
-                    >
-                      <div>
-                        <p className="text-sm font-black text-black dark:text-white">
-                          {item.quantity}x {item.name}
-                        </p>
-                      </div>
+                <div className="space-y-4">
+                  {items.map((item, index) => {
+                    const hasToppings =
+                      item.toppings && Object.keys(item.toppings).length > 0;
+                    const hasSauces = item.sauces && item.sauces.length > 0;
+                    const hasNote = item.note && item.note.trim().length > 0;
 
-                      <p className="text-sm font-black text-black dark:text-white">
-                        {item.currency} {item.amount.toFixed(2)}
-                      </p>
-                    </div>
-                  ))}
+                    return (
+                      <div
+                        key={`${item.name}-${index}`}
+                        className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-950"
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          <div>
+                            <p className="text-base font-black text-black dark:text-white">
+                              {item.quantity}x {item.name}
+                            </p>
+
+                            {item.size?.label && (
+                              <p className="mt-1 text-xs font-semibold text-zinc-500">
+                                Size: {item.size.label}
+                              </p>
+                            )}
+                          </div>
+
+                          <p className="text-sm font-black text-black dark:text-white">
+                            {item.currency} {item.amount.toFixed(2)}
+                          </p>
+                        </div>
+
+                        {(hasToppings || hasSauces || hasNote) && (
+                          <div className="mt-4 space-y-3 rounded-xl bg-white p-3 dark:bg-black">
+                            {hasToppings && (
+                              <div>
+                                <p className="text-[11px] font-black uppercase tracking-wide text-zinc-500">
+                                  Toppings
+                                </p>
+
+                                <p className="mt-1 text-xs leading-5 text-zinc-600 dark:text-zinc-400">
+                                  {Object.entries(item.toppings || {})
+                                    .map(([name, side]) => `${name} (${side})`)
+                                    .join(", ")}
+                                </p>
+                              </div>
+                            )}
+
+                            {hasSauces && (
+                              <div>
+                                <p className="text-[11px] font-black uppercase tracking-wide text-zinc-500">
+                                  Sauces
+                                </p>
+
+                                <p className="mt-1 text-xs leading-5 text-zinc-600 dark:text-zinc-400">
+                                  {(item.sauces || []).join(", ")}
+                                </p>
+                              </div>
+                            )}
+
+                            {hasNote && (
+                              <div>
+                                <p className="text-[11px] font-black uppercase tracking-wide text-zinc-500">
+                                  Special Instructions
+                                </p>
+
+                                <p className="mt-1 text-xs leading-5 text-zinc-600 dark:text-zinc-400">
+                                  {item.note}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>

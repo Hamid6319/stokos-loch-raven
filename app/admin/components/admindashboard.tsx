@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   Bell,
   CheckCircle2,
   Clock,
   CreditCard,
-  Mail,
+  FileText,
   MapPin,
   PackageCheck,
   Search,
@@ -14,6 +14,7 @@ import {
   Truck,
   User,
   X,
+  Utensils,
 } from "lucide-react";
 
 type AdminOrderItem = {
@@ -21,6 +22,13 @@ type AdminOrderItem = {
   quantity: number;
   amount: number;
   currency: string;
+  size?: {
+    label?: string;
+    price?: number;
+  };
+  toppings?: Record<string, string>;
+  sauces?: string[];
+  note?: string;
 };
 
 type AdminOrder = {
@@ -28,6 +36,7 @@ type AdminOrder = {
   orderNumber: string;
   createdAt: string;
   store: string;
+  storeSlug?: string;
   orderType: "pickup" | "delivery" | string;
   deliveryAddress?: string;
   orderDay: string;
@@ -37,6 +46,7 @@ type AdminOrder = {
   paymentStatus: string;
   amountTotal: number;
   currency: string;
+  paymentMethod?: string;
   items: AdminOrderItem[];
 };
 
@@ -49,24 +59,41 @@ export default function AdminDashboard() {
   const [notification, setNotification] = useState("");
 
   const loadOrders = () => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    const parsed = saved ? JSON.parse(saved) : [];
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      const parsed: AdminOrder[] = saved ? JSON.parse(saved) : [];
 
-    setOrders(parsed);
-    setActiveOrder(parsed[0] || null);
+      setOrders(parsed);
+
+      setActiveOrder((current) => {
+        if (current) {
+          return parsed.find((order) => order.id === current.id) || parsed[0] || null;
+        }
+
+        return parsed[0] || null;
+      });
+    } catch (error) {
+      console.error("Failed to load admin orders:", error);
+      setOrders([]);
+      setActiveOrder(null);
+    }
   };
 
   useEffect(() => {
     loadOrders();
 
-    const channel = new BroadcastChannel("stokos-orders");
+    let channel: BroadcastChannel | null = null;
 
-    channel.onmessage = (event) => {
-      if (event.data?.type === "ORDER_CREATED") {
-        loadOrders();
-        setNotification(`New order received: ${event.data.order.orderNumber}`);
-      }
-    };
+    if (typeof BroadcastChannel !== "undefined") {
+      channel = new BroadcastChannel("stokos-orders");
+
+      channel.onmessage = (event) => {
+        if (event.data?.type === "ORDER_CREATED") {
+          loadOrders();
+          setNotification(`New order received: ${event.data.order.orderNumber}`);
+        }
+      };
+    }
 
     const handleStorage = () => loadOrders();
 
@@ -74,7 +101,7 @@ export default function AdminDashboard() {
     window.addEventListener("stokos-admin-orders-updated", loadOrders);
 
     return () => {
-      channel.close();
+      channel?.close();
       window.removeEventListener("storage", handleStorage);
       window.removeEventListener("stokos-admin-orders-updated", loadOrders);
     };
@@ -106,9 +133,18 @@ export default function AdminDashboard() {
     });
   }, [orders, search]);
 
-  const totalRevenue = orders.reduce((acc, order) => acc + order.amountTotal, 0);
-  const deliveryOrders = orders.filter((order) => order.orderType === "delivery").length;
-  const pickupOrders = orders.filter((order) => order.orderType === "pickup").length;
+  const totalRevenue = orders.reduce(
+    (acc, order) => acc + Number(order.amountTotal || 0),
+    0
+  );
+
+  const deliveryOrders = orders.filter(
+    (order) => order.orderType === "delivery"
+  ).length;
+
+  const pickupOrders = orders.filter(
+    (order) => order.orderType === "pickup"
+  ).length;
 
   const clearDemoOrders = () => {
     localStorage.removeItem(STORAGE_KEY);
@@ -151,7 +187,7 @@ export default function AdminDashboard() {
               <p className="text-sm font-black">{notification}</p>
             </div>
 
-            <button onClick={() => setNotification("")}>
+            <button type="button" onClick={() => setNotification("")}>
               <X size={18} />
             </button>
           </div>
@@ -159,10 +195,29 @@ export default function AdminDashboard() {
 
         {/* Stats */}
         <div className="mb-6 grid gap-4 md:grid-cols-4">
-          <StatCard title="Total Orders" value={orders.length.toString()} icon={<PackageCheck />} />
-          <StatCard title="Revenue" value={`$${totalRevenue.toFixed(2)}`} icon={<CreditCard />} />
-          <StatCard title="Pickup Orders" value={pickupOrders.toString()} icon={<Store />} />
-          <StatCard title="Delivery Orders" value={deliveryOrders.toString()} icon={<Truck />} />
+          <StatCard
+            title="Total Orders"
+            value={orders.length.toString()}
+            icon={<PackageCheck />}
+          />
+
+          <StatCard
+            title="Revenue"
+            value={`$${totalRevenue.toFixed(2)}`}
+            icon={<CreditCard />}
+          />
+
+          <StatCard
+            title="Pickup Orders"
+            value={pickupOrders.toString()}
+            icon={<Store />}
+          />
+
+          <StatCard
+            title="Delivery Orders"
+            value={deliveryOrders.toString()}
+            icon={<Truck />}
+          />
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[420px_1fr]">
@@ -183,6 +238,7 @@ export default function AdminDashboard() {
 
               <div className="mt-4 flex items-center gap-2 rounded-2xl border border-zinc-200 px-4 py-3">
                 <Search size={18} className="text-zinc-400" />
+
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
@@ -197,7 +253,9 @@ export default function AdminDashboard() {
                 <div className="flex h-72 flex-col items-center justify-center text-center text-zinc-400">
                   <PackageCheck size={46} className="mb-4 opacity-30" />
                   <p className="font-bold">No orders yet</p>
-                  <p className="mt-1 text-sm">New demo orders will appear here.</p>
+                  <p className="mt-1 text-sm">
+                    New demo orders will appear here.
+                  </p>
                 </div>
               ) : (
                 filteredOrders.map((order) => {
@@ -216,7 +274,10 @@ export default function AdminDashboard() {
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <p className="text-sm font-black">{order.orderNumber}</p>
+                          <p className="text-sm font-black">
+                            {order.orderNumber}
+                          </p>
+
                           <p className="mt-1 text-xs text-zinc-500">
                             {new Date(order.createdAt).toLocaleString()}
                           </p>
@@ -227,14 +288,19 @@ export default function AdminDashboard() {
                         </span>
                       </div>
 
-                      <div className="mt-4 flex items-center justify-between">
+                      <div className="mt-4 flex items-center justify-between gap-3">
                         <div>
-                          <p className="text-sm font-bold">{order.customerName}</p>
-                          <p className="text-xs text-zinc-500">{order.store}</p>
+                          <p className="text-sm font-bold">
+                            {order.customerName}
+                          </p>
+
+                          <p className="text-xs text-zinc-500">
+                            {order.store}
+                          </p>
                         </div>
 
                         <p className="text-lg font-black">
-                          ${order.amountTotal.toFixed(2)}
+                          ${Number(order.amountTotal || 0).toFixed(2)}
                         </p>
                       </div>
                     </button>
@@ -253,6 +319,7 @@ export default function AdminDashboard() {
               </div>
             ) : (
               <>
+                {/* Detail Header */}
                 <div className="border-b border-zinc-200 p-6">
                   <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                     <div>
@@ -271,6 +338,7 @@ export default function AdminDashboard() {
 
                     <div className="rounded-2xl bg-green-50 px-5 py-3 text-green-800">
                       <p className="text-xs font-black uppercase">Payment</p>
+
                       <p className="text-sm font-black">
                         {activeOrder.paymentStatus === "paid"
                           ? "Paid Successfully"
@@ -280,19 +348,22 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
+                {/* Detail Cards */}
                 <div className="grid gap-4 p-6 md:grid-cols-2">
                   <DetailCard
                     icon={<User size={20} />}
                     title="Customer"
-                    main={activeOrder.customerName}
-                    sub={activeOrder.customerEmail}
+                    main={activeOrder.customerName || "Not provided"}
+                    sub={activeOrder.customerEmail || "Not provided"}
                   />
 
                   <DetailCard
                     icon={<CreditCard size={20} />}
                     title="Payment"
-                    main={`${activeOrder.currency} ${activeOrder.amountTotal.toFixed(2)}`}
-                    sub="Card via Stripe"
+                    main={`${activeOrder.currency || "USD"} ${Number(
+                      activeOrder.amountTotal || 0
+                    ).toFixed(2)}`}
+                    sub={activeOrder.paymentMethod || "Card via Stripe"}
                   />
 
                   <DetailCard
@@ -309,7 +380,9 @@ export default function AdminDashboard() {
                         ? "Delivery"
                         : "Pickup / Carryout"
                     }
-                    sub={`${activeOrder.orderDay} · ${activeOrder.orderTime}`}
+                    sub={`${activeOrder.orderDay || "Today"} · ${
+                      activeOrder.orderTime || "ASAP"
+                    }`}
                   />
 
                   <DetailCard
@@ -324,38 +397,122 @@ export default function AdminDashboard() {
                         ? activeOrder.deliveryAddress || "Not provided"
                         : activeOrder.store
                     }
-                    sub="Store/order location"
+                    sub="Store / order location"
                   />
                 </div>
 
+                {/* Full Order Items */}
                 <div className="px-6 pb-6">
                   <div className="rounded-3xl border border-zinc-200">
-                    <div className="border-b border-zinc-200 p-5">
-                      <h3 className="text-lg font-black uppercase">
-                        Order Items
-                      </h3>
+                    <div className="flex items-center gap-3 border-b border-zinc-200 p-5">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-green-50 text-green-800">
+                        <Utensils size={20} />
+                      </div>
+
+                      <div>
+                        <h3 className="text-lg font-black uppercase">
+                          Full Order Details
+                        </h3>
+
+                        <p className="text-sm text-zinc-500">
+                          Items, size, toppings, sauces, and special instructions.
+                        </p>
+                      </div>
                     </div>
 
-                    <div className="divide-y divide-zinc-200">
-                      {activeOrder.items.map((item, index) => (
-                        <div
-                          key={`${item.name}-${index}`}
-                          className="flex items-center justify-between gap-4 p-5"
-                        >
-                          <div>
-                            <p className="font-black">
-                              {item.quantity}x {item.name}
-                            </p>
-                            <p className="text-xs text-zinc-500">
-                              Item total
-                            </p>
-                          </div>
+                    <div className="space-y-4 p-5">
+                      {activeOrder.items?.length ? (
+                        activeOrder.items.map((item, index) => {
+                          const hasToppings =
+                            item.toppings &&
+                            Object.keys(item.toppings).length > 0;
 
-                          <p className="font-black">
-                            {item.currency} {item.amount.toFixed(2)}
-                          </p>
+                          const hasSauces =
+                            item.sauces && item.sauces.length > 0;
+
+                          const hasNote =
+                            item.note && item.note.trim().length > 0;
+
+                          const hasDetails =
+                            item.size?.label || hasToppings || hasSauces || hasNote;
+
+                          return (
+                            <div
+                              key={`${item.name}-${index}`}
+                              className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4"
+                            >
+                              <div className="flex items-start justify-between gap-4">
+                                <div>
+                                  <p className="text-base font-black">
+                                    {item.quantity}x {item.name}
+                                  </p>
+
+                                  {item.size?.label && (
+                                    <p className="mt-1 text-xs font-semibold text-zinc-500">
+                                      Size: {item.size.label}
+                                    </p>
+                                  )}
+                                </div>
+
+                                <p className="text-sm font-black">
+                                  {item.currency || activeOrder.currency || "USD"}{" "}
+                                  {Number(item.amount || 0).toFixed(2)}
+                                </p>
+                              </div>
+
+                              {hasDetails && (
+                                <div className="mt-4 space-y-3 rounded-xl bg-white p-3">
+                                  {hasToppings && (
+                                    <div>
+                                      <p className="text-[11px] font-black uppercase tracking-wide text-zinc-500">
+                                        Toppings
+                                      </p>
+
+                                      <p className="mt-1 text-xs leading-5 text-zinc-600">
+                                        {Object.entries(item.toppings || {})
+                                          .map(
+                                            ([name, side]) =>
+                                              `${name} (${side})`
+                                          )
+                                          .join(", ")}
+                                      </p>
+                                    </div>
+                                  )}
+
+                                  {hasSauces && (
+                                    <div>
+                                      <p className="text-[11px] font-black uppercase tracking-wide text-zinc-500">
+                                        Sauces
+                                      </p>
+
+                                      <p className="mt-1 text-xs leading-5 text-zinc-600">
+                                        {(item.sauces || []).join(", ")}
+                                      </p>
+                                    </div>
+                                  )}
+
+                                  {hasNote && (
+                                    <div>
+                                      <p className="text-[11px] font-black uppercase tracking-wide text-zinc-500">
+                                        Special Instructions
+                                      </p>
+
+                                      <p className="mt-1 text-xs leading-5 text-zinc-600">
+                                        {item.note}
+                                      </p>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })
+                      ) : (
+                        <div className="flex h-40 flex-col items-center justify-center text-center text-zinc-400">
+                          <FileText size={34} className="mb-3 opacity-40" />
+                          <p className="font-bold">No item details available</p>
                         </div>
-                      ))}
+                      )}
                     </div>
                   </div>
                 </div>
@@ -375,7 +532,7 @@ function StatCard({
 }: {
   title: string;
   value: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
 }) {
   return (
     <div className="rounded-[24px] border border-zinc-200 bg-white p-5 shadow-sm">
@@ -398,7 +555,7 @@ function DetailCard({
   main,
   sub,
 }: {
-  icon: React.ReactNode;
+  icon: ReactNode;
   title: string;
   main: string;
   sub: string;
