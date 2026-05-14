@@ -3,6 +3,7 @@ import Stripe from "stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
+// CREATE STRIPE CHECKOUT
 export async function POST(req: Request) {
   try {
     const {
@@ -12,6 +13,7 @@ export async function POST(req: Request) {
       deliveryAddress,
       orderDay,
       orderTime,
+      orderStore,
     } = await req.json();
 
     if (!items || !Array.isArray(items) || items.length === 0) {
@@ -39,6 +41,7 @@ export async function POST(req: Request) {
 
     const cleanOrigin = origin.replace(/\/$/, "");
 
+    const storeSlug = slug || "towson";
     const formattedDay = orderDay || "Today";
     const formattedTime = orderTime || "ASAP";
 
@@ -70,11 +73,13 @@ export async function POST(req: Request) {
           currency: "usd",
           product_data: {
             name: item.title,
-            description: descriptionParts.join(" | ") || undefined,
+            description: descriptionParts.length
+              ? descriptionParts.join(" | ")
+              : undefined,
           },
           unit_amount: Math.round(Number(item.price) * 100),
         },
-        quantity: item.quantity,
+        quantity: item.quantity || 1,
       };
     });
 
@@ -90,15 +95,16 @@ export async function POST(req: Request) {
       line_items: lineItems,
 
       metadata: {
-        store: slug || "towson",
+        store: storeSlug,
+        orderStore: orderStore || storeSlug,
         orderType,
         deliveryAddress: deliveryAddress || "",
         orderDay: formattedDay,
         orderTime: formattedTime,
       },
 
-      success_url: `${cleanOrigin}/store/${slug || "towson"}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${cleanOrigin}/store/${slug || "towson"}?payment=cancelled`,
+      success_url: `${cleanOrigin}/store/${storeSlug}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${cleanOrigin}/store/${storeSlug}?payment=cancelled`,
     });
 
     return NextResponse.json({ url: session.url });
@@ -107,6 +113,50 @@ export async function POST(req: Request) {
 
     return NextResponse.json(
       { error: "Stripe checkout failed" },
+      { status: 500 }
+    );
+  }
+}
+
+// GET STRIPE SESSION DETAILS FOR SUCCESS PAGE
+export async function GET(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const sessionId = searchParams.get("session_id");
+
+    if (!sessionId) {
+      return NextResponse.json(
+        { error: "Session ID is required" },
+        { status: 400 }
+      );
+    }
+
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+    const lineItems = await stripe.checkout.sessions.listLineItems(sessionId, {
+      limit: 50,
+    });
+
+    return NextResponse.json({
+      id: session.id,
+      paymentStatus: session.payment_status,
+      amountTotal: session.amount_total ? session.amount_total / 100 : 0,
+      currency: session.currency?.toUpperCase() || "USD",
+      customerName: session.customer_details?.name || "Not provided",
+      customerEmail: session.customer_details?.email || "Not provided",
+      metadata: session.metadata || {},
+      items: lineItems.data.map((item) => ({
+        name: item.description || "Item",
+        quantity: item.quantity || 1,
+        amount: item.amount_total ? item.amount_total / 100 : 0,
+        currency: item.currency?.toUpperCase() || "USD",
+      })),
+    });
+  } catch (error) {
+    console.error("CHECKOUT SESSION ERROR:", error);
+
+    return NextResponse.json(
+      { error: "Failed to fetch checkout session" },
       { status: 500 }
     );
   }
