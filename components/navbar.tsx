@@ -39,6 +39,36 @@ export default function Navbar() {
   const isStorePage = pathname.startsWith("/store");
   const storeMenuUrl = currentStore?.menuUrl || "/store/towson";
 
+
+const storeBasePath = `/store/${currentStore.slug}`;
+const storeContactPath = `/store/${currentStore.slug}/contact`;
+
+const [activeHash, setActiveHash] = useState("");
+
+useEffect(() => {
+  const updateHash = () => {
+    setActiveHash(window.location.hash);
+  };
+
+  updateHash();
+
+  window.addEventListener("hashchange", updateHash);
+
+  return () => {
+    window.removeEventListener("hashchange", updateHash);
+  };
+}, [pathname]);
+
+const isMenuActive =
+  pathname === storeBasePath &&
+  (activeHash === "" || activeHash === "#trending");
+
+const isDealsActive = pathname === storeBasePath && activeHash === "#deals";
+
+const isContactActive = pathname === storeContactPath;
+
+const showFloatingCart = pathname === storeBasePath;
+
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
 
@@ -100,35 +130,32 @@ export default function Navbar() {
         <div className="mx-auto w-full max-w-[1600px] px-4 md:px-6">
           <div className="relative flex min-h-[76px] items-center justify-between gap-4 lg:h-[86px]">
             {/* Desktop Navigation */}
-            <nav className="hidden items-center gap-8 text-sm uppercase tracking-wide lg:flex">
-              <Link href="/" className={navClass(pathname === "/")}>
-                Home
-              </Link>
+           <nav className="hidden items-center gap-8 text-sm uppercase tracking-wide lg:flex">
+  <Link href="/" className={navClass(pathname === "/")}>
+    Home
+  </Link>
 
-              <Link
-                href={
-                  isStorePage
-                    ? `${storeMenuUrl}#trending`
-                    : "/store/towson#trending"
-                }
-                className={navClass(isStorePage)}
-              >
-                Menu
-              </Link>
+  <Link
+    href={`${storeMenuUrl}#trending`}
+    className={navClass(isMenuActive)}
+  >
+    Menu
+  </Link>
 
-              <Link
-                href={
-                  isStorePage ? `${storeMenuUrl}#deals` : "/store/towson#deals"
-                }
-                className={navClass(false)}
-              >
-                Deals
-              </Link>
+  <Link
+    href={`${storeMenuUrl}#deals`}
+    className={navClass(isDealsActive)}
+  >
+    Deals
+  </Link>
 
-              <Link href="/contact" className={navClass(pathname === "/contact")}>
-                Contact Us
-              </Link>
-            </nav>
+  <Link
+    href={`/store/${currentStore.slug}/contact`}
+    className={navClass(isContactActive)}
+  >
+    Contact Us
+  </Link>
+</nav>
 
             {/* Logo */}
             <Link
@@ -224,33 +251,32 @@ export default function Navbar() {
           </div>
 
           {/* Mobile Navigation */}
-          <nav className="-mx-4 flex w-auto items-center justify-start gap-7 overflow-x-auto border-t border-white/20 px-4 py-3 text-xs uppercase no-scrollbar md:-mx-6 md:px-6 lg:hidden">
-            <Link href="/" className={navClass(pathname === "/")}>
-              Home
-            </Link>
+        <nav className="-mx-4 flex w-auto items-center justify-start gap-7 overflow-x-auto border-t border-white/20 px-4 py-3 text-xs uppercase no-scrollbar md:-mx-6 md:px-6 lg:hidden">
+  <Link href="/" className={navClass(pathname === "/")}>
+    Home
+  </Link>
 
-            <Link
-              href={
-                isStorePage
-                  ? `${storeMenuUrl}#trending`
-                  : "/store/towson#trending"
-              }
-              className={navClass(isStorePage)}
-            >
-              Menu
-            </Link>
+  <Link
+    href={`${storeMenuUrl}#trending`}
+    className={navClass(isMenuActive)}
+  >
+    Menu
+  </Link>
 
-            <Link
-              href={isStorePage ? `${storeMenuUrl}#deals` : "/store/towson#deals"}
-              className={navClass(false)}
-            >
-              Deals
-            </Link>
+  <Link
+    href={`${storeMenuUrl}#deals`}
+    className={navClass(isDealsActive)}
+  >
+    Deals
+  </Link>
 
-            <Link href="/contact" className={navClass(pathname === "/contact")}>
-              Contact
-            </Link>
-          </nav>
+  <Link
+    href={`/store/${currentStore.slug}/contact`}
+    className={navClass(isContactActive)}
+  >
+    Contact
+  </Link>
+</nav>
         </div>
       </header>
 
@@ -378,19 +404,21 @@ export default function Navbar() {
       </aside>
 
       {/* Floating Cart */}
-      <button
-        type="button"
-        onClick={toggleCart}
-        className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#DA3327] text-white shadow-2xl transition hover:scale-105 active:scale-95 md:h-16 md:w-16"
-      >
-        <ShoppingCart size={24} />
+{showFloatingCart && (
+  <button
+    type="button"
+    onClick={toggleCart}
+    className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#DA3327] text-white shadow-2xl transition hover:scale-105 active:scale-95 md:h-16 md:w-16"
+  >
+    <ShoppingCart size={24} />
 
-        {cartCount > 0 && (
-          <span className="absolute -right-2 -top-2 flex h-6 min-w-6 items-center justify-center rounded-full bg-black px-2 text-xs font-black text-white dark:bg-green-500">
-            {cartCount}
-          </span>
-        )}
-      </button>
+    {cartCount > 0 && (
+      <span className="absolute -right-2 -top-2 flex h-6 min-w-6 items-center justify-center rounded-full bg-black px-2 text-xs font-black text-white dark:bg-green-500">
+        {cartCount}
+      </span>
+    )}
+  </button>
+)}
     </>
   );
 }
