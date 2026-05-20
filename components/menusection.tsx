@@ -35,12 +35,14 @@ export default function MenuSection({
 
   return (
     <section
-      id={id}
-      className="
-        w-full md:w-[1600px] mx-auto
-        px-4 md:px-0
-        pt-6 pb-8 md:pt-8 md:pb-10
-      "
+  id={id}
+  className="
+    scroll-mt-[120px]
+    w-full md:w-[1600px] mx-auto
+    px-4 md:px-0
+    pt-6 pb-8 md:pt-8 md:pb-10
+  "
+
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-5 md:mb-6">

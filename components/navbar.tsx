@@ -126,7 +126,7 @@ const showFloatingCart = pathname === storeBasePath;
 
   return (
     <>
-      <header className="top-0 z-50 w-full border-b border-zinc-800 bg-green-600 text-white shadow-md dark:bg-black">
+      <header className="top-0 z-50 w-full border-b border-zinc-800 bg-green-600 text-white shadow-md dark:bg-green-700">
         <div className="mx-auto w-full max-w-[1600px] px-4 md:px-6">
           <div className="relative flex min-h-[76px] items-center justify-between gap-4 lg:h-[86px]">
             {/* Desktop Navigation */}
@@ -142,12 +142,12 @@ const showFloatingCart = pathname === storeBasePath;
     Menu
   </Link>
 
-  <Link
+  {/* <Link
     href={`${storeMenuUrl}#deals`}
     className={navClass(isDealsActive)}
   >
     Deals
-  </Link>
+  </Link> */}
 
   <Link
     href={`/store/${currentStore.slug}/contact`}
@@ -263,12 +263,12 @@ const showFloatingCart = pathname === storeBasePath;
     Menu
   </Link>
 
-  <Link
+  {/* <Link
     href={`${storeMenuUrl}#deals`}
     className={navClass(isDealsActive)}
   >
     Deals
-  </Link>
+  </Link> */}
 
   <Link
     href={`/store/${currentStore.slug}/contact`}

@@ -1,10 +1,32 @@
+import MainNavbar from "@/components/mainwebsite/mainnavbar";
+import MainHeroSection from "@/components/mainwebsite/mainherosection";
+import MainStoreSelection  from "@/components/mainwebsite/mainstoreselection";
+import MainTestimonials from "@/components/mainwebsite/maintestimonials";
+import MainFooter from "@/components/mainwebsite/mainfooter";
+import BackToTop  from "@/components/mainwebsite/mainbacktotop";
+import FeaturedDeals  from "@/components/mainwebsite/maindealssection";
+import ExploreMenuSection from "@/components/mainwebsite/mainmenusection";
 
-import { redirect } from "next/navigation";
 
 
 export default function Page() {
-   redirect("/store/towson");
+  return (
+    <>
+      <MainNavbar />
 
- 
+      <main className="min-h-screen bg-white text-black transition-colors duration-300 dark:bg-black dark:text-white">
+        <MainHeroSection />
+          <FeaturedDeals />
+          <ExploreMenuSection />
+
+       <section id="stores"><MainStoreSelection /></section>
+        <section id="testimonials"><MainTestimonials /></section>
+           <BackToTop />
+          <MainFooter />
+        
+        {/* <section id="contact">Contact</section>
+        <section id="map">Map</section>  */}
+      </main>
+    </>
+  );
 }
-

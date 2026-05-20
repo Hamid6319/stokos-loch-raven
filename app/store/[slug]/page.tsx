@@ -1,4 +1,3 @@
-
 import Navbar from "@/components/navbar";
 import Hero from "@/components/hero";
 import Categories from "@/components/categories";
@@ -13,6 +12,7 @@ import Footer from "@/components/footer";
 import BackToTop from "@/components/backtotop";
 import DealsSection from "@/components/dealssection";
 import CartSidebar from "@/components/cartsidebar";
+import ScrollMenu from "@/components/scrollmenu";
 
 type StorePageProps = {
   params: Promise<{
@@ -30,15 +30,14 @@ export default async function StorePage({ params }: StorePageProps) {
   }
 
   return (
-    <main className="bg-white dark:bg-black min-h-screen">
-    
-        <Navbar />
-        <CartSidebar />
-        <StartOrder />
+    <main className="min-h-screen bg-white dark:bg-black">
+      <ScrollMenu />
+
+      <Navbar />
+      <CartSidebar />
+      <StartOrder />
       <Hero />
       <Categories />
-
-
 
       <DealsSection />
 
@@ -62,8 +61,9 @@ export default async function StorePage({ params }: StorePageProps) {
           products={BREAKFAST.filter((p: any) => p.category === "breakfast")}
         />
       </div>
-        <BackToTop />
-       <Footer store={store} />
+
+      <BackToTop />
+      <Footer store={store} />
     </main>
   );
 }
