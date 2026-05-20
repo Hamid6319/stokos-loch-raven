@@ -30,7 +30,7 @@ const deals: DealProduct[] = [
     description:
       "Any 1/2 sub with French fries and a can of soda. Seafood subs extra.",
     price: "$12.99",
-    image: "/images/subcombo.png",
+    image: "/images/halfsubcombo.jpeg",
   },
   {
     id: "two-large-one-topping-pizzas",
