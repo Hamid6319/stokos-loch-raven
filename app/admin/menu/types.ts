@@ -50,7 +50,6 @@ export type UpsellRule = {
   slug?: string;
   trigger: string;
   offer: string;
-  placement: "Cart Sidebar" | "Product Modal" | "Checkout";
   image?: string;
   appliesToCategories?: string[];
   sortOrder?: number;

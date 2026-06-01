@@ -46,7 +46,7 @@ const ProductSchema = new Schema(
       default: "",
     },
 
-    // Current UI sends category name: "Pizzas"
+    // Current UI sends category name like "Pizzas"
     category: {
       type: String,
       required: true,
@@ -59,7 +59,7 @@ const ProductSchema = new Schema(
       default: [],
     },
 
-    // Current UI stores selected upsell IDs
+    // Current UI stores selected upsell IDs here
     relatedUpsells: {
       type: [String],
       default: [],
@@ -102,8 +102,18 @@ const ProductSchema = new Schema(
       updatedAt: "lastSavedAt",
     },
     collection: "products",
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
   }
 );
+
+// This allows .populate("upsellRules") without schema error
+ProductSchema.virtual("upsellRules", {
+  ref: "UpsellRule",
+  localField: "relatedUpsells",
+  foreignField: "_id",
+  justOne: false,
+});
 
 ProductSchema.pre("validate", function (next) {
   const doc = this as any;
@@ -116,7 +126,7 @@ ProductSchema.pre("validate", function (next) {
     doc.updatedAt = "Today";
   }
 
-
+  next();
 });
 
 ProductSchema.index({ storeId: 1, slug: 1 }, { unique: true });

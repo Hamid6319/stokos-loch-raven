@@ -36,17 +36,16 @@ export default function UpsellTable({
       <div className="border-b border-zinc-200 bg-zinc-50 p-4">
         <h3 className="text-lg font-black">Upsell Rules</h3>
         <p className="mt-1 text-sm text-zinc-500">
-          Suggest add-ons based on product category or cart.
+          Suggest checkout add-ons based on product category or cart.
         </p>
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[900px] text-left">
+        <table className="w-full min-w-[820px] text-left">
           <thead className="border-b border-zinc-200 bg-white">
             <tr>
               <TableHead>Upsell</TableHead>
               <TableHead>Trigger</TableHead>
-              <TableHead>Placement</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Action</TableHead>
             </tr>
@@ -57,10 +56,7 @@ export default function UpsellTable({
               const ruleId = getUpsellId(rule, `upsell-${index}`);
 
               return (
-                <tr
-                  key={ruleId}
-                  className="transition hover:bg-green-50/50"
-                >
+                <tr key={ruleId} className="transition hover:bg-green-50/50">
                   <td className="px-5 py-5">
                     <div className="flex items-center gap-3">
                       <ImageBox
@@ -89,10 +85,6 @@ export default function UpsellTable({
 
                   <td className="px-5 py-5 text-sm font-black">
                     {rule.trigger || "Any Product"}
-                  </td>
-
-                  <td className="px-5 py-5 text-sm font-semibold text-zinc-600">
-                    {rule.placement || "Cart Sidebar"}
                   </td>
 
                   <td className="px-5 py-5">

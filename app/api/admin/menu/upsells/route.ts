@@ -62,20 +62,19 @@ export async function POST(req: Request) {
 
     const name = body.name || offer;
 
-    const upsellRule = await UpsellRule.create({
-      storeId: body.storeId || "towson",
-      name,
-      slug: body.slug || slugify(name),
-      offer,
-      trigger: body.trigger || "",
-      placement: body.placement || "Cart Sidebar",
-      image: body.image || "",
-      appliesToCategories: cleanCategories(
-        body.appliesToCategories || body.categories || []
-      ),
-      sortOrder: Number(body.sortOrder || 0),
-      status: body.status || "Active",
-    });
+  const upsellRule = await UpsellRule.create({
+  storeId: body.storeId || "towson",
+  name,
+  slug: body.slug || slugify(name),
+  offer,
+  trigger: body.trigger || "",
+  image: body.image || "",
+  appliesToCategories: cleanCategories(
+    body.appliesToCategories || body.categories || []
+  ),
+  sortOrder: Number(body.sortOrder || 0),
+  status: body.status || "Active",
+});
 
     return NextResponse.json(
       { success: true, data: upsellRule },
@@ -116,18 +115,17 @@ export async function PATCH(req: Request) {
     const name = body.name || offer;
 
     const updateData: any = {
-      storeId: body.storeId || "towson",
-      name,
-      offer,
-      trigger: body.trigger || "",
-      placement: body.placement || "Cart Sidebar",
-      image: body.image || "",
-      appliesToCategories: cleanCategories(
-        body.appliesToCategories || body.categories || []
-      ),
-      sortOrder: Number(body.sortOrder || 0),
-      status: body.status || "Active",
-    };
+  storeId: body.storeId || "towson",
+  name,
+  offer,
+  trigger: body.trigger || "",
+  image: body.image || "",
+  appliesToCategories: cleanCategories(
+    body.appliesToCategories || body.categories || []
+  ),
+  sortOrder: Number(body.sortOrder || 0),
+  status: body.status || "Active",
+};
 
     if (name) {
       updateData.slug = body.slug || slugify(name);

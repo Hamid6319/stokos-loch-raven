@@ -41,12 +41,6 @@ const UpsellRuleSchema = new Schema(
       trim: true,
     },
 
-    placement: {
-      type: String,
-      enum: ["Cart Sidebar", "Product Modal", "Checkout"],
-      default: "Cart Sidebar",
-    },
-
     image: {
       type: String,
       default: "",
@@ -74,7 +68,7 @@ const UpsellRuleSchema = new Schema(
   }
 );
 
-UpsellRuleSchema.pre("validate", function () {
+UpsellRuleSchema.pre("validate", function (next) {
   const doc = this as any;
 
   if (!doc.offer && doc.name) {
@@ -99,6 +93,8 @@ UpsellRuleSchema.pre("validate", function () {
         ? categories.map((item: string) => `Any ${item}`).join(", ")
         : "Any Product";
   }
+
+  next();
 });
 
 UpsellRuleSchema.index({ storeId: 1, slug: 1 }, { unique: true });
