@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import ModifierGroup from "@/models/modifiergroup";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 const slugify = (value: string) =>
   value
     .toLowerCase()

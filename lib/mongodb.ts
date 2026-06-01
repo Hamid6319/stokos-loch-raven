@@ -1,22 +1,16 @@
 import mongoose from "mongoose";
 
-const MONGODB_URI = process.env.MONGODB_URI;
-
-if (!MONGODB_URI) {
-  throw new Error("Please add MONGODB_URI in your .env.local file");
-}
-
-type CachedConnection = {
+type CachedMongoose = {
   conn: typeof mongoose | null;
   promise: Promise<typeof mongoose> | null;
 };
 
 declare global {
   // eslint-disable-next-line no-var
-  var mongooseCache: CachedConnection | undefined;
+  var mongooseCache: CachedMongoose | undefined;
 }
 
-const cached: CachedConnection = global.mongooseCache || {
+const cached: CachedMongoose = global.mongooseCache || {
   conn: null,
   promise: null,
 };
@@ -25,17 +19,25 @@ if (!global.mongooseCache) {
   global.mongooseCache = cached;
 }
 
-export default async function connectDB() {
+async function connectMongoDB() {
+  const MONGODB_URI = process.env.MONGODB_URI;
+
+  if (!MONGODB_URI) {
+    throw new Error(
+      "MONGODB_URI is missing. Add it in Vercel Project Settings > Environment Variables."
+    );
+  }
+
   if (cached.conn) {
     return cached.conn;
   }
 
   if (!cached.promise) {
-    cached.promise = mongoose.connect(MONGODB_URI as string, {
-      bufferCommands: false,
-    });
+    cached.promise = mongoose.connect(MONGODB_URI);
   }
 
   cached.conn = await cached.promise;
   return cached.conn;
 }
+
+export default connectMongoDB;

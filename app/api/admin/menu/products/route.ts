@@ -6,6 +6,11 @@ import Category from "@/models/category";
 import ModifierGroup from "@/models/modifiergroup";
 import UpsellRule from "@/models/upsellrule";
 
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+
 const slugify = (value: string) =>
   value
     .toLowerCase()
