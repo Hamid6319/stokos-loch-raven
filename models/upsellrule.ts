@@ -68,7 +68,7 @@ const UpsellRuleSchema = new Schema(
   }
 );
 
-UpsellRuleSchema.pre("validate", function (next) {
+UpsellRuleSchema.pre("validate", function () {
   const doc = this as any;
 
   if (!doc.offer && doc.name) {
@@ -93,8 +93,6 @@ UpsellRuleSchema.pre("validate", function (next) {
         ? categories.map((item: string) => `Any ${item}`).join(", ")
         : "Any Product";
   }
-
-  next();
 });
 
 UpsellRuleSchema.index({ storeId: 1, slug: 1 }, { unique: true });
