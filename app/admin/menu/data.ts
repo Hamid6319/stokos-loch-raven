@@ -90,7 +90,32 @@ export const defaultModifierGroups: ModifierGroup[] = [
     storeId: DEFAULT_STORE_ID,
     name: "Pizza Size",
     appliesTo: "Pizzas",
-    options: ["Small", "Medium", "Large", "X-Large"],
+    options: [
+      {
+        id: "OPT-001",
+        name: "Small",
+        price: 0,
+        status: "Active",
+      },
+      {
+        id: "OPT-002",
+        name: "Medium",
+        price: 2,
+        status: "Active",
+      },
+      {
+        id: "OPT-003",
+        name: "Large",
+        price: 4,
+        status: "Active",
+      },
+      {
+        id: "OPT-004",
+        name: "X-Large",
+        price: 6,
+        status: "Active",
+      },
+    ],
     required: true,
   },
   {
@@ -98,7 +123,32 @@ export const defaultModifierGroups: ModifierGroup[] = [
     storeId: DEFAULT_STORE_ID,
     name: "Pizza Toppings",
     appliesTo: "Pizzas",
-    options: ["Pepperoni", "Mushrooms", "Onions", "Green Peppers"],
+    options: [
+      {
+        id: "OPT-005",
+        name: "Pepperoni",
+        price: 1.5,
+        status: "Active",
+      },
+      {
+        id: "OPT-006",
+        name: "Mushrooms",
+        price: 1,
+        status: "Active",
+      },
+      {
+        id: "OPT-007",
+        name: "Onions",
+        price: 1,
+        status: "Active",
+      },
+      {
+        id: "OPT-008",
+        name: "Green Peppers",
+        price: 1,
+        status: "Active",
+      },
+    ],
     required: false,
   },
   {
@@ -106,7 +156,32 @@ export const defaultModifierGroups: ModifierGroup[] = [
     storeId: DEFAULT_STORE_ID,
     name: "Wing Sauce",
     appliesTo: "Wings",
-    options: ["Buffalo", "BBQ", "Mild", "Hot"],
+    options: [
+      {
+        id: "OPT-009",
+        name: "Buffalo",
+        price: 0,
+        status: "Active",
+      },
+      {
+        id: "OPT-010",
+        name: "BBQ",
+        price: 0,
+        status: "Active",
+      },
+      {
+        id: "OPT-011",
+        name: "Mild",
+        price: 0,
+        status: "Active",
+      },
+      {
+        id: "OPT-012",
+        name: "Hot",
+        price: 0,
+        status: "Active",
+      },
+    ],
     required: true,
   },
 ];
