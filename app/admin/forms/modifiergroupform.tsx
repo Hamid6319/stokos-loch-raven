@@ -17,11 +17,20 @@ type ModifierGroupWithMongo = ModifierGroup & {
   _id?: string;
 };
 
-const ModifierGroupForm = forwardRef<ModifierGroupFormRef, {
+type ModifierGroupFormProps = {
   item: ModifierGroup | null;
   categories: Category[];
+  selectedStoreId?: string;
   onSave: (value: any) => void;
-}>(function ModifierGroupForm({ item, categories, onSave }, ref) {
+};
+
+const ModifierGroupForm = forwardRef<
+  ModifierGroupFormRef,
+  ModifierGroupFormProps
+>(function ModifierGroupForm(
+  { item, categories, selectedStoreId = "", onSave },
+  ref
+) {
   const safeCategories = Array.isArray(categories)
     ? (categories as CategoryWithMongo[])
     : [];
@@ -32,13 +41,16 @@ const ModifierGroupForm = forwardRef<ModifierGroupFormRef, {
 
       return {
         ...modifier,
+        storeId: modifier.storeId || selectedStoreId,
         appliesTo: getTextValue((modifier as any).appliesTo, ""),
         options: Array.isArray(modifier.options) ? modifier.options : [],
+        required: Boolean(modifier.required),
       };
     }
 
     return {
       id: "",
+      storeId: selectedStoreId,
       name: "",
       appliesTo: safeCategories[0]?.name || "",
       options: [],
@@ -49,7 +61,16 @@ const ModifierGroupForm = forwardRef<ModifierGroupFormRef, {
   const [optionsText, setOptionsText] = useState(() => {
     if (item) {
       const modifier = item as ModifierGroupWithMongo;
-      return Array.isArray(modifier.options) ? modifier.options.join(", ") : "";
+
+      if (!Array.isArray(modifier.options)) return "";
+
+      return modifier.options
+        .map((option: any) => {
+          if (typeof option === "string") return option;
+          return option?.name || option?.label || option?.title || option?.value || "";
+        })
+        .filter(Boolean)
+        .join(", ");
     }
 
     return "";
@@ -60,6 +81,10 @@ const ModifierGroupForm = forwardRef<ModifierGroupFormRef, {
       return alert("Modifier group name required");
     }
 
+    if (!form.storeId) {
+      return alert("Store is required for modifier group");
+    }
+
     const options = optionsText
       .split(",")
       .map((item) => item.trim())
@@ -67,8 +92,11 @@ const ModifierGroupForm = forwardRef<ModifierGroupFormRef, {
 
     onSave({
       ...form,
+      storeId: form.storeId,
+      name: form.name.trim(),
       appliesTo: String(form.appliesTo || ""),
       options,
+      required: Boolean(form.required),
     });
   };
 
@@ -87,7 +115,10 @@ const ModifierGroupForm = forwardRef<ModifierGroupFormRef, {
         label="Applies To"
         value={form.appliesTo}
         onChange={(value) =>
-          setForm((prev) => ({ ...prev, appliesTo: value }))
+          setForm((prev) => ({
+            ...prev,
+            appliesTo: value,
+          }))
         }
         options={safeCategories.map((item) => item.name)}
       />
@@ -102,7 +133,7 @@ const ModifierGroupForm = forwardRef<ModifierGroupFormRef, {
       <label className="flex cursor-pointer items-center gap-3 rounded-2xl border border-zinc-200 p-4">
         <input
           type="checkbox"
-          checked={form.required}
+          checked={Boolean(form.required)}
           onChange={(event) =>
             setForm((prev) => ({
               ...prev,
@@ -119,5 +150,7 @@ const ModifierGroupForm = forwardRef<ModifierGroupFormRef, {
     </>
   );
 });
+
+ModifierGroupForm.displayName = "ModifierGroupForm";
 
 export default ModifierGroupForm;

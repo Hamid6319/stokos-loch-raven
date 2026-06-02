@@ -102,6 +102,25 @@ export default function MenuModal({
     setSelectedStoreIds(nextSingleStore ? [nextSingleStore] : []);
   }, [itemStoreId, firstStoreId, storeOptions, isCategoryAdd]);
 
+  const activeFormStoreId = useMemo(() => {
+    if (isCategoryAdd) {
+      return selectedStoreIds[0] || selectedStoreId || firstStoreId || "";
+    }
+
+    if (isCategoryEdit) {
+      return itemStoreId || selectedStoreId || firstStoreId || "";
+    }
+
+    return selectedStoreId || "";
+  }, [
+    isCategoryAdd,
+    isCategoryEdit,
+    selectedStoreIds,
+    selectedStoreId,
+    itemStoreId,
+    firstStoreId,
+  ]);
+
   const lockedCategoryStoreName = useMemo(() => {
     if (!itemStoreId) return "No Store";
 
@@ -113,14 +132,16 @@ export default function MenuModal({
   }, [itemStoreId, storeOptions]);
 
   const selectedStoreCategories = useMemo(() => {
-    if (!selectedStoreId) return [];
+    const filterStoreId = activeFormStoreId || selectedStoreId;
+
+    if (!filterStoreId) return [];
 
     const filtered = categories.filter((category) => {
-      return isItemInSelectedStore(category, selectedStoreId, storeOptions);
+      return isItemInSelectedStore(category, filterStoreId, storeOptions);
     });
 
     return dedupeCategoriesForSelect(filtered);
-  }, [categories, selectedStoreId, storeOptions]);
+  }, [categories, activeFormStoreId, selectedStoreId, storeOptions]);
 
   const selectedStoreModifierGroups = useMemo(() => {
     if (!selectedStoreId) return [];
@@ -362,15 +383,18 @@ export default function MenuModal({
           categories={selectedStoreCategories}
           modifierGroups={selectedStoreModifierGroups}
           upsellRules={selectedStoreUpsellRules}
+          selectedStoreId={selectedStoreId}
           onSave={handleFormSave}
         />
       )}
 
       {type === "categories" && (
         <CategoryForm
+          key={`category-form-${activeFormStoreId}-${getSafeId(item) || "new"}`}
           ref={categoryRef}
           item={item as Category | null}
           categories={selectedStoreCategories}
+          selectedStoreId={activeFormStoreId}
           onSave={handleFormSave}
         />
       )}
@@ -381,6 +405,7 @@ export default function MenuModal({
           ref={modifierRef}
           item={item as ModifierGroup | null}
           categories={selectedStoreCategories}
+          selectedStoreId={selectedStoreId}
           onSave={handleFormSave}
         />
       )}
@@ -391,6 +416,7 @@ export default function MenuModal({
           ref={upsellRef}
           item={item as UpsellRule | null}
           categories={selectedStoreCategories}
+          selectedStoreId={selectedStoreId}
           onSave={handleFormSave}
         />
       )}
