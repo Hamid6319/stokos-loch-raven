@@ -2,9 +2,12 @@ import type { Category, ModifierGroup, Product, UpsellRule } from "./types";
 
 export const STORAGE_KEY = "stokos_admin_menu_data";
 
+const DEFAULT_STORE_ID = "towson";
+
 export const defaultProducts: Product[] = [
   {
     id: "PRD-001",
+    storeId: DEFAULT_STORE_ID,
     name: "Large Cheese Pizza",
     category: "Pizzas",
     price: 12.99,
@@ -12,10 +15,12 @@ export const defaultProducts: Product[] = [
     status: "Active",
     modifierGroups: ["Pizza Size", "Pizza Toppings"],
     upsell: "Wings + Soda",
+    relatedUpsells: [],
     updatedAt: "Today",
   },
   {
     id: "PRD-002",
+    storeId: DEFAULT_STORE_ID,
     name: "Buffalo Wings",
     category: "Wings",
     price: 10.99,
@@ -23,10 +28,12 @@ export const defaultProducts: Product[] = [
     status: "Active",
     modifierGroups: ["Wing Sauce"],
     upsell: "Fries + Drink",
+    relatedUpsells: [],
     updatedAt: "Today",
   },
   {
     id: "PRD-003",
+    storeId: DEFAULT_STORE_ID,
     name: "Chicken Cheesesteak Sub",
     category: "Hot Subs",
     price: 9.49,
@@ -34,21 +41,53 @@ export const defaultProducts: Product[] = [
     status: "Active",
     modifierGroups: ["Bread Choice"],
     upsell: "Fries + Soda",
+    relatedUpsells: [],
     updatedAt: "Yesterday",
   },
 ];
 
 export const defaultCategories: Category[] = [
-  { id: "CAT-001", name: "Pizzas", status: "Active", sortOrder: 1 },
-  { id: "CAT-002", name: "Wings", status: "Active", sortOrder: 2 },
-  { id: "CAT-003", name: "Hot Subs", status: "Active", sortOrder: 3 },
-  { id: "CAT-004", name: "Breakfast", status: "Active", sortOrder: 4 },
-  { id: "CAT-005", name: "Fresh Salads", status: "Active", sortOrder: 5 },
+  {
+    id: "CAT-001",
+    storeId: DEFAULT_STORE_ID,
+    name: "Pizzas",
+    status: "Active",
+    sortOrder: 1,
+  },
+  {
+    id: "CAT-002",
+    storeId: DEFAULT_STORE_ID,
+    name: "Wings",
+    status: "Active",
+    sortOrder: 2,
+  },
+  {
+    id: "CAT-003",
+    storeId: DEFAULT_STORE_ID,
+    name: "Hot Subs",
+    status: "Active",
+    sortOrder: 3,
+  },
+  {
+    id: "CAT-004",
+    storeId: DEFAULT_STORE_ID,
+    name: "Breakfast",
+    status: "Active",
+    sortOrder: 4,
+  },
+  {
+    id: "CAT-005",
+    storeId: DEFAULT_STORE_ID,
+    name: "Fresh Salads",
+    status: "Active",
+    sortOrder: 5,
+  },
 ];
 
 export const defaultModifierGroups: ModifierGroup[] = [
   {
     id: "MOD-001",
+    storeId: DEFAULT_STORE_ID,
     name: "Pizza Size",
     appliesTo: "Pizzas",
     options: ["Small", "Medium", "Large", "X-Large"],
@@ -56,6 +95,7 @@ export const defaultModifierGroups: ModifierGroup[] = [
   },
   {
     id: "MOD-002",
+    storeId: DEFAULT_STORE_ID,
     name: "Pizza Toppings",
     appliesTo: "Pizzas",
     options: ["Pepperoni", "Mushrooms", "Onions", "Green Peppers"],
@@ -63,6 +103,7 @@ export const defaultModifierGroups: ModifierGroup[] = [
   },
   {
     id: "MOD-003",
+    storeId: DEFAULT_STORE_ID,
     name: "Wing Sauce",
     appliesTo: "Wings",
     options: ["Buffalo", "BBQ", "Mild", "Hot"],
@@ -73,16 +114,20 @@ export const defaultModifierGroups: ModifierGroup[] = [
 export const defaultUpsellRules: UpsellRule[] = [
   {
     id: "UP-001",
+    storeId: DEFAULT_STORE_ID,
     trigger: "Any Pizza",
     offer: "Add Wings + 2L Soda",
     image: "/images/pizzaandwings.png",
     status: "Active",
+    appliesToCategories: [],
   },
   {
     id: "UP-002",
+    storeId: DEFAULT_STORE_ID,
     trigger: "Any Sub",
     offer: "Add Fries + Can Soda",
     image: "/images/subcombo.png",
     status: "Active",
+    appliesToCategories: [],
   },
 ];
