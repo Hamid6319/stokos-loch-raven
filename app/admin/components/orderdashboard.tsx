@@ -154,7 +154,7 @@ export default function OrdersDashboard() {
 
   return (
     <div className="w-full">
-      <section className="mb-5 overflow-hidden rounded-[30px] bg-[#146C38] p-6 text-white shadow-[0_18px_45px_rgba(15,63,36,0.25)] md:p-8">
+      <section className="mb-5 overflow-hidden rounded-[30px] bg-[#146C38] p-6 text-white  md:p-8">
         <div className="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
           <div>
             <div className="mb-4 flex w-fit items-center gap-2 rounded-full bg-white/10 px-4 py-2">
@@ -169,7 +169,7 @@ export default function OrdersDashboard() {
             </h2>
 
             <p className="mt-3 max-w-2xl text-sm leading-6 text-white/75 md:text-base">
-              Track pickup, delivery, customer details, payment status, and full order items from one clean dashboard.
+              Manage orders, delivery, payments, and customer details from one clean dashboard.
             </p>
           </div>
 

@@ -33,7 +33,11 @@ async function connectMongoDB() {
   }
 
   if (!cached.promise) {
-    cached.promise = mongoose.connect(MONGODB_URI);
+    cached.promise = mongoose.connect(MONGODB_URI, {
+      dbName: "stokos",
+      bufferCommands: false,
+      maxPoolSize: 10,
+    });
   }
 
   cached.conn = await cached.promise;

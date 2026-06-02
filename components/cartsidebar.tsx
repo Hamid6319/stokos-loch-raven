@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { useCartStore, CartItem } from "@/app/store/[slug]/usecartstore";
+import { useCartStore } from "@/app/store/[slug]/usecartstore";
+import type { CartItem } from "@/app/store/[slug]/usecartstore";
 import { STORES } from "@/lib/data/stores";
 import {
   X,
@@ -109,6 +110,8 @@ const upsellByCategory: Record<string, CartItem[]> = {
 };
 
 export default function CartSidebar() {
+  const [mounted, setMounted] = useState(false);
+
   const params = useParams();
   const slugParam = params?.slug;
   const slug = Array.isArray(slugParam) ? slugParam[0] : slugParam || "towson";
@@ -123,13 +126,16 @@ export default function CartSidebar() {
   const [orderTime, setOrderTime] = useState<string | null>(null);
   const [orderStoreSlug, setOrderStoreSlug] = useState<string | null>(null);
 
-  const orderStore =
-    STORES.find((store) => store.slug === orderStoreSlug) || currentStore;
-
   const { cart, isCartOpen, toggleCart, closeCart, removeItem, addItem } =
     useCartStore();
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+
     const loadOrderInfo = () => {
       setOrderType(localStorage.getItem("stokos_order_type"));
       setDeliveryAddress(localStorage.getItem("stokos_delivery_address"));
@@ -145,9 +151,11 @@ export default function CartSidebar() {
     return () => {
       window.removeEventListener("stokos-order-updated", loadOrderInfo);
     };
-  }, [slug]);
+  }, [slug, mounted]);
 
   useEffect(() => {
+    if (!mounted) return;
+
     const resetLoading = () => {
       setLoading(false);
       closeCart();
@@ -158,7 +166,12 @@ export default function CartSidebar() {
     return () => {
       window.removeEventListener("pageshow", resetLoading);
     };
-  }, [closeCart]);
+  }, [closeCart, mounted]);
+
+  if (!mounted) return null;
+
+  const orderStore =
+    STORES.find((store) => store.slug === orderStoreSlug) || currentStore;
 
   const openOrderEditModal = () => {
     closeCart();
@@ -493,9 +506,7 @@ export default function CartSidebar() {
                 Subtotal
               </span>
 
-              <span className="text-xl font-black">
-                ${subtotal.toFixed(2)}
-              </span>
+              <span className="text-xl font-black">${subtotal.toFixed(2)}</span>
             </div>
 
             <button

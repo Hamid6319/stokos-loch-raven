@@ -3,23 +3,87 @@
 import type { UpsellRule } from "../types";
 import { ActionButtons, EmptyBox, ImageBox, StatusBadge, TableHead } from "./ui";
 
+type StoreItem = {
+  _id?: string;
+  id?: string;
+  name: string;
+  slug: string;
+};
+
+type MongoObject = {
+  _id?: string;
+  id?: string;
+  name?: string;
+  slug?: string;
+};
+
 type MongoUpsellRule = UpsellRule & {
   _id?: string;
   id?: string;
   name?: string;
   appliesToCategories?: string[];
+  storeId?: unknown;
+  storeSlug?: unknown;
+  store?: unknown;
 };
 
 function getUpsellId(rule: MongoUpsellRule, fallback: string) {
   return String(rule._id || rule.id || rule.slug || rule.offer || fallback);
 }
 
+function getStoreValue(store: StoreItem) {
+  return String(store.slug || store._id || store.id || "").trim();
+}
+
+function getItemStoreId(item: unknown) {
+  if (!item || typeof item !== "object") return "";
+
+  const obj = item as {
+    storeId?: unknown;
+    storeSlug?: unknown;
+    store?: unknown;
+  };
+
+  return (
+    normalizeStoreValue(obj.storeId) ||
+    normalizeStoreValue(obj.storeSlug) ||
+    normalizeStoreValue(obj.store)
+  );
+}
+
+function normalizeStoreValue(value: unknown) {
+  if (!value) return "";
+
+  if (typeof value === "string" || typeof value === "number") {
+    return String(value).trim();
+  }
+
+  if (typeof value === "object") {
+    const obj = value as MongoObject;
+    return String(obj.slug || obj._id || obj.id || obj.name || "").trim();
+  }
+
+  return "";
+}
+
+function getStoreName(stores: StoreItem[], item: unknown) {
+  const storeId = getItemStoreId(item);
+
+  if (!storeId) return "No Store";
+
+  const foundStore = stores.find((store) => getStoreValue(store) === storeId);
+
+  return foundStore?.name || storeId;
+}
+
 export default function UpsellTable({
   upsellRules = [],
+  stores = [],
   onEdit,
   onDelete,
 }: {
   upsellRules?: UpsellRule[];
+  stores?: StoreItem[];
   onEdit: (upsell: UpsellRule) => void;
   onDelete: (id: string) => void;
 }) {
@@ -41,10 +105,11 @@ export default function UpsellTable({
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[820px] text-left">
+        <table className="w-full min-w-[960px] text-left">
           <thead className="border-b border-zinc-200 bg-white">
             <tr>
               <TableHead>Upsell</TableHead>
+              <TableHead>Store</TableHead>
               <TableHead>Trigger</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Action</TableHead>
@@ -54,6 +119,7 @@ export default function UpsellTable({
           <tbody className="divide-y divide-zinc-100">
             {safeUpsells.map((rule, index) => {
               const ruleId = getUpsellId(rule, `upsell-${index}`);
+              const storeName = getStoreName(stores, rule);
 
               return (
                 <tr key={ruleId} className="transition hover:bg-green-50/50">
@@ -81,6 +147,12 @@ export default function UpsellTable({
                           )}
                       </div>
                     </div>
+                  </td>
+
+                  <td className="px-5 py-5">
+                    <span className="rounded-full bg-green-50 px-3 py-1.5 text-xs font-black text-green-800">
+                      {storeName}
+                    </span>
                   </td>
 
                   <td className="px-5 py-5 text-sm font-black">

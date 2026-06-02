@@ -153,7 +153,7 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="w-full space-y-5">
-      <section className="overflow-hidden rounded-[30px] border border-green-900/10 bg-[#146C38] text-white shadow-[0_18px_45px_rgba(15,63,36,0.25)]">
+      <section className="overflow-hidden rounded-[30px] border border-green-900/10 bg-[#146C38] text-white ">
         <div className="relative p-6 md:p-8">
           <div className="absolute right-0 top-0 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
           <div className="absolute bottom-0 right-24 h-28 w-28 rounded-full bg-white/5 blur-xl" />

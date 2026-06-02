@@ -18,17 +18,26 @@ export async function GET(req: Request) {
     await connectDB();
 
     const { searchParams } = new URL(req.url);
-    const storeId = searchParams.get("storeId") || "towson";
+    const storeId = searchParams.get("storeId");
 
-    const categories = await Category.find({ storeId })
+    const filter = storeId && storeId !== "all" ? { storeId } : {};
+
+    const categories = await Category.find(filter)
       .sort({ sortOrder: 1, createdAt: -1 })
       .lean();
 
-    return NextResponse.json({ success: true, data: categories });
+    return NextResponse.json({
+      success: true,
+      data: categories,
+    });
   } catch (error) {
     console.error("GET CATEGORIES ERROR:", error);
+
     return NextResponse.json(
-      { success: false, message: "Failed to fetch categories" },
+      {
+        success: false,
+        message: "Failed to fetch categories",
+      },
       { status: 500 }
     );
   }
@@ -40,29 +49,61 @@ export async function POST(req: Request) {
 
     const body = await req.json();
 
+    if (!body.storeId) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Store ID is required",
+        },
+        { status: 400 }
+      );
+    }
+
+    if (!body.name) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Category name is required",
+        },
+        { status: 400 }
+      );
+    }
+
     const category = await Category.create({
-      storeId: body.storeId || "towson",
+      storeId: body.storeId,
       name: body.name,
       slug: body.slug || slugify(body.name),
       description: body.description || "",
       image: body.image || "",
-      sortOrder: Number(body.sortOrder || 0),
+      sortOrder: Number(body.sortOrder || 1),
       status: body.status || "Active",
     });
 
-    return NextResponse.json({ success: true, data: category }, { status: 201 });
+    return NextResponse.json(
+      {
+        success: true,
+        data: category,
+      },
+      { status: 201 }
+    );
   } catch (error: any) {
     console.error("POST CATEGORY ERROR:", error);
 
     if (error.code === 11000) {
       return NextResponse.json(
-        { success: false, message: "Category already exists" },
+        {
+          success: false,
+          message: "Category already exists for this store",
+        },
         { status: 409 }
       );
     }
 
     return NextResponse.json(
-      { success: false, message: "Failed to create category" },
+      {
+        success: false,
+        message: "Failed to create category",
+      },
       { status: 500 }
     );
   }
@@ -73,10 +114,24 @@ export async function PATCH(req: Request) {
     await connectDB();
 
     const body = await req.json();
+    const id = body.id || body._id;
 
-    if (!body.id) {
+    if (!id) {
       return NextResponse.json(
-        { success: false, message: "Category ID is required" },
+        {
+          success: false,
+          message: "Category ID is required",
+        },
+        { status: 400 }
+      );
+    }
+
+    if (!body.name) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Category name is required",
+        },
         { status: 400 }
       );
     }
@@ -86,27 +141,37 @@ export async function PATCH(req: Request) {
       slug: body.slug || slugify(body.name),
       description: body.description || "",
       image: body.image || "",
-      sortOrder: Number(body.sortOrder || 0),
+      sortOrder: Number(body.sortOrder || 1),
       status: body.status || "Active",
     };
 
-    const category = await Category.findByIdAndUpdate(body.id, updateData, {
+    const category = await Category.findByIdAndUpdate(id, updateData, {
       new: true,
       runValidators: true,
     });
 
     if (!category) {
       return NextResponse.json(
-        { success: false, message: "Category not found" },
+        {
+          success: false,
+          message: "Category not found",
+        },
         { status: 404 }
       );
     }
 
-    return NextResponse.json({ success: true, data: category });
+    return NextResponse.json({
+      success: true,
+      data: category,
+    });
   } catch (error) {
     console.error("PATCH CATEGORY ERROR:", error);
+
     return NextResponse.json(
-      { success: false, message: "Failed to update category" },
+      {
+        success: false,
+        message: "Failed to update category",
+      },
       { status: 500 }
     );
   }
@@ -121,7 +186,10 @@ export async function DELETE(req: Request) {
 
     if (!id) {
       return NextResponse.json(
-        { success: false, message: "Category ID is required" },
+        {
+          success: false,
+          message: "Category ID is required",
+        },
         { status: 400 }
       );
     }
@@ -130,7 +198,10 @@ export async function DELETE(req: Request) {
 
     if (!deletedCategory) {
       return NextResponse.json(
-        { success: false, message: "Category not found" },
+        {
+          success: false,
+          message: "Category not found",
+        },
         { status: 404 }
       );
     }
@@ -138,11 +209,16 @@ export async function DELETE(req: Request) {
     return NextResponse.json({
       success: true,
       message: "Category deleted successfully",
+      data: deletedCategory,
     });
   } catch (error) {
     console.error("DELETE CATEGORY ERROR:", error);
+
     return NextResponse.json(
-      { success: false, message: "Failed to delete category" },
+      {
+        success: false,
+        message: "Failed to delete category",
+      },
       { status: 500 }
     );
   }

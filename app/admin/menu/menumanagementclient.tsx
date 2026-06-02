@@ -1,11 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronDown,
-  Flame,
-  Layers3,
-  Package,
   Plus,
   Search,
   Settings2,
@@ -36,6 +33,17 @@ const tabs = [
   { id: "upsells", label: "Upsells", icon: Sparkles },
 ] as const;
 
+export type StoreItem = {
+  _id?: string;
+  id?: string;
+  name: string;
+  slug: string;
+  location?: string;
+  phone?: string;
+  openingHours?: string;
+  status?: string;
+};
+
 type ModalState =
   | { type: "products"; item: Product | null }
   | { type: "categories"; item: Category | null }
@@ -43,18 +51,31 @@ type ModalState =
   | { type: "upsells"; item: UpsellRule | null }
   | null;
 
+type LocalSnapshot = {
+  products: Product[];
+  categories: Category[];
+  modifierGroups: ModifierGroup[];
+  upsellRules: UpsellRule[];
+};
+
 export default function MenuManagementClient() {
   const crud = useMenuCrud();
 
-  const products = Array.isArray(crud.products) ? crud.products : [];
-  const categories = Array.isArray(crud.categories) ? crud.categories : [];
-  const modifierGroups = Array.isArray(crud.modifierGroups)
-    ? crud.modifierGroups
-    : [];
-  const upsellRules = Array.isArray(crud.upsellRules) ? crud.upsellRules : [];
+  const [stores, setStores] = useState<StoreItem[]>([]);
+  const [storesLoading, setStoresLoading] = useState(true);
+  const [selectedStoreFilter, setSelectedStoreFilter] = useState("all");
+
+  const firstStoreId = useMemo(() => {
+    return stores[0] ? getStoreValue(stores[0]) : "";
+  }, [stores]);
 
   const {
     isLoaded = true,
+
+    products: crudProductsRaw,
+    categories: crudCategoriesRaw,
+    modifierGroups: crudModifierGroupsRaw,
+    upsellRules: crudUpsellRulesRaw,
 
     addProduct,
     updateProduct,
@@ -73,39 +94,154 @@ export default function MenuManagementClient() {
     deleteUpsell,
   } = crud;
 
+  const crudProducts = useMemo(
+    () => (Array.isArray(crudProductsRaw) ? crudProductsRaw : []),
+    [crudProductsRaw]
+  );
+
+  const crudCategories = useMemo(
+    () => (Array.isArray(crudCategoriesRaw) ? crudCategoriesRaw : []),
+    [crudCategoriesRaw]
+  );
+
+  const crudModifierGroups = useMemo(
+    () => (Array.isArray(crudModifierGroupsRaw) ? crudModifierGroupsRaw : []),
+    [crudModifierGroupsRaw]
+  );
+
+  const crudUpsellRules = useMemo(
+    () => (Array.isArray(crudUpsellRulesRaw) ? crudUpsellRulesRaw : []),
+    [crudUpsellRulesRaw]
+  );
+
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>("products");
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [modal, setModal] = useState<ModalState>(null);
 
+  const [pendingActions, setPendingActions] = useState(0);
+  const pendingActionsRef = useRef(0);
+
+  const [hasSynced, setHasSynced] = useState(false);
+
+  const [uiProducts, setUiProducts] = useState<Product[]>([]);
+  const [uiCategories, setUiCategories] = useState<Category[]>([]);
+  const [uiModifierGroups, setUiModifierGroups] = useState<ModifierGroup[]>([]);
+  const [uiUpsellRules, setUiUpsellRules] = useState<UpsellRule[]>([]);
+
+  useEffect(() => {
+    pendingActionsRef.current = pendingActions;
+  }, [pendingActions]);
+
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  useEffect(() => {
+    const fetchStores = async () => {
+      try {
+        setStoresLoading(true);
+
+        const res = await fetch("/api/admin/stores", {
+          cache: "no-store",
+        });
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch stores");
+        }
+
+        const data = await res.json();
+
+        const safeStores: StoreItem[] = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.stores)
+          ? data.stores
+          : [];
+
+        setStores(safeStores);
+      } catch (error) {
+        console.error("Stores fetch failed:", error);
+        setStores([]);
+      } finally {
+        setStoresLoading(false);
+      }
+    };
+
+    fetchStores();
+  }, []);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+
+    if (pendingActionsRef.current > 0) {
+      return;
+    }
+
+    setUiProducts(crudProducts);
+    setUiCategories(crudCategories);
+    setUiModifierGroups(crudModifierGroups);
+    setUiUpsellRules(crudUpsellRules);
+    setHasSynced(true);
+  }, [
+    isLoaded,
+    crudProducts,
+    crudCategories,
+    crudModifierGroups,
+    crudUpsellRules,
+  ]);
+
+  useEffect(() => {
+    setSelectedCategory("All Categories");
+  }, [selectedStoreFilter]);
+
+  const products = hasSynced ? uiProducts : crudProducts;
+  const categories = hasSynced ? uiCategories : crudCategories;
+  const modifierGroups = hasSynced ? uiModifierGroups : crudModifierGroups;
+  const upsellRules = hasSynced ? uiUpsellRules : crudUpsellRules;
+
+  const visibleProducts = useMemo(
+    () => filterItemsByStore(products, selectedStoreFilter),
+    [products, selectedStoreFilter]
+  );
+
+  const visibleCategories = useMemo(
+    () => filterItemsByStore(categories, selectedStoreFilter),
+    [categories, selectedStoreFilter]
+  );
+
+  const visibleModifierGroups = useMemo(
+    () => filterItemsByStore(modifierGroups, selectedStoreFilter),
+    [modifierGroups, selectedStoreFilter]
+  );
+
+  const visibleUpsellRules = useMemo(
+    () => filterItemsByStore(upsellRules, selectedStoreFilter),
+    [upsellRules, selectedStoreFilter]
+  );
+
   const filteredProducts = useMemo(() => {
-    return products.filter((product) => {
+    return visibleProducts.filter((product) => {
       const name = product.name || "";
-      const category = product.category || "";
+
+     const categoryName = getProductCategoryLabel(categories, product);
+      const searchValue = search.toLowerCase();
 
       const matchesSearch =
-        name.toLowerCase().includes(search.toLowerCase()) ||
-        category.toLowerCase().includes(search.toLowerCase());
+        name.toLowerCase().includes(searchValue) ||
+        categoryName.toLowerCase().includes(searchValue);
 
       const matchesCategory =
-        selectedCategory === "All Categories" || category === selectedCategory;
+        selectedCategory === "All Categories" ||
+        categoryName === selectedCategory;
 
       return matchesSearch && matchesCategory;
     });
-  }, [products, search, selectedCategory]);
+  }, [visibleProducts, categories, search, selectedCategory]);
 
-  const activeProducts = products.filter(
-    (product) => product.status === "Active"
-  ).length;
-
-  const activeUpsells = upsellRules.filter(
-    (upsell) => upsell.status === "Active"
-  ).length;
+  const categoryFilterOptions = useMemo(() => {
+    return dedupeCategoriesForFilter(visibleCategories);
+  }, [visibleCategories]);
 
   const openAdd = (type: TabType) => {
     setActiveTab(type);
@@ -127,62 +263,158 @@ export default function MenuManagementClient() {
     }
   };
 
-const handleDelete = async (type: TabType, id: string) => {
-  const ok = window.confirm("Are you sure you want to delete this?");
-  if (!ok) return;
+  const getSnapshot = (): LocalSnapshot => ({
+    products,
+    categories,
+    modifierGroups,
+    upsellRules,
+  });
 
-  try {
-    if (type === "products") await deleteProduct(id);
-    if (type === "categories") await deleteCategory(id);
-    if (type === "modifiers") await deleteModifier(id);
-    if (type === "upsells") await deleteUpsell(id);
-  } catch (error) {
-    console.error("Delete failed:", error);
-    alert("Failed to delete item from database.");
-  }
-};
+  const restoreSnapshot = (snapshot: LocalSnapshot) => {
+    setUiProducts(snapshot.products);
+    setUiCategories(snapshot.categories);
+    setUiModifierGroups(snapshot.modifierGroups);
+    setUiUpsellRules(snapshot.upsellRules);
+  };
 
- const handleSave = async (
-  value: Product | Category | ModifierGroup | UpsellRule
-) => {
-  if (!modal) return;
+  const handleDelete = async (type: TabType, id: string) => {
+    const ok = window.confirm("Are you sure you want to delete this?");
+    if (!ok) return;
 
-  try {
+    const snapshot = getSnapshot();
+
+    setPendingActions((count) => count + 1);
+
+    if (type === "products") {
+      setUiProducts((prev) =>
+        prev.filter((item) => getSafeId(item) !== String(id))
+      );
+    }
+
+    if (type === "categories") {
+      setUiCategories((prev) =>
+        prev.filter((item) => getSafeId(item) !== String(id))
+      );
+    }
+
+    if (type === "modifiers") {
+      setUiModifierGroups((prev) =>
+        prev.filter((item) => getSafeId(item) !== String(id))
+      );
+    }
+
+    if (type === "upsells") {
+      setUiUpsellRules((prev) =>
+        prev.filter((item) => getSafeId(item) !== String(id))
+      );
+    }
+
+    try {
+      if (type === "products") await deleteProduct(id);
+      if (type === "categories") await deleteCategory(id);
+      if (type === "modifiers") await deleteModifier(id);
+      if (type === "upsells") await deleteUpsell(id);
+    } catch (error) {
+      console.error("Delete failed:", error);
+      restoreSnapshot(snapshot);
+      alert("Failed to delete item from database.");
+    } finally {
+      setPendingActions((count) => Math.max(0, count - 1));
+    }
+  };
+
+  const handleSave = async (
+    value: Product | Category | ModifierGroup | UpsellRule
+  ) => {
+    if (!modal) return;
+
+    const finalStoreId = getItemStoreId(value) || firstStoreId;
+
+    if (!finalStoreId) {
+      alert("Please add a store first.");
+      return;
+    }
+
+    const snapshot = getSnapshot();
+    const isEdit = Boolean(modal.item);
+    const tempId = `temp-${modal.type}-${Date.now()}`;
+
+    const valueWithStore = attachStoreId(value, finalStoreId);
+
+    const mergedValue = isEdit
+      ? attachStoreId(
+          {
+            ...(modal.item as object),
+            ...(value as object),
+          } as Product | Category | ModifierGroup | UpsellRule,
+          finalStoreId
+        )
+      : valueWithStore;
+
+    setModal(null);
+    setPendingActions((count) => count + 1);
+
     if (modal.type === "products") {
-      modal.item
-        ? await updateProduct(value as Product)
-        : await addProduct(value as Product);
+      setUiProducts((prev) =>
+        optimisticUpsert(prev, mergedValue as Product, isEdit, tempId)
+      );
     }
 
     if (modal.type === "categories") {
-      modal.item
-        ? await updateCategory(value as Category)
-        : await addCategory(value as Category);
+      setUiCategories((prev) =>
+        optimisticUpsert(prev, mergedValue as Category, isEdit, tempId)
+      );
     }
 
     if (modal.type === "modifiers") {
-      modal.item
-        ? await updateModifier(value as ModifierGroup)
-        : await addModifier(value as ModifierGroup);
+      setUiModifierGroups((prev) =>
+        optimisticUpsert(prev, mergedValue as ModifierGroup, isEdit, tempId)
+      );
     }
 
     if (modal.type === "upsells") {
-      modal.item
-        ? await updateUpsell(value as UpsellRule)
-        : await addUpsell(value as UpsellRule);
+      setUiUpsellRules((prev) =>
+        optimisticUpsert(prev, mergedValue as UpsellRule, isEdit, tempId)
+      );
     }
 
-    setModal(null);
-  } catch (error) {
-    console.error("Save failed:", error);
-    alert("Failed to save item in database.");
-  }
-};
+    try {
+      if (modal.type === "products") {
+        isEdit
+          ? await updateProduct(mergedValue as Product)
+          : await addProduct(valueWithStore as Product);
+      }
+
+      if (modal.type === "categories") {
+        isEdit
+          ? await updateCategory(mergedValue as Category)
+          : await addCategory(valueWithStore as Category);
+      }
+
+      if (modal.type === "modifiers") {
+        isEdit
+          ? await updateModifier(mergedValue as ModifierGroup)
+          : await addModifier(valueWithStore as ModifierGroup);
+      }
+
+      if (modal.type === "upsells") {
+        isEdit
+          ? await updateUpsell(mergedValue as UpsellRule)
+          : await addUpsell(valueWithStore as UpsellRule);
+      }
+    } catch (error) {
+      console.error("Save failed:", error);
+      restoreSnapshot(snapshot);
+      alert("Failed to save item in database.");
+    } finally {
+      setPendingActions((count) => Math.max(0, count - 1));
+    }
+  };
 
   if (!mounted || !isLoaded) {
     return (
       <div className="w-full space-y-5">
-        <section className="rounded-[30px] bg-[#146C38] p-6 text-white shadow-[0_18px_45px_rgba(15,63,36,0.25)] md:p-8">
+        <section className="rounded-[30px] bg-green-700 p-6 text-white md:p-8">
           <p className="mb-4 w-fit rounded-full bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-white/75">
             Menu Control
           </p>
@@ -201,7 +433,7 @@ const handleDelete = async (type: TabType, id: string) => {
 
   return (
     <div className="w-full space-y-5">
-      <section className="overflow-hidden rounded-[30px] bg-[#146C38] text-white shadow-[0_18px_45px_rgba(15,63,36,0.25)]">
+      <section className="overflow-hidden rounded-[30px] bg-green-800 text-white">
         <div className="relative p-6 md:p-8">
           <p className="mb-4 w-fit rounded-full bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-white/75">
             Menu Control
@@ -214,8 +446,8 @@ const handleDelete = async (type: TabType, id: string) => {
               </h2>
 
               <p className="mt-3 max-w-2xl text-sm leading-6 text-white/75 md:text-base">
-                Add, edit, update, and delete products, categories, modifier
-                groups, and upsells.
+                Manage store products, categories, modifier groups, toppings,
+                sauces, pricing, and upsell rules from one dashboard.
               </p>
             </div>
 
@@ -231,37 +463,41 @@ const handleDelete = async (type: TabType, id: string) => {
         </div>
       </section>
 
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard
-          title="Total Products"
-          value={products.length}
-          description={`${activeProducts} active products`}
-          icon={<Package size={22} />}
-        />
-
-        <StatCard
-          title="Categories"
-          value={categories.length}
-          description="Menu sections"
-          icon={<Layers3 size={22} />}
-        />
-
-        <StatCard
-          title="Modifier Groups"
-          value={modifierGroups.length}
-          description="Toppings, sauces, sizes"
-          icon={<Settings2 size={22} />}
-        />
-
-        <StatCard
-          title="Active Upsells"
-          value={activeUpsells}
-          description="Smart add-ons"
-          icon={<Flame size={22} />}
-        />
-      </section>
-
       <section className="rounded-[30px] border border-zinc-200 bg-white p-5 shadow-sm md:p-6">
+        <div className="mb-5 flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setSelectedStoreFilter("all")}
+            className={`rounded-full px-4 py-2 text-xs font-black transition ${
+              selectedStoreFilter === "all"
+                ? "bg-green-800 text-white"
+                : "bg-zinc-100 text-zinc-600 hover:bg-green-50 hover:text-green-800"
+            }`}
+          >
+            All Stores
+          </button>
+
+          {stores.map((store) => {
+            const storeValue = getStoreValue(store);
+            const isActive = selectedStoreFilter === storeValue;
+
+            return (
+              <button
+                key={storeValue}
+                type="button"
+                onClick={() => setSelectedStoreFilter(storeValue)}
+                className={`rounded-full px-4 py-2 text-xs font-black transition ${
+                  isActive
+                    ? "bg-green-800 text-white"
+                    : "bg-zinc-100 text-zinc-600 hover:bg-green-50 hover:text-green-800"
+                }`}
+              >
+                {store.name}
+              </button>
+            );
+          })}
+        </div>
+
         <div className="mb-6 flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex flex-wrap gap-3">
             {tabs.map((tab) => {
@@ -304,24 +540,26 @@ const handleDelete = async (type: TabType, id: string) => {
                 </div>
 
                 <div className="relative">
-            <select
-  value={selectedCategory}
-  onChange={(event) => setSelectedCategory(event.target.value)}
-  className="h-12 w-full appearance-none rounded-2xl border border-zinc-200 bg-white px-4 pr-10 text-sm font-black text-zinc-700 outline-none transition focus:border-green-700 sm:w-[220px]"
->
-  <option value="All Categories">All Categories</option>
+                  <select
+                    value={selectedCategory}
+                    onChange={(event) =>
+                      setSelectedCategory(event.target.value)
+                    }
+                    className="h-12 w-full appearance-none rounded-2xl border border-zinc-200 bg-white px-4 pr-10 text-sm font-black text-zinc-700 outline-none transition focus:border-green-700 sm:w-[220px]"
+                  >
+                    <option value="All Categories">All Categories</option>
 
-  {categories
-    .filter((category) => category?.name)
-    .map((category, index) => (
-      <option
-        key={category.id || `${category.name}-${index}`}
-        value={category.name}
-      >
-        {category.name}
-      </option>
-    ))}
-</select>
+                    {categoryFilterOptions.map((category, index) => (
+                      <option
+                        key={`${getItemStoreId(category)}-${getSafeId(
+                          category
+                        )}-${index}`}
+                        value={category.name}
+                      >
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
 
                   <ChevronDown
                     size={18}
@@ -342,9 +580,23 @@ const handleDelete = async (type: TabType, id: string) => {
           </div>
         </div>
 
+        {storesLoading && (
+          <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-800">
+            Loading stores...
+          </div>
+        )}
+
+        {!storesLoading && stores.length === 0 && (
+          <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700">
+            No stores found. Please add store first from Store Management.
+          </div>
+        )}
+
         {activeTab === "products" && (
           <ProductTable
             products={filteredProducts}
+            categories={categories}
+            stores={stores}
             onEdit={(product) => setModal({ type: "products", item: product })}
             onDelete={(id) => handleDelete("products", id)}
           />
@@ -352,8 +604,10 @@ const handleDelete = async (type: TabType, id: string) => {
 
         {activeTab === "categories" && (
           <CategoryTable
-            categories={categories}
-            products={products}
+            categories={visibleCategories}
+            products={visibleProducts}
+            stores={stores}
+            hideEdit={selectedStoreFilter === "all"}
             onEdit={(category) =>
               setModal({ type: "categories", item: category })
             }
@@ -363,7 +617,8 @@ const handleDelete = async (type: TabType, id: string) => {
 
         {activeTab === "modifiers" && (
           <ModifierGrid
-            modifierGroups={modifierGroups}
+            modifierGroups={visibleModifierGroups}
+            stores={stores}
             onEdit={(modifier) =>
               setModal({ type: "modifiers", item: modifier })
             }
@@ -373,7 +628,8 @@ const handleDelete = async (type: TabType, id: string) => {
 
         {activeTab === "upsells" && (
           <UpsellTable
-            upsellRules={upsellRules}
+            upsellRules={visibleUpsellRules}
+            stores={stores}
             onEdit={(upsell) => setModal({ type: "upsells", item: upsell })}
             onDelete={(id) => handleDelete("upsells", id)}
           />
@@ -382,7 +638,8 @@ const handleDelete = async (type: TabType, id: string) => {
 
       {modal && (
         <MenuModal
-         key={`${modal.type}-${(modal.item as any)?._id || modal.item?.id || "new"}`}
+          key={`${modal.type}-${getSafeId(modal.item) || "new"}`}
+          stores={stores}
           type={modal.type}
           item={modal.item}
           categories={categories}
@@ -396,37 +653,209 @@ const handleDelete = async (type: TabType, id: string) => {
   );
 }
 
-function StatCard({
-  title,
-  value,
-  description,
-  icon,
-}: {
-  title: string;
-  value: number;
-  description: string;
-  icon: ReactNode;
-}) {
-  return (
-    <div className="rounded-[26px] border border-zinc-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-green-50 text-green-800">
-        {icon}
-      </div>
-
-      <p className="text-xs font-black uppercase tracking-wide text-zinc-500">
-        {title}
-      </p>
-
-      <p className="mt-2 text-3xl font-black text-zinc-950">{value}</p>
-
-      <p className="mt-1 text-sm text-zinc-500">{description}</p>
-    </div>
-  );
-}
-
 function getLabel(tab: TabType) {
   if (tab === "products") return "Product";
   if (tab === "categories") return "Category";
   if (tab === "modifiers") return "Modifier Group";
   return "Upsell";
+}
+
+function getStoreValue(store: StoreItem) {
+  return String(store.slug || store._id || store.id || "").trim();
+}
+
+function getSafeId(item: unknown) {
+  if (!item || typeof item !== "object") return "";
+
+  const obj = item as {
+    _id?: string;
+    id?: string;
+    slug?: string;
+    name?: string;
+    offer?: string;
+  };
+
+  return String(obj._id || obj.id || obj.slug || obj.name || obj.offer || "");
+}
+
+function getItemStoreId(item: unknown) {
+  if (!item || typeof item !== "object") return "";
+
+  const obj = item as {
+    storeId?: unknown;
+    storeSlug?: unknown;
+    store?: unknown;
+  };
+
+  return (
+    normalizeStoreValue(obj.storeId) ||
+    normalizeStoreValue(obj.storeSlug) ||
+    normalizeStoreValue(obj.store)
+  );
+}
+
+function normalizeStoreValue(value: unknown) {
+  if (!value) return "";
+
+  if (typeof value === "string" || typeof value === "number") {
+    return String(value).trim();
+  }
+
+  if (typeof value === "object") {
+    const obj = value as {
+      _id?: string;
+      id?: string;
+      slug?: string;
+      name?: string;
+    };
+
+    return String(obj.slug || obj._id || obj.id || obj.name || "").trim();
+  }
+
+  return "";
+}
+
+function filterItemsByStore<T>(items: T[], selectedStoreFilter: string) {
+  if (selectedStoreFilter === "all") return items;
+
+  return items.filter((item) => {
+    const itemStoreId = getItemStoreId(item);
+    return itemStoreId === selectedStoreFilter;
+  });
+}
+
+function getTextValue(value: unknown, fallback = "Not selected") {
+  if (!value) return fallback;
+
+  if (typeof value === "string") return value;
+
+  if (typeof value === "number") return String(value);
+
+  if (typeof value === "object") {
+    const obj = value as {
+      _id?: string;
+      id?: string;
+      name?: string;
+      title?: string;
+      offer?: string;
+      slug?: string;
+    };
+
+    return (
+      obj.name || obj.title || obj.offer || obj.slug || obj._id || obj.id || fallback
+    );
+  }
+
+  return fallback;
+}
+
+function getProductCategoryLabel(categories: Category[], product: Product) {
+  const productObj = product as Product & {
+    category?: unknown;
+    categoryId?: unknown;
+    categorySlug?: unknown;
+  };
+
+  const productStoreId = getItemStoreId(product);
+
+  const productCategoryValues = [
+    productObj.categoryId,
+    productObj.category,
+    productObj.categorySlug,
+  ]
+    .map((value) => getTextValue(value, "").trim().toLowerCase())
+    .filter(Boolean);
+
+  const foundCategory = categories.find((category) => {
+    const categoryStoreId = getItemStoreId(category);
+
+    if (
+      productStoreId &&
+      categoryStoreId &&
+      String(productStoreId) !== String(categoryStoreId)
+    ) {
+      return false;
+    }
+
+    const categoryId = getSafeId(category);
+    const categorySlug = String(
+      (category as Category & { slug?: string }).slug || ""
+    );
+
+    const categoryValues = [category._id, categoryId, category.name, categorySlug]
+      .map((value) => getTextValue(value, "").trim().toLowerCase())
+      .filter(Boolean);
+
+    return productCategoryValues.some((value) =>
+      categoryValues.includes(value)
+    );
+  });
+
+  return (
+    foundCategory?.name ||
+    getTextValue(productObj.category, "") ||
+    getTextValue(productObj.categoryId, "No Category")
+  );
+}
+function dedupeCategoriesForFilter(categories: Category[]) {
+  const seen = new Set<string>();
+
+  return categories.filter((category) => {
+    const name = String(category.name || "").trim();
+    const key = name.toLowerCase();
+
+    if (!key || seen.has(key)) return false;
+
+    seen.add(key);
+    return true;
+  });
+}
+
+function attachStoreId<T>(item: T, storeId: string): T {
+  if (!item || typeof item !== "object") return item;
+
+  return {
+    ...(item as object),
+    storeId,
+  } as T;
+}
+
+function addTempId<T>(item: T, tempId: string): T {
+  if (!item || typeof item !== "object") return item;
+
+  const obj = item as Record<string, unknown>;
+
+  if (obj._id || obj.id) return item;
+
+  return {
+    ...obj,
+    id: tempId,
+  } as T;
+}
+
+function optimisticUpsert<T>(
+  items: T[],
+  item: T,
+  isEdit: boolean,
+  fallbackId: string
+): T[] {
+  const safeItem = addTempId(item, fallbackId);
+  const itemId = getSafeId(safeItem) || fallbackId;
+
+  if (!isEdit) {
+    return [safeItem, ...items];
+  }
+
+  return items.map((current) => {
+    const currentId = getSafeId(current);
+
+    if (currentId !== itemId) {
+      return current;
+    }
+
+    return {
+      ...(current as object),
+      ...(safeItem as object),
+    } as T;
+  });
 }

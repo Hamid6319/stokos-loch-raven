@@ -3,16 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  BarChart3,
   ChevronRight,
   ClipboardList,
-  Home,
   LayoutDashboard,
   LogOut,
-  Settings,
   ShoppingBag,
   Store,
-  Users,
+  StoreIcon,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -22,7 +19,6 @@ type SidebarItem = {
   description: string;
   href: string;
   icon: LucideIcon;
-  badge?: string;
 };
 
 const navItems: SidebarItem[] = [
@@ -45,25 +41,10 @@ const navItems: SidebarItem[] = [
     icon: ShoppingBag,
   },
   {
-    label: "Customers",
-    description: "Customer records",
-    href: "/admin/customers",
-    icon: Users,
-    badge: "Soon",
-  },
-  {
-    label: "Reports",
-    description: "Sales and analytics",
-    href: "/admin/reports",
-    icon: BarChart3,
-    badge: "Soon",
-  },
-  {
-    label: "Store Settings",
-    description: "Hours, delivery, taxes",
-    href: "/admin/settings",
-    icon: Settings,
-    badge: "Soon",
+    label: "Store Management",
+    description: "Multi Stores  and details",
+    href: "/admin/stores",
+    icon: StoreIcon,
   },
 ];
 
@@ -111,6 +92,7 @@ export default function AdminSidebar({ onClose }: { onClose: () => void }) {
       <nav className="space-y-2">
         {navItems.map((item) => {
           const Icon = item.icon;
+
           const active =
             item.href === "/admin"
               ? pathname === "/admin"
@@ -136,15 +118,7 @@ export default function AdminSidebar({ onClose }: { onClose: () => void }) {
               </div>
 
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <p className="truncate text-sm font-black">{item.label}</p>
-
-                  {item.badge && (
-                    <span className="rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-black uppercase text-white/70">
-                      {item.badge}
-                    </span>
-                  )}
-                </div>
+                <p className="truncate text-sm font-black">{item.label}</p>
 
                 <p
                   className={`mt-0.5 truncate text-xs ${
@@ -161,21 +135,7 @@ export default function AdminSidebar({ onClose }: { onClose: () => void }) {
         })}
       </nav>
 
-      <div className="mt-auto space-y-2">
-        <Link
-          href="/"
-          className="flex w-full items-center gap-3 rounded-3xl p-3 text-left text-white/70 transition hover:bg-white/10 hover:text-white"
-        >
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10">
-            <Home size={20} />
-          </div>
-
-          <div>
-            <p className="text-sm font-black">Back to Website</p>
-            <p className="mt-0.5 text-xs text-white/40">Customer storefront</p>
-          </div>
-        </Link>
-
+      <div className="mt-auto">
         <button
           type="button"
           className="flex w-full items-center gap-3 rounded-3xl p-3 text-left text-white/70 transition hover:bg-red-500/10 hover:text-white"
