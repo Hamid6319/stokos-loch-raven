@@ -12,74 +12,96 @@ type CategoryWithMongo = Category & {
   _id?: string;
 };
 
-const CategoryForm = forwardRef<CategoryFormRef, {
+type CategoryFormProps = {
   item: Category | null;
   categories: Category[];
-  onSave: (value: any) => void;
-}>(function CategoryForm({ item, categories, onSave }, ref) {
-  const safeCategories = Array.isArray(categories)
-    ? (categories as CategoryWithMongo[])
-    : [];
+  selectedStoreId?: string;
+  onSave: (value: CategoryWithMongo) => void;
+};
 
-  const [form, setForm] = useState<CategoryWithMongo>(() => {
-    if (item) return item as CategoryWithMongo;
+const CategoryForm = forwardRef<CategoryFormRef, CategoryFormProps>(
+  function CategoryForm(
+    { item, categories, selectedStoreId = "", onSave },
+    ref
+  ) {
+    const safeCategories = Array.isArray(categories)
+      ? (categories as CategoryWithMongo[])
+      : [];
 
-    return {
-      id: "",
-      name: "",
-      status: "Active",
-      sortOrder: safeCategories.length + 1,
-    };
-  });
+    const [form, setForm] = useState<CategoryWithMongo>(() => {
+      if (item) return item as CategoryWithMongo;
 
-  const submit = () => {
-    if (!form.name.trim()) return alert("Category name required");
-
-    onSave({
-      ...form,
-      sortOrder: Number(form.sortOrder || 1),
+      return {
+        id: "",
+        storeId: selectedStoreId,
+        name: "",
+        status: "Active" as CategoryStatus,
+        sortOrder: safeCategories.length + 1,
+      };
     });
-  };
 
-  useImperativeHandle(ref, () => ({ submit }));
+    const submit = () => {
+      if (!form.name.trim()) return alert("Category name required");
 
-  return (
-    <>
-      <FormInput
-        label="Category Name"
-        value={form.name}
-        onChange={(value) => setForm((prev) => ({ ...prev, name: value }))}
-        placeholder="Pizzas"
-      />
+      if (!form.storeId) {
+        return alert("Store is required for category");
+      }
 
-      <div className="grid gap-4 md:grid-cols-2">
+      onSave({
+        ...form,
+        name: form.name.trim(),
+        storeId: form.storeId,
+        sortOrder: Number(form.sortOrder || 1),
+      });
+    };
+
+    useImperativeHandle(ref, () => ({ submit }));
+
+    return (
+      <>
         <FormInput
-          label="Sort Order"
-          value={String(form.sortOrder)}
+          label="Category Name"
+          value={form.name}
           onChange={(value) =>
             setForm((prev) => ({
               ...prev,
-              sortOrder: Number(value),
+              name: value,
             }))
           }
-          type="number"
-          placeholder="1"
+          placeholder="Pizzas"
         />
 
-        <FormSelect
-          label="Status"
-          value={form.status}
-          onChange={(value) =>
-            setForm((prev) => ({
-              ...prev,
-              status: value as CategoryStatus,
-            }))
-          }
-          options={["Active", "Inactive"]}
-        />
-      </div>
-    </>
-  );
-});
+        <div className="grid gap-4 md:grid-cols-2">
+          <FormInput
+            label="Sort Order"
+            value={String(form.sortOrder)}
+            onChange={(value) =>
+              setForm((prev) => ({
+                ...prev,
+                sortOrder: Number(value || 1),
+              }))
+            }
+            type="number"
+            placeholder="1"
+          />
+
+          <FormSelect
+            label="Status"
+            value={form.status}
+            onChange={(value) =>
+              setForm((prev) => ({
+                ...prev,
+                status: value as CategoryStatus,
+              }))
+            }
+            options={["Active", "Inactive"]}
+          />
+        </div>
+      </>
+    );
+  }
+);
+
+CategoryForm.displayName = "CategoryForm";
 
 export default CategoryForm;
