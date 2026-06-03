@@ -145,8 +145,15 @@ function getProductCategoryName(
   const productObj = product as Product & {
     category?: unknown;
     categoryId?: unknown;
+    categoryName?: unknown;
     categorySlug?: unknown;
   };
+
+  const directCategoryName = String(productObj.categoryName || "").trim();
+
+  if (directCategoryName) {
+    return directCategoryName;
+  }
 
   const productStoreId = getItemStoreId(product);
 
@@ -159,6 +166,7 @@ function getProductCategoryName(
     .filter(Boolean);
 
   const fallbackCategory =
+    getTextValue(productObj.categoryName, "") ||
     getTextValue(productObj.category, "") ||
     getTextValue(productObj.categoryId, "No Category");
 

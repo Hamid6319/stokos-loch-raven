@@ -230,13 +230,23 @@ function addTempId<T extends object>(item: T, tempId: string): T {
 }
 
 function normalizeProduct(product: Product): Product {
+  const productObj = product as Product & {
+    categoryName?: unknown;
+    categoryId?: unknown;
+  };
+
+  const category = String(productObj.category || productObj.categoryId || "").trim();
+  const categoryId = String(productObj.categoryId || productObj.category || "").trim();
+  const categoryName = String(productObj.categoryName || "").trim();
+
   return {
     ...product,
     storeId: String(product.storeId || "").trim(),
-    category: String(product.category || product.categoryId || "").trim(),
-    categoryId: product.categoryId
-      ? String(product.categoryId).trim()
-      : String(product.category || "").trim(),
+
+    category,
+    categoryId,
+    categoryName,
+
     price: Number(product.price || 0),
     image: product.image || "",
     modifierGroups: safeArray((product as any).modifierGroups),

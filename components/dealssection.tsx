@@ -123,14 +123,35 @@ export default function DealsSection() {
 
   return (
     <>
-      <section id="deals" className="scroll-mt-[120px] w-full py-5 md:py-10">
-        <div className="mx-auto max-w-[1600px] px-4 md:px-0">
-          <div className="mb-4 flex items-center justify-between md:mb-6">
-            <h2 className="text-[26px] font-black uppercase leading-none tracking-tight text-black dark:text-white md:text-4xl">
+      <section
+        id="deals"
+        className="w-full overflow-hidden scroll-mt-[120px] py-5 md:py-8 lg:py-10"
+      >
+        <div
+          className="
+            mx-auto w-full max-w-[1600px]
+            px-4
+            sm:px-5
+            md:px-6
+            lg:px-8
+            xl:px-10
+            2xl:px-0
+          "
+        >
+          <div className="mb-4 flex items-center justify-between gap-4 md:mb-6">
+            <h2
+              className="
+                text-[26px] font-black uppercase leading-none tracking-tight
+                text-black dark:text-white
+                sm:text-[30px]
+                md:text-[34px]
+                lg:text-4xl
+              "
+            >
               Explore More Deals
             </h2>
 
-            <div className="hidden items-center gap-2 md:flex">
+            <div className="hidden shrink-0 items-center gap-2 md:flex">
               <button
                 type="button"
                 onClick={() => scroll("left")}
@@ -153,24 +174,52 @@ export default function DealsSection() {
 
           <div
             ref={sliderRef}
-            className="no-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth pb-3 md:gap-6 md:px-3"
+            className="
+              no-scrollbar flex snap-x snap-mandatory overflow-x-auto
+              scroll-smooth pb-3
+
+              gap-4
+              scroll-px-4
+
+              md:gap-5
+              md:scroll-px-6
+
+              lg:gap-6
+              lg:scroll-px-8
+            "
           >
             {deals.map((deal) => (
               <article
                 key={deal.id}
-                className="group w-[86vw] shrink-0 snap-start overflow-hidden rounded-[20px] bg-white ring-1 ring-black/5 transition duration-300 hover:-translate-y-1 dark:bg-[#121b13] dark:ring-white/10 sm:w-[390px] md:w-[405px] lg:w-[410px]"
+                className="
+                  group shrink-0 snap-start overflow-hidden rounded-[20px]
+                  bg-white ring-1 ring-black/5 transition duration-300
+                  hover:-translate-y-1
+                  dark:bg-[#121b13] dark:ring-white/10
+
+                  w-[84vw]
+                  sm:w-[380px]
+                  md:w-[calc((100%-20px)/2)]
+                  lg:w-[410px]
+                "
               >
                 <button
                   type="button"
                   onClick={() => openDealModal(deal)}
-                  className="relative block h-[210px] w-full overflow-hidden bg-neutral-100 text-left dark:bg-[#050505] md:h-[225px]"
+                  className="
+                    relative block w-full overflow-hidden bg-neutral-100
+                    text-left dark:bg-[#050505]
+
+                    h-[205px]
+                    md:h-[225px]
+                  "
                 >
                   <Image
                     src={deal.image}
                     alt={deal.title}
                     fill
                     className="object-cover transition duration-500 group-hover:scale-105"
-                    sizes="(max-width: 640px) 86vw, 410px"
+                    sizes="(max-width: 640px) 84vw, (max-width: 1024px) 50vw, 410px"
                   />
 
                   <div className="absolute left-4 top-4 rounded-full bg-[#DA3327] px-4 py-2 text-[12px] font-black uppercase tracking-wide text-white">
@@ -180,8 +229,14 @@ export default function DealsSection() {
                   <div className="pointer-events-none absolute inset-0 hidden bg-black/5 dark:block" />
                 </button>
 
-                <div className="p-6">
-                  <h3 className="text-[22px] font-black leading-tight tracking-[-0.03em] text-black transition-colors duration-300 dark:text-white">
+                <div className="p-5 md:p-6">
+                  <h3
+                    className="
+                      text-[21px] font-black leading-tight tracking-[-0.03em]
+                      text-black transition-colors duration-300 dark:text-white
+                      md:text-[22px]
+                    "
+                  >
                     {deal.title}
                   </h3>
 
@@ -190,14 +245,20 @@ export default function DealsSection() {
                   </p>
 
                   <div className="mt-6 flex items-center justify-between gap-4">
-                    <p className="text-[26px] font-black leading-none tracking-[-0.04em] text-black dark:text-white">
+                    <p className="shrink-0 text-[26px] font-black leading-none tracking-[-0.04em] text-black dark:text-white">
                       {deal.price}
                     </p>
 
                     <button
                       type="button"
                       onClick={() => openDealModal(deal)}
-                      className="inline-flex h-[42px] items-center justify-center rounded-full bg-[#DA3327] px-6 text-[12px] font-black uppercase tracking-wide text-white transition hover:bg-[#DA2337] active:scale-[0.98]"
+                      className="
+                        inline-flex h-[42px] shrink-0 items-center justify-center
+                        rounded-full bg-[#DA3327] px-5 text-[12px]
+                        font-black uppercase tracking-wide text-white
+                        transition hover:bg-[#DA2337] active:scale-[0.98]
+                        md:px-6
+                      "
                     >
                       Order Deal
                     </button>
@@ -205,6 +266,8 @@ export default function DealsSection() {
                 </div>
               </article>
             ))}
+
+            <div className="h-1 w-1 shrink-0" />
           </div>
         </div>
       </section>

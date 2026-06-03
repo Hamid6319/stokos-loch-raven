@@ -42,10 +42,10 @@ export default function MainFooter() {
       id="contact"
       className="w-full bg-green-800 text-white transition-colors duration-300 dark:bg-[#003b11]"
     >
-      <div className="mx-auto w-full max-w-[1600px] px-4 py-12 md:px-6 md:py-16">
-        <div className="grid gap-12 lg:grid-cols-[0.8fr_2fr]">
+      <div className="mx-auto w-full max-w-[1320px] px-5 py-10 sm:px-6 md:px-8 md:py-12 lg:px-8 lg:py-16">
+        <div className="grid gap-10 xl:grid-cols-[0.75fr_2.25fr] xl:gap-14">
           {/* Brand */}
-          <div className="flex flex-col ">
+          <div className="max-w-[520px]">
             <Link href="/" className="inline-flex">
               <Image
                 src="/images/newstokoslogo.png"
@@ -53,47 +53,51 @@ export default function MainFooter() {
                 width={180}
                 height={70}
                 priority
-                className="h-12 w-auto object-contain md:h-[58px]"
+                className="h-11 w-auto object-contain md:h-12 lg:h-[58px]"
               />
             </Link>
 
-            <p className="mt-6 max-w-sm text-sm font-medium leading-7 text-white/75">
+            <p className="mt-5 max-w-[440px] text-[15px] font-medium leading-7 text-white/80 md:mt-4 md:text-[14px] md:leading-6 lg:mt-6 lg:text-[15px] lg:leading-7">
               Fresh pizza, wings, subs, salads, and local favorites from your
               nearest Stoko’s location.
             </p>
-
-        
           </div>
 
           {/* Stores */}
-          <div className="grid gap-8 md:grid-cols-3">
+          <div className="grid gap-8 md:grid-cols-3 md:gap-5 lg:gap-6 xl:gap-0">
             {stores.map((store, index) => (
               <div
                 key={store.slug}
-                className={`md:px-8 ${
-                  index !== 0 ? "md:border-l md:border-white/20" : ""
+                className={`min-w-0 ${
+                  index !== 0
+                    ? "md:border-l md:border-white/20 md:pl-5 lg:pl-6 xl:pl-8"
+                    : ""
                 }`}
               >
-                <h3 className="text-xl font-black uppercase tracking-wide text-white">
+                <h3 className="min-h-[42px] text-[19px] font-black uppercase leading-tight tracking-wide text-white md:text-[18px] lg:min-h-[54px] lg:text-[21px]">
                   {store.name}
                 </h3>
 
-                <div className="mt-5 space-y-4">
-                  <div className="flex items-start gap-3 text-sm font-medium leading-6 text-white/75">
-                    <MapPin size={18} className="mt-0.5 shrink-0 text-white" />
-                    <p className="whitespace-pre-line">{store.address}</p>
+                <div className="mt-4 space-y-4 md:space-y-3 lg:mt-5 lg:space-y-4">
+                  <div className="flex items-start gap-3 text-[14px] font-medium leading-6 text-white/80 md:gap-2 md:text-[12px] md:leading-5 lg:gap-3 lg:text-[14px] lg:leading-6">
+                    <MapPin className="mt-1 h-[18px] w-[18px] shrink-0 text-white md:h-[15px] md:w-[15px] lg:h-[18px] lg:w-[18px]" />
+                    <p className="whitespace-pre-line break-words">
+                      {store.address}
+                    </p>
                   </div>
 
-                  <div className="flex items-start gap-3 text-sm font-medium leading-6 text-white/75">
-                    <Clock size={18} className="mt-0.5 shrink-0 text-white" />
-                    <p className="whitespace-pre-line">{store.hours}</p>
+                  <div className="flex items-start gap-3 text-[14px] font-medium leading-6 text-white/80 md:gap-2 md:text-[12px] md:leading-5 lg:gap-3 lg:text-[14px] lg:leading-6">
+                    <Clock className="mt-1 h-[18px] w-[18px] shrink-0 text-white md:h-[15px] md:w-[15px] lg:h-[18px] lg:w-[18px]" />
+                    <p className="whitespace-pre-line break-words">
+                      {store.hours}
+                    </p>
                   </div>
 
-                  <div className="flex items-center gap-3 text-sm font-black text-white">
-                    <Phone size={18} className="shrink-0 text-white" />
+                  <div className="flex items-center gap-3 text-[15px] font-black text-white md:gap-2 md:text-[13px] lg:gap-3 lg:text-[15px]">
+                    <Phone className="h-[18px] w-[18px] shrink-0 text-white md:h-[15px] md:w-[15px] lg:h-[18px] lg:w-[18px]" />
                     <a
                       href={`tel:${store.phone.replace(/[^\d+]/g, "")}`}
-                      className="transition hover:text-white/75"
+                      className="break-words transition hover:text-white/75"
                     >
                       {store.phone}
                     </a>
@@ -101,14 +105,14 @@ export default function MainFooter() {
                 </div>
 
                 {/* Social Icons */}
-                <div className="mt-7 flex items-center gap-3">
+                <div className="mt-6 flex items-center gap-3 md:mt-5 md:gap-2 lg:mt-7 lg:gap-3">
                   {store.facebook && (
                     <a
                       href={store.facebook}
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={`${store.name} Facebook`}
-                      className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-sm font-black text-blue-700 transition hover:scale-105"
+                      className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-sm font-black text-blue-700 transition hover:scale-105 md:h-8 md:w-8 md:text-xs lg:h-9 lg:w-9 lg:text-sm"
                     >
                       f
                     </a>
@@ -120,7 +124,7 @@ export default function MainFooter() {
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={`${store.name} Yelp`}
-                      className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-xs font-black text-red-600 transition hover:scale-105"
+                      className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-xs font-black text-red-600 transition hover:scale-105 md:h-8 md:w-8 md:text-[10px] lg:h-9 lg:w-9 lg:text-xs"
                     >
                       Yelp
                     </a>
@@ -131,7 +135,7 @@ export default function MainFooter() {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={`${store.name} Google`}
-                    className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-sm font-black text-green-700 transition hover:scale-105"
+                    className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-sm font-black text-green-700 transition hover:scale-105 md:h-8 md:w-8 md:text-xs lg:h-9 lg:w-9 lg:text-sm"
                   >
                     G
                   </a>
@@ -142,10 +146,10 @@ export default function MainFooter() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-12 flex flex-col gap-4 border-t border-white/15 pt-7 text-sm font-medium text-white/70 md:flex-row md:items-center md:justify-between">
+        <div className="mt-10 flex flex-col gap-5 border-t border-white/15 pt-7 text-sm font-medium text-white/75 md:mt-10 md:flex-row md:items-center md:justify-between md:pr-16 lg:mt-14 lg:pr-0">
           <p>© {new Date().getFullYear()} Stoko&apos;s. All rights reserved.</p>
 
-          <div className="flex flex-wrap gap-5">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
             <a href="#stores" className="transition hover:text-white">
               Stores
             </a>
@@ -157,14 +161,6 @@ export default function MainFooter() {
             <a href="#contact" className="transition hover:text-white">
               Contact
             </a>
-
-            {/* <Link href="#" className="transition hover:text-white">
-              Privacy Policy
-            </Link>
-
-            <Link href="#" className="transition hover:text-white">
-              Terms
-            </Link> */}
           </div>
         </div>
       </div>

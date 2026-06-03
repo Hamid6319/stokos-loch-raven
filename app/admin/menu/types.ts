@@ -63,8 +63,13 @@ export type Product = {
   storeId: string;
 
   name: string;
+
+  // DB relation / category id
   category: string;
   categoryId?: string;
+
+  // frontend/database readable label
+  categoryName?: string;
 
   price: number;
   image: string;
@@ -82,7 +87,6 @@ export type Product = {
 
   updatedAt: string;
 };
-
 export type Category = {
   _id?: string;
   id?: string;

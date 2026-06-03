@@ -43,11 +43,11 @@ export default function MainNavbar() {
 
   return (
     <header className="top-0 z-50 w-full bg-[#16A34A] text-white shadow-sm transition-colors duration-300 dark:border-b dark:border-white/10 dark:bg-[#003b11]">
-      <div className="mx-auto w-full max-w-[1280px] px-4 md:px-6 lg:px-0">
+      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-5 md:px-6 lg:px-8 xl:px-10 2xl:px-0">
         {/* Top Row */}
-        <div className="flex min-h-[76px] items-center justify-between gap-4 lg:h-[82px]">
+        <div className="relative flex min-h-[76px] items-center justify-between gap-4 xl:h-[82px]">
           {/* Desktop Nav */}
-          <nav className="hidden items-center gap-8 text-sm font-extrabold uppercase tracking-wide lg:flex">
+          <nav className="hidden items-center gap-8 text-sm font-extrabold uppercase tracking-wide xl:flex">
             {navLinks.map((link) => (
               <a
                 key={link.href}
@@ -60,7 +60,10 @@ export default function MainNavbar() {
           </nav>
 
           {/* Logo */}
-          <Link href="/" className="shrink-0 lg:absolute lg:left-1/2 lg:-translate-x-1/2">
+          <Link
+            href="/"
+            className="shrink-0 xl:absolute xl:left-1/2 xl:-translate-x-1/2"
+          >
             <Image
               src="/images/newstokoslogo.png"
               alt="Stoko's Logo"
@@ -109,8 +112,8 @@ export default function MainNavbar() {
           </div>
         </div>
 
-        {/* Mobile Navigation - Always Open */}
-        <nav className="-mx-4 flex items-center justify-start gap-7 overflow-x-auto border-t border-white/20 px-4 py-3 text-xs font-extrabold uppercase tracking-wide no-scrollbar lg:hidden">
+        {/* Tablet / Mobile Navigation */}
+        <nav className="-mx-4 flex items-center justify-start gap-7 overflow-x-auto border-t border-white/20 px-4 py-3 text-xs font-extrabold uppercase tracking-wide no-scrollbar xl:hidden sm:-mx-5 sm:px-5 md:-mx-6 md:px-6 lg:-mx-8 lg:px-8">
           {navLinks.map((link) => (
             <a
               key={link.href}

@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { ArrowRight, Clock, MapPin, Phone } from "lucide-react";
 
-type Store = {
+type StoreLocation = {
   name: string;
   slug: string;
   addressLine: string;
@@ -16,20 +17,14 @@ type Store = {
   }[];
 };
 
-const STORES: Store[] = [
+const STORES: StoreLocation[] = [
   {
     name: "Towson",
     slug: "towson",
     addressLine: "6821 Loch Raven Blvd, Towson, MD 21286",
     phone: "410-296-6066",
     hoursLabel: "Daily: 11am - 11:30pm",
-    schedule: [
-      {
-        days: [0, 1, 2, 3, 4, 5, 6],
-        open: "11:00",
-        close: "23:30",
-      },
-    ],
+    schedule: [{ days: [0, 1, 2, 3, 4, 5, 6], open: "11:00", close: "23:30" }],
   },
   {
     name: "York",
@@ -37,13 +32,7 @@ const STORES: Store[] = [
     addressLine: "5403 York Rd, Baltimore, MD 21212",
     phone: "410-433-4161",
     hoursLabel: "Daily: 11am - 12am",
-    schedule: [
-      {
-        days: [0, 1, 2, 3, 4, 5, 6],
-        open: "11:00",
-        close: "24:00",
-      },
-    ],
+    schedule: [{ days: [0, 1, 2, 3, 4, 5, 6], open: "11:00", close: "24:00" }],
   },
   {
     name: "Liberty",
@@ -52,55 +41,77 @@ const STORES: Store[] = [
     phone: "410-655-0009",
     hoursLabel: "Sun - Thu: 10am - 10pm\nFri - Sat: 10am - 11pm",
     schedule: [
-      {
-        days: [0, 1, 2, 3, 4],
-        open: "10:00",
-        close: "22:00",
-      },
-      {
-        days: [5, 6],
-        open: "10:00",
-        close: "23:00",
-      },
+      { days: [0, 1, 2, 3, 4], open: "10:00", close: "22:00" },
+      { days: [5, 6], open: "10:00", close: "23:00" },
     ],
   },
 ];
 
-export default function MainStoreSelection() {
+export default function LocationStoreCards() {
+  const searchParams = useSearchParams();
+
+  const action = searchParams.get("action");
+  const category = searchParams.get("category");
+  const deal = searchParams.get("deal");
+
+  const buildStoreHref = (slug: string) => {
+    const params = new URLSearchParams();
+
+    if (deal) params.set("deal", deal);
+    if (category) params.set("category", category);
+    if (action) params.set("action", action);
+
+    const query = params.toString();
+
+    if (category) {
+      return query
+        ? `/store/${slug}?${query}#${category}`
+        : `/store/${slug}#${category}`;
+    }
+
+    if (deal) {
+      return query ? `/store/${slug}?${query}#deals` : `/store/${slug}#deals`;
+    }
+
+    return query ? `/store/${slug}?${query}` : `/store/${slug}`;
+  };
+
   return (
     <section
       id="stores"
-      className="w-full px-4 py-20 text-black transition-colors duration-300 dark:bg-[#050505] dark:text-white md:px-6 lg:px-8"
+      className="w-full bg-white px-4 py-16 text-black transition-colors duration-300 dark:bg-[#07110a] dark:text-white sm:px-6 lg:px-8 lg:py-20"
     >
-      <div className="mx-auto w-full max-w-[1280px]">
-        <div className="mb-9">
+      <div className="mx-auto w-full max-w-[1320px]">
+        {/* Header */}
+        <div className="mb-10 md:mb-9 lg:mb-10">
           <p className="mb-3 text-[12px] font-black uppercase tracking-[0.35em] text-[#ff3131]">
             Find a Stoko’s near you
           </p>
 
-          <h2 className="text-[34px] font-black leading-tight tracking-[-0.04em] text-black dark:text-white md:text-[42px] lg:text-[44px]">
+          <h2 className="text-[38px] font-black leading-tight tracking-[-0.05em] text-black dark:text-white md:text-[42px] lg:text-[44px]">
             Our Locations
           </h2>
         </div>
 
-        <div className="grid items-stretch gap-6 md:grid-cols-2 xl:grid-cols-3">
+        {/* Store Cards */}
+        <div className="grid grid-cols-1 items-stretch gap-5 md:grid-cols-3 md:gap-4 lg:gap-6">
           {STORES.map((store) => {
             const openNow = isStoreOpen(store.schedule);
 
             return (
               <article
                 key={store.slug}
-                className="group flex h-full flex-col overflow-hidden rounded-[30px] border border-black/5 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-white/10 dark:bg-[#121b13]"
+                className="group flex h-full min-w-0 flex-col rounded-[28px] border border-black/5 bg-white p-6 shadow-[0_10px_28px_rgba(0,0,0,0.06)] ring-1 ring-black/5 transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_45px_rgba(0,0,0,0.1)] dark:border-white/10 dark:bg-[#121b13] dark:ring-white/5 dark:shadow-[0_16px_45px_rgba(0,0,0,0.35)] md:rounded-[22px] md:p-4 lg:rounded-[28px] lg:p-6"
               >
-                <div className="mb-8 flex items-start justify-between gap-4">
-                  <h3 className="text-2xl font-black tracking-tight text-black dark:text-white">
+                <div className="mb-8 flex items-start justify-between gap-4 md:mb-6 md:gap-2 lg:mb-8 lg:gap-4">
+                  <h3 className="text-[24px] font-black tracking-[-0.04em] text-black dark:text-white md:text-[20px] lg:text-[24px]">
                     {store.name}
                   </h3>
 
                   <span
-                    className={`shrink-0 rounded-full px-4 py-2 text-xs font-black uppercase ${
+                    className={`shrink-0 rounded-full px-4 py-2 text-[12px] font-black uppercase md:px-3 md:py-1.5 md:text-[10px] lg:px-4 lg:py-2 lg:text-[12px] ${
                       openNow
-                        ? "bg-green-100 text-[#138A3D]"
+                        ? "bg-green-100 text-[#138A3D] dark:bg-green-500/15 dark:text-green-300"
                         : "bg-[#DA3327] text-white"
                     }`}
                   >
@@ -108,33 +119,37 @@ export default function MainStoreSelection() {
                   </span>
                 </div>
 
-                <div className="mb-4 space-y-4 rounded-[22px]">
-                  <div className="flex min-w-0 items-center gap-3 text-neutral-700 dark:text-neutral-300">
-                    <MapPin size={18} className="shrink-0 text-[#DA3327]" />
-
-                    <p className="min-w-0 truncate whitespace-nowrap text-[14px] font-medium leading-none">
+                <div className="mb-8 space-y-4 md:mb-6 md:space-y-3 lg:mb-8 lg:space-y-4">
+                  <div className="flex min-w-0 items-center gap-3 text-neutral-700 dark:text-neutral-300 md:gap-2 lg:gap-3">
+                    <MapPin
+                      size={17}
+                      className="shrink-0 text-[#ff3131] md:size-[15px] lg:size-[17px]"
+                    />
+                    <p className="min-w-0 truncate whitespace-nowrap text-[14px] font-medium md:text-[12px] lg:text-[15px]">
                       {store.addressLine}
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-3 text-neutral-700 dark:text-neutral-300">
-                    <Phone size={17} className="shrink-0 text-[#DA3327]" />
-
+                  <div className="flex items-center gap-3 text-neutral-700 dark:text-neutral-300 md:gap-2 lg:gap-3">
+                    <Phone
+                      size={17}
+                      className="shrink-0 text-[#ff3131] md:size-[15px] lg:size-[17px]"
+                    />
                     <a
                       href={`tel:${store.phone.replace(/[^\d+]/g, "")}`}
-                      className="text-[14px] font-medium leading-none transition hover:text-[#DA3327]"
+                      className="text-[14px] font-medium transition hover:text-[#DA3327] md:text-[12px] lg:text-[15px]"
                     >
                       {store.phone}
                     </a>
                   </div>
 
-                  <div className="flex items-start gap-3 text-neutral-700 dark:text-neutral-300">
+                  <div className="flex items-start gap-3 text-neutral-700 dark:text-neutral-300 md:gap-2 lg:gap-3">
                     <Clock
                       size={17}
-                      className="mt-[2px] shrink-0 text-[#DA3327]"
+                      className="mt-[2px] shrink-0 text-[#ff3131] md:size-[15px] lg:size-[17px]"
                     />
 
-                    <div className="space-y-4 text-[14px] font-medium leading-none">
+                    <div className="space-y-2 text-[14px] font-medium md:text-[12px] lg:text-[15px]">
                       {store.hoursLabel.split("\n").map((line) => (
                         <p key={line}>{line}</p>
                       ))}
@@ -143,11 +158,11 @@ export default function MainStoreSelection() {
                 </div>
 
                 <Link
-                  href={`/store/${store.slug}`}
-                  className="mt-auto inline-flex w-full items-center justify-center gap-3 rounded-full bg-[#DA3327] px-6 py-4 text-sm font-black uppercase text-white transition hover:bg-[#12863d] group-hover:shadow-lg group-hover:shadow-green-900/20"
+                  href={buildStoreHref(store.slug)}
+                  className="mt-auto inline-flex w-full items-center justify-center gap-3 rounded-full bg-[#DA3327] px-6 py-4 text-sm font-black uppercase text-white shadow-[0_12px_28px_rgba(218,51,39,0.22)] transition hover:bg-[#12863d] md:h-[48px] md:px-3 md:py-0 md:text-[12px] lg:h-auto lg:px-6 lg:py-4 lg:text-sm"
                 >
                   Order Now
-                  <ArrowRight size={18} />
+                  <ArrowRight size={18} className="md:size-[16px] lg:size-[18px]" />
                 </Link>
               </article>
             );
@@ -158,7 +173,7 @@ export default function MainStoreSelection() {
   );
 }
 
-function isStoreOpen(schedule: Store["schedule"]) {
+function isStoreOpen(schedule: StoreLocation["schedule"]) {
   const now = new Date();
 
   const formatter = new Intl.DateTimeFormat("en-US", {
@@ -175,9 +190,7 @@ function isStoreOpen(schedule: Store["schedule"]) {
   const hourValue = parts.find((part) => part.type === "hour")?.value;
   const minuteValue = parts.find((part) => part.type === "minute")?.value;
 
-  if (!weekday || !hourValue || !minuteValue) {
-    return false;
-  }
+  if (!weekday || !hourValue || !minuteValue) return false;
 
   const dayMap: Record<string, number> = {
     Sun: 0,
@@ -190,20 +203,14 @@ function isStoreOpen(schedule: Store["schedule"]) {
   };
 
   const currentDay = dayMap[weekday];
-
   let currentHour = Number(hourValue);
 
-  if (currentHour === 24) {
-    currentHour = 0;
-  }
+  if (currentHour === 24) currentHour = 0;
 
   const currentMinutes = currentHour * 60 + Number(minuteValue);
-
   const todaySchedule = schedule.find((item) => item.days.includes(currentDay));
 
-  if (!todaySchedule) {
-    return false;
-  }
+  if (!todaySchedule) return false;
 
   const openMinutes = timeToMinutes(todaySchedule.open);
   const closeMinutes = timeToMinutes(todaySchedule.close);

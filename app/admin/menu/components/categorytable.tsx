@@ -222,6 +222,30 @@ function RowActionButtons({
   );
 }
 
+function StoreDeleteBadge({
+  storeName,
+  onDelete,
+}: {
+  storeName: string;
+  onDelete: () => void;
+}) {
+  return (
+    <span className="inline-flex items-center overflow-hidden rounded-full bg-green-50 text-xs font-black text-green-800">
+      <span className="px-3 py-1.5">{storeName}</span>
+
+      <button
+        type="button"
+        onClick={onDelete}
+        className="flex h-7 w-7 items-center justify-center border-l border-green-100 text-red-500 transition hover:bg-red-50 hover:text-red-700"
+        aria-label={`Delete ${storeName} category`}
+        title={`Delete from ${storeName}`}
+      >
+        <Trash2 size={13} />
+      </button>
+    </span>
+  );
+}
+
 function buildGroupedCategories(
   categories: Category[],
   products: Product[],
@@ -364,6 +388,7 @@ export default function CategoryTable({
 }) {
   const [currentPage, setCurrentPage] = useState(1);
 
+  // all filter view
   const isAllStoresView = hideEdit || hideActions;
 
   const groupedCategories = useMemo(() => {
@@ -440,12 +465,11 @@ export default function CategoryTable({
                     <td className="px-5 py-5">
                       <div className="flex flex-wrap gap-2">
                         {group.rows.map((row) => (
-                          <span
+                          <StoreDeleteBadge
                             key={row.categoryId}
-                            className="inline-flex items-center rounded-full bg-green-50 px-3 py-1.5 text-xs font-black text-green-800"
-                          >
-                            {row.storeName}
-                          </span>
+                            storeName={row.storeName}
+                            onDelete={() => onDelete(row.categoryId)}
+                          />
                         ))}
                       </div>
                     </td>

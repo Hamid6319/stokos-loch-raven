@@ -47,6 +47,36 @@ type UpsellRuleWithCategories = UpsellRule & {
   appliesToCategories?: string[];
 };
 
+function getCategoryId(category?: CategoryWithMongo | null) {
+  if (!category) return "";
+
+  return String(category._id || category.id || category.slug || "").trim();
+}
+
+function findSelectedCategory(
+  categories: CategoryWithMongo[],
+  value: unknown,
+  categoryId?: unknown,
+  categoryName?: unknown
+) {
+  const selectedValues = [value, categoryId, categoryName]
+    .map((item) => String(item || "").trim().toLowerCase())
+    .filter(Boolean);
+
+  return categories.find((category) => {
+    const categoryValues = [
+      category._id,
+      category.id,
+      category.slug,
+      category.name,
+    ]
+      .map((item) => String(item || "").trim().toLowerCase())
+      .filter(Boolean);
+
+    return selectedValues.some((item) => categoryValues.includes(item));
+  });
+}
+
 type ProductFormProps = {
   item: Product | null;
   categories: Category[];
@@ -81,34 +111,53 @@ const ProductForm = forwardRef<ProductFormRef, ProductFormProps>(
       : [];
 
     const [form, setForm] = useState<ProductWithUpsells>(() => {
-      if (item) {
-        const product = item as ProductWithUpsells;
+  if (item) {
+    const product = item as ProductWithUpsells & {
+      categoryName?: string;
+      categoryId?: string;
+    };
 
-        return {
-          ...product,
-          storeId: product.storeId || selectedStoreId,
-          category: getTextValue((product as any).category, ""),
-          modifierGroups: normalizeStringArray((product as any).modifierGroups),
-          relatedUpsells: normalizeStringArray((product as any).relatedUpsells),
-          updatedAt: product.updatedAt || "Today",
-        };
-      }
+    const matchedCategory = findSelectedCategory(
+      safeCategories,
+      product.category,
+      product.categoryId,
+      product.categoryName
+    );
 
-      return {
-        id: "",
-        storeId: selectedStoreId,
-        name: "",
-        category: safeCategories[0]?.name || "",
-        price: 0,
-        image: "",
-        status: "Active",
-        modifierGroups: [],
-        upsell: "",
-        relatedUpsells: [],
-        updatedAt: "Today",
-      };
-    });
+    const categoryId = getCategoryId(matchedCategory) || product.categoryId || "";
+    const categoryName =
+      matchedCategory?.name || product.categoryName || getTextValue(product.category, "");
 
+    return {
+      ...product,
+      storeId: product.storeId || selectedStoreId,
+      category: categoryName,
+      categoryId,
+      categoryName,
+      modifierGroups: normalizeStringArray((product as any).modifierGroups),
+      relatedUpsells: normalizeStringArray((product as any).relatedUpsells),
+      updatedAt: product.updatedAt || "Today",
+    };
+  }
+
+  const firstCategory = safeCategories[0] || null;
+
+  return {
+    id: "",
+    storeId: selectedStoreId,
+    name: "",
+    category: firstCategory?.name || "",
+    categoryId: getCategoryId(firstCategory),
+    categoryName: firstCategory?.name || "",
+    price: 0,
+    image: "",
+    status: "Active",
+    modifierGroups: [],
+    upsell: "",
+    relatedUpsells: [],
+    updatedAt: "Today",
+  };
+});
     const categoryBasedUpsells = useMemo(() => {
       return safeUpsellRules.filter((rule) => {
         const selectedCategories = Array.isArray(rule.appliesToCategories)
@@ -218,18 +267,39 @@ const ProductForm = forwardRef<ProductFormRef, ProductFormProps>(
         .map((rule) => rule.offer)
         .filter(Boolean);
 
-      onSave({
-        ...form,
-        storeId: form.storeId,
-        name: form.name.trim(),
-        price: Number(form.price || 0),
-        category: String(form.category || ""),
-        modifierGroups: Array.isArray(form.modifierGroups)
-          ? form.modifierGroups
-          : [],
-        upsell: selectedUpsellNames.join(", "),
-        relatedUpsells: form.relatedUpsells || [],
-      });
+
+        const selectedCategory = findSelectedCategory(
+  safeCategories,
+  form.category,
+  (form as any).categoryId,
+  (form as any).categoryName
+);
+
+const selectedCategoryId =
+  getCategoryId(selectedCategory) ||
+  String((form as any).categoryId || "").trim();
+
+const selectedCategoryName =
+  selectedCategory?.name ||
+  String((form as any).categoryName || form.category || "").trim();
+
+    onSave({
+  ...form,
+  storeId: form.storeId,
+  name: form.name.trim(),
+  price: Number(form.price || 0),
+
+  category: selectedCategoryId || String(form.category || ""),
+  categoryId: selectedCategoryId,
+  categoryName: selectedCategoryName,
+
+  modifierGroups: Array.isArray(form.modifierGroups)
+    ? form.modifierGroups
+    : [],
+
+  upsell: selectedUpsellNames.join(", "),
+  relatedUpsells: form.relatedUpsells || [],
+});
     };
 
     useImperativeHandle(ref, () => ({ submit }));
@@ -252,18 +322,24 @@ const ProductForm = forwardRef<ProductFormRef, ProductFormProps>(
         />
 
         <div className="grid gap-4 md:grid-cols-2">
-          <FormSelect
-            label="Category"
-            value={String(form.category || "")}
-            onChange={(value) =>
-              setForm((prev) => ({
-                ...prev,
-                category: value,
-                relatedUpsells: [],
-              }))
-            }
-            options={safeCategories.map((item) => item.name)}
-          />
+         <FormSelect
+  label="Category"
+  value={String(form.category || "")}
+  onChange={(value) => {
+    const selectedCategory = findSelectedCategory(safeCategories, value);
+    const selectedCategoryId = getCategoryId(selectedCategory);
+    const selectedCategoryName = selectedCategory?.name || value;
+
+    setForm((prev) => ({
+      ...prev,
+      category: selectedCategoryName,
+      categoryId: selectedCategoryId,
+      categoryName: selectedCategoryName,
+      relatedUpsells: [],
+    }));
+  }}
+  options={safeCategories.map((item) => item.name)}
+/>
 
           <FormInput
             label="Price"

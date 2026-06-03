@@ -35,24 +35,32 @@ export default function MenuSection({
 
   return (
     <section
-  id={id}
-  className="
-    scroll-mt-[120px]
-    w-full md:w-[1600px] mx-auto
-    px-4 md:px-0
-    pt-6 pb-8 md:pt-8 md:pb-10
-  "
-
+      id={id}
+      className="
+        scroll-mt-[120px]
+        mx-auto w-full max-w-[1600px]
+        px-4
+        sm:px-5
+        md:px-6
+        lg:px-8
+        xl:px-10
+        2xl:px-0
+        pt-6 pb-8
+        md:pt-8 md:pb-10
+      "
     >
       {/* Header */}
-      <div className="flex items-center justify-between mb-5 md:mb-6">
-        <div className="flex items-baseline gap-3 flex-wrap">
+      <div className="mb-5 flex items-center justify-between gap-4 md:mb-6">
+        <div className="flex min-w-0 flex-wrap items-baseline gap-2 md:gap-3">
           <h2
             className="
               text-black dark:text-white
-              text-2xl md:text-4xl
+              text-[26px]
               font-black uppercase tracking-wide
-              ml-1 leading-tight
+              leading-tight
+              sm:text-[30px]
+              md:text-[32px]
+              lg:text-4xl
             "
           >
             {title}
@@ -62,8 +70,8 @@ export default function MenuSection({
             <span
               className="
                 text-black dark:text-white
-                text-xs md:text-sm
-                font-bold
+                text-xs font-bold
+                md:text-sm
               "
             >
               ({subtitle})
@@ -72,8 +80,9 @@ export default function MenuSection({
 
           <span
             className="
+              hidden text-xs font-bold uppercase
               text-zinc-600 dark:text-zinc-500
-              text-xs font-bold uppercase hidden sm:block
+              sm:block
             "
           >
             {visibleProducts.length} Items
@@ -84,10 +93,11 @@ export default function MenuSection({
           <button
             type="button"
             className="
-              text-black dark:text-white
-              text-sm md:text-lg
-              font-black uppercase tracking-widest
-              transition-all flex items-center gap-1
+              hidden shrink-0 items-center gap-1
+              text-sm font-black uppercase tracking-widest
+              text-black transition-all dark:text-white
+              md:flex
+              lg:text-lg
             "
           >
             ALL <ChevronRight size={20} strokeWidth={4} className="mt-0.5" />
@@ -98,19 +108,28 @@ export default function MenuSection({
       {/* Grid */}
       <div
         className="
-          grid
+          grid w-full
           grid-cols-2
-          sm:grid-cols-[repeat(auto-fill,minmax(230px,280px))]
-          md:grid-cols-[repeat(auto-fill,minmax(250px,300px))]
-          justify-start
-          gap-3 md:gap-4
+          gap-3
+
+          md:grid-cols-3
+          md:gap-4
+
+          lg:grid-cols-3
+          lg:gap-5
+
+          xl:grid-cols-4
+          xl:gap-5
+
+          2xl:grid-cols-5
+          2xl:gap-6
         "
       >
         {visibleProducts.map((product, index) => (
           <div
             key={product.id}
             className={`
-              w-full h-full
+              min-w-0 h-full
               ${!normalizedSearch && index >= 4 ? "hidden md:block" : "block"}
             `}
           >

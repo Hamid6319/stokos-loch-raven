@@ -26,6 +26,7 @@ export default function Navbar() {
 
   const [isDark, setIsDark] = useState(false);
   const [locationOpen, setLocationOpen] = useState(false);
+  const [activeHash, setActiveHash] = useState("");
 
   const { cart, toggleCart, clearCart } = useCartStore();
   const { searchQuery, setSearchQuery } = useSearchStore();
@@ -36,38 +37,29 @@ export default function Navbar() {
   const currentStore =
     STORES.find((store) => store.slug === storeSlug) || STORES[0];
 
-  const isStorePage = pathname.startsWith("/store");
   const storeMenuUrl = currentStore?.menuUrl || "/store/towson";
+  const storeBasePath = `/store/${currentStore.slug}`;
+  const storeContactPath = `/store/${currentStore.slug}/contact`;
 
+  useEffect(() => {
+    const updateHash = () => {
+      setActiveHash(window.location.hash);
+    };
 
-const storeBasePath = `/store/${currentStore.slug}`;
-const storeContactPath = `/store/${currentStore.slug}/contact`;
+    updateHash();
+    window.addEventListener("hashchange", updateHash);
 
-const [activeHash, setActiveHash] = useState("");
+    return () => {
+      window.removeEventListener("hashchange", updateHash);
+    };
+  }, [pathname]);
 
-useEffect(() => {
-  const updateHash = () => {
-    setActiveHash(window.location.hash);
-  };
+  const isMenuActive =
+    pathname === storeBasePath &&
+    (activeHash === "" || activeHash === "#trending");
 
-  updateHash();
-
-  window.addEventListener("hashchange", updateHash);
-
-  return () => {
-    window.removeEventListener("hashchange", updateHash);
-  };
-}, [pathname]);
-
-const isMenuActive =
-  pathname === storeBasePath &&
-  (activeHash === "" || activeHash === "#trending");
-
-const isDealsActive = pathname === storeBasePath && activeHash === "#deals";
-
-const isContactActive = pathname === storeContactPath;
-
-const showFloatingCart = pathname === storeBasePath;
+  const isContactActive = pathname === storeContactPath;
+  const showFloatingCart = pathname === storeBasePath;
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
@@ -128,39 +120,33 @@ const showFloatingCart = pathname === storeBasePath;
     <>
       <header className="top-0 z-50 w-full border-b border-zinc-800 bg-green-600 text-white shadow-md dark:bg-green-700">
         <div className="mx-auto w-full max-w-[1600px] px-4 md:px-6">
-          <div className="relative flex min-h-[76px] items-center justify-between gap-4 lg:h-[86px]">
-            {/* Desktop Navigation */}
-           <nav className="hidden items-center gap-8 text-sm uppercase tracking-wide lg:flex">
-  <Link href="/" className={navClass(pathname === "/")}>
-    Home
-  </Link>
+          {/* Top Row */}
+          <div className="relative flex min-h-[76px] items-center justify-between gap-3 md:min-h-[82px] 2xl:h-[86px]">
+            {/* Desktop Navigation Only */}
+            <nav className="hidden items-center gap-8 text-sm uppercase tracking-wide 2xl:flex">
+              <Link href="/" className={navClass(pathname === "/")}>
+                Home
+              </Link>
 
-  <Link
-    href={`${storeMenuUrl}#trending`}
-    className={navClass(isMenuActive)}
-  >
-    Menu
-  </Link>
+              <Link
+                href={`${storeMenuUrl}#trending`}
+                className={navClass(isMenuActive)}
+              >
+                Menu
+              </Link>
 
-  {/* <Link
-    href={`${storeMenuUrl}#deals`}
-    className={navClass(isDealsActive)}
-  >
-    Deals
-  </Link> */}
-
-  <Link
-    href={`/store/${currentStore.slug}/contact`}
-    className={navClass(isContactActive)}
-  >
-    Contact Us
-  </Link>
-</nav>
+              <Link
+                href={`/store/${currentStore.slug}/contact`}
+                className={navClass(isContactActive)}
+              >
+                Contact Us
+              </Link>
+            </nav>
 
             {/* Logo */}
             <Link
               href={storeMenuUrl}
-              className="flex items-center lg:absolute lg:left-1/2 lg:-translate-x-1/2"
+              className="flex shrink-0 items-center 2xl:absolute 2xl:left-1/2 2xl:-translate-x-1/2"
             >
               <Image
                 src="/images/newstokoslogo.png"
@@ -168,37 +154,41 @@ const showFloatingCart = pathname === storeBasePath;
                 width={170}
                 height={70}
                 priority
-                className="h-10 w-auto object-contain md:h-12"
+                className="h-10 w-auto object-contain sm:h-11 md:h-12"
               />
             </Link>
 
             {/* Right Actions */}
-            <div className="ml-auto flex items-center gap-3 md:gap-4">
-              <div className="hidden items-center gap-2 rounded-full border border-white/20 bg-white/15 px-4 py-2 md:flex">
-                <Search size={17} />
+            <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3 md:gap-4 2xl:gap-3">
+              {/* Desktop Search Only */}
+              <div className="hidden min-w-0 items-center gap-2 rounded-full border border-white/20 bg-white/15 px-4 py-2 2xl:flex">
+                <Search size={17} className="shrink-0" />
 
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search menu..."
-                  className="w-[170px] bg-transparent text-sm text-white placeholder:text-white/70 outline-none lg:w-[190px]"
+                  className="w-[190px] bg-transparent text-sm text-white placeholder:text-white/70 outline-none"
                 />
               </div>
 
+              {/* Desktop Location Only */}
               <button
                 type="button"
                 onClick={() => setLocationOpen(true)}
-                className="hidden items-center gap-2 rounded-full border border-white/20 bg-white/15 px-4 py-2 text-sm font-black text-white transition hover:bg-white/20 md:flex"
+                className="hidden shrink-0 items-center gap-2 rounded-full border border-white/20 bg-white/15 px-4 py-2 text-sm font-black text-white transition hover:bg-white/20 2xl:flex"
               >
                 <MapPin size={16} />
-                {currentStore.displayName}
+                <span className="max-w-[110px] truncate">
+                  {currentStore.displayName}
+                </span>
                 <ChevronDown size={15} />
               </button>
 
               <button
                 type="button"
-                className="rounded-full bg-white px-4 py-2 text-xs font-bold text-green-800 transition hover:bg-green-100 md:px-5 md:text-sm"
+                className="shrink-0 whitespace-nowrap rounded-full bg-white px-4 py-2 text-xs font-bold text-green-800 transition hover:bg-green-100 md:px-5 md:text-sm"
               >
                 Sign In
               </button>
@@ -207,7 +197,7 @@ const showFloatingCart = pathname === storeBasePath;
                 type="button"
                 onClick={toggleTheme}
                 aria-label="Toggle dark mode"
-                className="relative flex h-9 w-[64px] cursor-pointer items-center rounded-full border border-white/25 bg-white/20 px-1 md:w-[70px]"
+                className="relative flex h-9 w-[64px] shrink-0 cursor-pointer items-center rounded-full border border-white/25 bg-white/20 px-1 md:w-[70px]"
               >
                 <span
                   className={`absolute flex h-7 w-7 items-center justify-center rounded-full bg-white transition-transform duration-300 ${
@@ -227,9 +217,9 @@ const showFloatingCart = pathname === storeBasePath;
           </div>
 
           {/* Mobile Search + Location */}
-          <div className="flex gap-2 border-t border-white/20 py-3 md:hidden">
-            <div className="flex flex-1 items-center gap-2 rounded-full border border-white/20 bg-white/15 px-3 py-2">
-              <Search size={15} />
+          <div className="-mx-4 flex gap-2 border-t border-white/20 px-4 py-3 md:hidden">
+            <div className="flex min-w-0 flex-1 items-center gap-2 rounded-full border border-white/20 bg-white/15 px-3 py-2">
+              <Search size={15} className="shrink-0" />
 
               <input
                 type="text"
@@ -243,40 +233,84 @@ const showFloatingCart = pathname === storeBasePath;
             <button
               type="button"
               onClick={() => setLocationOpen(true)}
-              className="flex items-center gap-1 rounded-full border border-white/20 bg-white/15 px-3 py-2 text-xs font-black text-white"
+              className="flex max-w-[42%] shrink-0 items-center gap-1 rounded-full border border-white/20 bg-white/15 px-3 py-2 text-xs font-black text-white"
             >
-              <MapPin size={14} />
-              {currentStore.displayName}
+              <MapPin size={14} className="shrink-0" />
+              <span className="truncate">{currentStore.displayName}</span>
             </button>
           </div>
 
+          {/* Laptop + Tablet Bottom Row */}
+          <div className="-mx-4 hidden border-t border-white/20 md:-mx-6 md:block 2xl:hidden">
+            <div className="flex w-full items-center justify-between gap-4 px-4 py-3 md:px-6">
+              <nav className="flex shrink-0 items-center gap-6 overflow-x-auto text-xs uppercase no-scrollbar md:gap-8 md:text-sm">
+                <Link href="/" className={navClass(pathname === "/")}>
+                  Home
+                </Link>
+
+                <Link
+                  href={`${storeMenuUrl}#trending`}
+                  className={navClass(isMenuActive)}
+                >
+                  Menu
+                </Link>
+
+                <Link
+                  href={`/store/${currentStore.slug}/contact`}
+                  className={navClass(isContactActive)}
+                >
+                  Contact
+                </Link>
+              </nav>
+
+              <div className="flex min-w-0 flex-1 items-center justify-end gap-3">
+                <div className="flex min-w-[210px] max-w-[380px] flex-1 items-center gap-2 rounded-full border border-white/20 bg-white/15 px-4 py-2 xl:max-w-[430px]">
+                  <Search size={17} className="shrink-0" />
+
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search menu..."
+                    className="w-full bg-transparent text-sm text-white placeholder:text-white/70 outline-none"
+                  />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setLocationOpen(true)}
+                  className="flex shrink-0 items-center gap-2 rounded-full border border-white/20 bg-white/15 px-4 py-2 text-sm font-black text-white transition hover:bg-white/20"
+                >
+                  <MapPin size={16} className="shrink-0" />
+                  <span className="max-w-[110px] truncate">
+                    {currentStore.displayName}
+                  </span>
+                  <ChevronDown size={15} className="shrink-0" />
+                </button>
+              </div>
+            </div>
+          </div>
+
           {/* Mobile Navigation */}
-        <nav className="-mx-4 flex w-auto items-center justify-start gap-7 overflow-x-auto border-t border-white/20 px-4 py-3 text-xs uppercase no-scrollbar md:-mx-6 md:px-6 lg:hidden">
-  <Link href="/" className={navClass(pathname === "/")}>
-    Home
-  </Link>
+          <nav className="-mx-4 flex w-auto items-center justify-start gap-7 overflow-x-auto border-t border-white/20 px-4 py-3 text-xs uppercase no-scrollbar md:hidden">
+            <Link href="/" className={navClass(pathname === "/")}>
+              Home
+            </Link>
 
-  <Link
-    href={`${storeMenuUrl}#trending`}
-    className={navClass(isMenuActive)}
-  >
-    Menu
-  </Link>
+            <Link
+              href={`${storeMenuUrl}#trending`}
+              className={navClass(isMenuActive)}
+            >
+              Menu
+            </Link>
 
-  {/* <Link
-    href={`${storeMenuUrl}#deals`}
-    className={navClass(isDealsActive)}
-  >
-    Deals
-  </Link> */}
-
-  <Link
-    href={`/store/${currentStore.slug}/contact`}
-    className={navClass(isContactActive)}
-  >
-    Contact
-  </Link>
-</nav>
+            <Link
+              href={`/store/${currentStore.slug}/contact`}
+              className={navClass(isContactActive)}
+            >
+              Contact
+            </Link>
+          </nav>
         </div>
       </header>
 
@@ -294,7 +328,6 @@ const showFloatingCart = pathname === storeBasePath;
           locationOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        {/* Fixed Header */}
         <div className="shrink-0 border-b bg-white p-5 dark:border-zinc-800 dark:bg-[#111]">
           <div className="flex items-center justify-between">
             <div>
@@ -317,7 +350,6 @@ const showFloatingCart = pathname === storeBasePath;
           </div>
         </div>
 
-        {/* Scrollable Store Cards */}
         <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4 pb-8">
           {STORES.map((store) => {
             const isActive = store.slug === currentStore.slug;
@@ -355,7 +387,10 @@ const showFloatingCart = pathname === storeBasePath;
                   <div className="flex gap-2">
                     <Phone size={16} className="mt-0.5 shrink-0" />
 
-                    <a href={`tel:${store.phone}`} className="hover:text-green-700">
+                    <a
+                      href={`tel:${store.phone}`}
+                      className="hover:text-green-700"
+                    >
                       {store.phone}
                     </a>
                   </div>
@@ -404,21 +439,21 @@ const showFloatingCart = pathname === storeBasePath;
       </aside>
 
       {/* Floating Cart */}
-{showFloatingCart && (
-  <button
-    type="button"
-    onClick={toggleCart}
-    className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#DA3327] text-white shadow-2xl transition hover:scale-105 active:scale-95 md:h-16 md:w-16"
-  >
-    <ShoppingCart size={24} />
+      {showFloatingCart && (
+        <button
+          type="button"
+          onClick={toggleCart}
+          className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#DA3327] text-white shadow-2xl transition hover:scale-105 active:scale-95 md:h-16 md:w-16"
+        >
+          <ShoppingCart size={24} />
 
-    {cartCount > 0 && (
-      <span className="absolute -right-2 -top-2 flex h-6 min-w-6 items-center justify-center rounded-full bg-black px-2 text-xs font-black text-white dark:bg-green-500">
-        {cartCount}
-      </span>
-    )}
-  </button>
-)}
+          {cartCount > 0 && (
+            <span className="absolute -right-2 -top-2 flex h-6 min-w-6 items-center justify-center rounded-full bg-black px-2 text-xs font-black text-white dark:bg-green-500">
+              {cartCount}
+            </span>
+          )}
+        </button>
+      )}
     </>
   );
 }

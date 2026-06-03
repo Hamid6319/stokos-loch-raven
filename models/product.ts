@@ -46,12 +46,23 @@ const ProductSchema = new Schema(
       default: "",
     },
 
-    category: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+ category: {
+  type: String,
+  required: true,
+  trim: true,
+},
 
+categoryId: {
+  type: String,
+  default: "",
+  trim: true,
+},
+
+categoryName: {
+  type: String,
+  default: "",
+  trim: true,
+},
     modifierGroups: {
       type: [String],
       default: [],

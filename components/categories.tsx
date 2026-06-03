@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useRef, useState } from "react";
+import type { MouseEvent } from "react";
 
 const CATEGORIES = [
   { id: "trending", name: "Popular Menu Items", special: true },
@@ -36,7 +37,7 @@ export default function Categories() {
 
   const handleCategoryClick = (
     id: string,
-    e: React.MouseEvent<HTMLButtonElement>
+    e: MouseEvent<HTMLButtonElement>
   ) => {
     setActive(id);
 
@@ -45,10 +46,14 @@ export default function Categories() {
 
     if (container) {
       const scrollPos =
-        target.offsetLeft - container.offsetWidth / 2 + target.offsetWidth / 2;
+        target.offsetLeft -
+        container.clientWidth / 2 +
+        target.clientWidth / 2;
+
+      const maxScroll = container.scrollWidth - container.clientWidth;
 
       container.scrollTo({
-        left: scrollPos,
+        left: Math.max(0, Math.min(scrollPos, maxScroll)),
         behavior: "smooth",
       });
     }
@@ -57,7 +62,8 @@ export default function Categories() {
 
     if (section) {
       const yOffset = -150;
-      const y = section.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      const y =
+        section.getBoundingClientRect().top + window.pageYOffset + yOffset;
 
       window.scrollTo({
         top: y,
@@ -67,11 +73,19 @@ export default function Categories() {
   };
 
   return (
-    <div className="top-[125px] z-30 w-full border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-black md:top-[82px]">
-      <div className="mx-auto max-w-[1600px] px-4 md:px-0">
+    <div className="top-[125px] z-30 w-full border-b border-zinc-200 bg-white/95 backdrop-blur-md dark:border-zinc-800 dark:bg-black/95 md:top-[82px]">
+      <div className="mx-auto w-full max-w-[1600px]">
         <div
           ref={scrollRef}
-          className="no-scrollbar flex flex-nowrap items-center gap-2.5 overflow-x-auto scroll-smooth py-4 md:gap-3"
+          className="
+            no-scrollbar flex w-full flex-nowrap items-center gap-2.5
+            overflow-x-auto scroll-smooth px-4 py-4
+            sm:px-5
+            md:gap-3 md:px-6
+            lg:px-3
+            xl:px-10
+            2xl:px-0
+          "
         >
           {CATEGORIES.map((cat) => {
             const isActive = active === cat.id;
@@ -82,11 +96,15 @@ export default function Categories() {
                 type="button"
                 onClick={(e) => handleCategoryClick(cat.id, e)}
                 className={`
-                  relative flex-shrink-0 whitespace-nowrap rounded-full px-5 py-2
-                  text-[11px] font-semibold outline-none md:px-7 md:py-2.5 md:text-sm
+                  relative flex-shrink-0 whitespace-nowrap rounded-full
+                  px-5 py-2 text-[12px] font-semibold leading-none
+                  outline-none transition-all duration-200
+                  sm:px-6 sm:py-2.5 sm:text-[13px]
+                  md:px-7 md:text-sm
+                  lg:px-8
                   ${
                     isActive
-                      ? "bg-[#DA3327] text-white"
+                      ? "bg-[#DA3327] text-white shadow-sm"
                       : "bg-zinc-100 text-zinc-800 hover:bg-zinc-200 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800"
                   }
                 `}
@@ -96,7 +114,7 @@ export default function Categories() {
             );
           })}
 
-          <div className="h-1 w-6 flex-shrink-0" />
+          <div className="h-1 w-4 flex-shrink-0 md:w-6" />
         </div>
       </div>
     </div>

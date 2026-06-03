@@ -753,8 +753,15 @@ function getProductCategoryLabel(categories: Category[], product: Product) {
   const productObj = product as Product & {
     category?: unknown;
     categoryId?: unknown;
+    categoryName?: unknown;
     categorySlug?: unknown;
   };
+
+  const directCategoryName = String(productObj.categoryName || "").trim();
+
+  if (directCategoryName) {
+    return directCategoryName;
+  }
 
   const productStoreId = getItemStoreId(product);
 
@@ -793,6 +800,7 @@ function getProductCategoryLabel(categories: Category[], product: Product) {
 
   return (
     foundCategory?.name ||
+    getTextValue(productObj.categoryName, "") ||
     getTextValue(productObj.category, "") ||
     getTextValue(productObj.categoryId, "No Category")
   );

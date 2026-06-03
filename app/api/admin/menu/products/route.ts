@@ -6,10 +6,8 @@ import Category from "@/models/category";
 import ModifierGroup from "@/models/modifiergroup";
 import UpsellRule from "@/models/upsellrule";
 
-
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
 
 const slugify = (value: string) =>
   value
@@ -93,12 +91,20 @@ export async function GET(req: Request) {
     await connectDB();
 
     const { searchParams } = new URL(req.url);
-    const storeId = searchParams.get("storeId") || "towson";
+
+    const storeId = searchParams.get("storeId");
     const category = searchParams.get("category");
 
-    const query: any = { storeId };
+    const query: any = {};
 
-    if (category) {
+    // Important fix:
+    // Agar storeId frontend se aaye tabhi filter karo.
+    // Warna all stores ke products return honge.
+    if (storeId && storeId !== "all") {
+      query.storeId = storeId;
+    }
+
+    if (category && category !== "All Categories") {
       query.categoryName = category;
     }
 
@@ -112,6 +118,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ success: true, data: products });
   } catch (error) {
     console.error("GET PRODUCTS ERROR:", error);
+
     return NextResponse.json(
       { success: false, message: "Failed to fetch products" },
       { status: 500 }
@@ -136,8 +143,11 @@ export async function POST(req: Request) {
       description: body.description || "",
       price: Number(body.price || 0),
       image: body.image || "",
-      category: category._id,
-      categoryName: category.name,
+
+      category: String(category._id),
+      categoryId: String(category._id),
+      categoryName: String(category.name || ""),
+
       modifierGroups,
       upsellRules,
       tags: Array.isArray(body.tags) ? body.tags : [],
@@ -195,8 +205,11 @@ export async function PATCH(req: Request) {
       description: body.description || "",
       price: Number(body.price || 0),
       image: body.image || "",
-      category: category._id,
-      categoryName: category.name,
+
+      category: String(category._id),
+      categoryId: String(category._id),
+      categoryName: String(category.name || ""),
+
       modifierGroups,
       upsellRules,
       tags: Array.isArray(body.tags) ? body.tags : [],
@@ -223,6 +236,7 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ success: true, data: product });
   } catch (error) {
     console.error("PATCH PRODUCT ERROR:", error);
+
     return NextResponse.json(
       { success: false, message: "Failed to update product" },
       { status: 500 }
@@ -259,6 +273,7 @@ export async function DELETE(req: Request) {
     });
   } catch (error) {
     console.error("DELETE PRODUCT ERROR:", error);
+
     return NextResponse.json(
       { success: false, message: "Failed to delete product" },
       { status: 500 }
