@@ -885,7 +885,7 @@ export async function GET(req: Request) {
     await connectDB();
 
     // One-time safety cleanup for old duplicate master products.
-    await cleanupDuplicateProductMastersBySlug();
+    // await cleanupDuplicateProductMastersBySlug();
 
     const { searchParams } = new URL(req.url);
 

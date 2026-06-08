@@ -343,7 +343,7 @@ function getErrorMessage(error: any) {
 export async function GET(req: Request) {
   try {
     await connectDB();
-    await cleanupDuplicateCategoryMasters();
+    // await cleanupDuplicateCategoryMasters();
 
     const { searchParams } = new URL(req.url);
     const storeId = searchParams.get("storeId");
