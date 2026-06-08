@@ -26,6 +26,7 @@ type MongoObject = {
 type CategoryRow = {
   category: Category;
   categoryId: string;
+  storeId: string;
   storeName: string;
   productsCount: number;
 };
@@ -265,10 +266,12 @@ function buildGroupedCategories(
 
       const productsCount = getCategoryProductsCount(category, products, stores);
       const storeName = getStoreName(stores, category);
+      const storeId = getItemStoreId(category) || storeName;
 
       const row: CategoryRow = {
         category,
         categoryId,
+        storeId,
         storeName,
         productsCount,
       };
@@ -453,9 +456,9 @@ export default function CategoryTable({
 
           <tbody className="divide-y divide-zinc-100">
             {isAllStoresView
-              ? paginatedGroups.map((group) => (
+              ? paginatedGroups.map((group, groupIndex) => (
                   <tr
-                    key={group.key}
+                    key={`${group.key}-${startIndex + groupIndex}`}
                     className="transition hover:bg-green-50/50"
                   >
                     <td className="px-5 py-5">
@@ -464,9 +467,9 @@ export default function CategoryTable({
 
                     <td className="px-5 py-5">
                       <div className="flex flex-wrap gap-2">
-                        {group.rows.map((row) => (
+                        {group.rows.map((row, rowIndex) => (
                           <StoreDeleteBadge
-                            key={row.categoryId}
+                            key={`${group.key}-${row.categoryId}-${row.storeId}-${rowIndex}`}
                             storeName={row.storeName}
                             onDelete={() => onDelete(row.categoryId)}
                           />
@@ -491,7 +494,7 @@ export default function CategoryTable({
 
                   return (
                     <tr
-                      key={categoryId}
+                      key={`${categoryId}-${getItemStoreId(category) || storeName}-${startIndex + index}`}
                       className="transition hover:bg-green-50/50"
                     >
                       <td className="px-5 py-5">

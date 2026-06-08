@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
     "172.16.25.151",
     "*.ngrok-free.app",
     "*.ngrok-free.dev",
+    "172.16.4.192",
   ],
 
   images: {

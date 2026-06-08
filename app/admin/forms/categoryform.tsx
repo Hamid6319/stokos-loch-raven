@@ -10,6 +10,15 @@ export type CategoryFormRef = {
 
 type CategoryWithMongo = Category & {
   _id?: string;
+  id?: string;
+  slug?: string;
+  storeId?: string;
+  storeIds?: string[];
+  storeConfigs?: Array<{
+    storeId?: string;
+    available?: boolean;
+    status?: string;
+  }>;
 };
 
 type CategoryFormProps = {
@@ -18,6 +27,50 @@ type CategoryFormProps = {
   selectedStoreId?: string;
   onSave: (value: CategoryWithMongo) => void;
 };
+
+function cleanText(value: unknown) {
+  return String(value || "").trim();
+}
+
+function normalizeText(value: unknown) {
+  return cleanText(value).toLowerCase().replace(/\s+/g, " ");
+}
+
+function normalizeStoreId(value: unknown) {
+  return cleanText(value).toLowerCase();
+}
+
+function getCategoryId(category: CategoryWithMongo | null | undefined) {
+  if (!category) return "";
+  return cleanText(category._id || category.id || category.slug || "");
+}
+
+function getCategoryStoreIds(category: CategoryWithMongo) {
+  const storeIds = new Set<string>();
+
+  if (category.storeId) {
+    storeIds.add(normalizeStoreId(category.storeId));
+  }
+
+  if (Array.isArray(category.storeIds)) {
+    category.storeIds.forEach((storeId) => {
+      const cleanStoreId = normalizeStoreId(storeId);
+      if (cleanStoreId) storeIds.add(cleanStoreId);
+    });
+  }
+
+  if (Array.isArray(category.storeConfigs)) {
+    category.storeConfigs.forEach((config) => {
+      if (config?.available === false) return;
+      if (config?.status === "Inactive" || config?.status === "Hidden") return;
+
+      const cleanStoreId = normalizeStoreId(config?.storeId);
+      if (cleanStoreId) storeIds.add(cleanStoreId);
+    });
+  }
+
+  return Array.from(storeIds).filter(Boolean);
+}
 
 const CategoryForm = forwardRef<CategoryFormRef, CategoryFormProps>(
   function CategoryForm(
@@ -29,7 +82,14 @@ const CategoryForm = forwardRef<CategoryFormRef, CategoryFormProps>(
       : [];
 
     const [form, setForm] = useState<CategoryWithMongo>(() => {
-      if (item) return item as CategoryWithMongo;
+      if (item) {
+        const editItem = item as CategoryWithMongo;
+
+        return {
+          ...editItem,
+          storeId: editItem.storeId || selectedStoreId,
+        };
+      }
 
       return {
         id: "",
@@ -41,16 +101,36 @@ const CategoryForm = forwardRef<CategoryFormRef, CategoryFormProps>(
     });
 
     const submit = () => {
-      if (!form.name.trim()) return alert("Category name required");
+      const name = cleanText(form.name);
+      const storeId = normalizeStoreId(form.storeId || selectedStoreId);
 
-      if (!form.storeId) {
+      if (!name) return alert("Category name required");
+
+      if (!storeId) {
         return alert("Store is required for category");
+      }
+
+      const currentId = getCategoryId(form);
+      const duplicate = safeCategories.find((category) => {
+        const sameName = normalizeText(category.name) === normalizeText(name);
+        if (!sameName) return false;
+
+        const categoryId = getCategoryId(category);
+        const sameRecord = Boolean(currentId && categoryId && currentId === categoryId);
+        if (sameRecord) return false;
+
+        const categoryStoreIds = getCategoryStoreIds(category);
+        return categoryStoreIds.includes(storeId);
+      });
+
+      if (duplicate) {
+        return alert(`Category "${name}" already exists for this store.`);
       }
 
       onSave({
         ...form,
-        name: form.name.trim(),
-        storeId: form.storeId,
+        name,
+        storeId,
         sortOrder: Number(form.sortOrder || 1),
       });
     };
@@ -103,5 +183,5 @@ const CategoryForm = forwardRef<CategoryFormRef, CategoryFormProps>(
 );
 
 CategoryForm.displayName = "CategoryForm";
-   
+
 export default CategoryForm;
