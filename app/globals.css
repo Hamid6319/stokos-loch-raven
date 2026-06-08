@@ -4,15 +4,28 @@
 
 /* Base styles */
 html {
-transition: background-color 0.25s ease, color 0.25s ease;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100%;
+  overflow-x: hidden;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 body {
-  @apply bg-white text-black dark:bg-black dark:text-white font-sans;
-  min-height: 100vh;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100dvh;
+  overflow-x: hidden;
+
+  @apply bg-white text-black font-sans antialiased dark:bg-black dark:text-white;
+
   transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 /* Reusable container */

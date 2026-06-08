@@ -11,23 +11,20 @@ function slugify(value: string) {
 
 const ProductSchema = new Schema(
   {
-    storeId: {
-      type: String,
-      required: true,
-      default: "towson",
-      index: true,
-    },
-
+    // Product Master = common/global data only.
+    // Store/category/price/size/modifier/status/sortOrder live in ProductStoreConfig.
     name: {
       type: String,
       required: true,
       trim: true,
+      index: true,
     },
 
     slug: {
       type: String,
       trim: true,
       lowercase: true,
+      index: true,
     },
 
     description: {
@@ -35,45 +32,7 @@ const ProductSchema = new Schema(
       default: "",
     },
 
-    price: {
-      type: Number,
-      required: true,
-      default: 0,
-    },
-
     image: {
-      type: String,
-      default: "",
-    },
-
- category: {
-  type: String,
-  required: true,
-  trim: true,
-},
-
-categoryId: {
-  type: String,
-  default: "",
-  trim: true,
-},
-
-categoryName: {
-  type: String,
-  default: "",
-  trim: true,
-},
-    modifierGroups: {
-      type: [String],
-      default: [],
-    },
-
-    relatedUpsells: {
-      type: [String],
-      default: [],
-    },
-
-    upsell: {
       type: String,
       default: "",
     },
@@ -88,21 +47,29 @@ categoryName: {
       default: "",
     },
 
-    sortOrder: {
-      type: Number,
-      default: 0,
+    updatedAt: {
+      type: String,
+      default: "Today",
     },
 
+    // Legacy fields are intentionally optional so old rows do not break during migration.
+    // New writes should not depend on these fields.
+    storeId: { type: String, default: "", trim: true },
+    category: { type: String, default: "", trim: true },
+    categoryId: { type: String, default: "", trim: true },
+    categoryName: { type: String, default: "", trim: true },
+    price: { type: Number, default: 0 },
+    sizes: { type: Array, default: [] },
+    modifierGroups: { type: Array, default: [] },
+    modifierGroupIds: { type: [String], default: [] },
+    relatedUpsells: { type: [String], default: [] },
+    upsell: { type: String, default: "" },
     status: {
       type: String,
       enum: ["Active", "Draft", "Hidden", "Inactive"],
       default: "Active",
     },
-
-    updatedAt: {
-      type: String,
-      default: "Today",
-    },
+    sortOrder: { type: Number, default: 0 },
   },
   {
     timestamps: {
@@ -115,18 +82,26 @@ categoryName: {
   }
 );
 
-ProductSchema.virtual("upsellRules", {
-  ref: "UpsellRule",
-  localField: "relatedUpsells",
-  foreignField: "_id",
+ProductSchema.virtual("storeConfigs", {
+  ref: "ProductStoreConfig",
+  localField: "_id",
+  foreignField: "productId",
   justOne: false,
 });
 
 ProductSchema.pre("validate", function () {
   const doc = this as any;
 
+  if (doc.name) {
+    doc.name = String(doc.name || "").trim();
+  }
+
   if (!doc.slug && doc.name) {
     doc.slug = slugify(doc.name);
+  }
+
+  if (doc.slug) {
+    doc.slug = slugify(doc.slug);
   }
 
   if (!doc.updatedAt) {
@@ -134,7 +109,12 @@ ProductSchema.pre("validate", function () {
   }
 });
 
-ProductSchema.index({ storeId: 1, slug: 1 }, { unique: true });
+ProductSchema.index({ slug: 1 });
+ProductSchema.index({ name: 1 });
+
+if (process.env.NODE_ENV === "development" && mongoose.models.Product) {
+  delete mongoose.models.Product;
+}
 
 const Product =
   mongoose.models.Product || mongoose.model("Product", ProductSchema);

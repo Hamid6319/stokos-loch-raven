@@ -52,8 +52,50 @@ export type Store = {
 export type ModifierOption = {
   id?: string;
   name: string;
-  price: number;
   status?: "Active" | "Inactive";
+};
+
+export type ModifierGroupAssignment = {
+  _id?: string;
+  id?: string;
+
+  modifierGroupId?: string;
+
+  storeId: string;
+
+  categoryId: string;
+  categoryName: string;
+
+  sortOrder?: number;
+  status?: "Active" | "Inactive";
+
+  updatedAt?: string;
+};
+
+export type ProductSize = {
+  id?: string;
+  name: string;
+  price: number;
+  sortOrder?: number;
+};
+
+export type ProductModifierOption = {
+  id?: string;
+  optionId?: string;
+  name: string;
+  status?: "Active" | "Inactive";
+  pricesBySize: Record<string, number>;
+};
+
+export type ProductModifierGroup = {
+  modifierGroupId?: string;
+  name: string;
+  required?: boolean;
+  minSelect?: number;
+  maxSelect?: number;
+  sortOrder?: number;
+  status?: "Active" | "Inactive";
+  options: ProductModifierOption[];
 };
 
 export type Product = {
@@ -64,19 +106,19 @@ export type Product = {
 
   name: string;
 
-  // DB relation / category id
   category: string;
   categoryId?: string;
-
-  // frontend/database readable label
   categoryName?: string;
 
   price: number;
+  sizes?: ProductSize[];
+
   image: string;
 
   status: ProductStatus;
 
-  modifierGroups: string[];
+  // Product-level modifier snapshot with per-size override prices.
+  modifierGroups: ProductModifierGroup[];
   modifierGroupIds?: string[];
 
   upsell: string;
@@ -87,6 +129,7 @@ export type Product = {
 
   updatedAt: string;
 };
+
 export type Category = {
   _id?: string;
   id?: string;
@@ -108,14 +151,10 @@ export type ModifierGroup = {
   _id?: string;
   id?: string;
 
-  storeId: string;
-
   name: string;
   slug?: string;
 
-  appliesTo: string;
-  appliesToCategories?: string[];
-
+  // Global options only. Prices stay on product/product-size level.
   options: ModifierOption[];
 
   required: boolean;
@@ -124,6 +163,18 @@ export type ModifierGroup = {
 
   sortOrder?: number;
   status?: "Active" | "Inactive";
+
+  // Link rows that control where this global group appears.
+  assignments?: ModifierGroupAssignment[];
+
+  // Legacy support only.
+  // Do not use these for new modifier logic.
+  storeId?: string;
+  appliesTo?: string;
+  appliesToCategories?: string[];
+  category?: string;
+  categoryId?: string;
+  categoryName?: string;
 
   updatedAt?: string;
 };
@@ -137,8 +188,13 @@ export type UpsellRule = {
   name?: string;
   slug?: string;
 
-  trigger: string;
-  offer: string;
+  triggerCategoryId: string;
+  triggerCategoryName: string;
+
+  offerProductIds: string[];
+
+  trigger?: string;
+  offer?: string;
   image?: string;
 
   appliesToCategories?: string[];

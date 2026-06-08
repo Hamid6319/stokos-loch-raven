@@ -42,6 +42,7 @@ export default function MenuModal({
   stores = [],
   type,
   item,
+  products = [],
   categories,
   modifierGroups,
   upsellRules = [],
@@ -51,6 +52,7 @@ export default function MenuModal({
   stores?: StoreItem[];
   type: TabType;
   item: ModalItem;
+  products?: Product[];
   categories: Category[];
   modifierGroups: ModifierGroup[];
   upsellRules?: UpsellRule[];
@@ -65,9 +67,12 @@ export default function MenuModal({
   const isEdit = Boolean(item);
   const label = getMenuModalLabel(type);
 
+  const isProduct = type === "products";
   const isCategory = type === "categories";
+  const isModifier = type === "modifiers";
   const isCategoryAdd = isCategory && !isEdit;
   const isCategoryEdit = isCategory && isEdit;
+  const showTopStoreBox = !isModifier && !isProduct;
 
   const storeOptions = useMemo(() => {
     return stores
@@ -143,6 +148,14 @@ export default function MenuModal({
     return dedupeCategoriesForSelect(filtered);
   }, [categories, activeFormStoreId, selectedStoreId, storeOptions]);
 
+const selectedStoreProducts = useMemo(() => {
+  if (!selectedStoreId) return [];
+
+  return products.filter((product) => {
+    return isItemInSelectedStore(product, selectedStoreId, storeOptions);
+  });
+}, [products, selectedStoreId, storeOptions]);
+
   const selectedStoreModifierGroups = useMemo(() => {
     if (!selectedStoreId) return [];
 
@@ -179,6 +192,11 @@ export default function MenuModal({
   };
 
   const handleFormSave = (value: SaveValue) => {
+    if (type === "modifiers") {
+      onSave(value);
+      return;
+    }
+
     if (isCategoryAdd) {
       if (!selectedStoreIds.length) {
         alert("Please select at least one store.");
@@ -216,6 +234,11 @@ export default function MenuModal({
       return;
     }
 
+    if (type === "products") {
+      onSave(value);
+      return;
+    }
+
     if (!selectedStoreId) {
       alert("Please select a store first.");
       return;
@@ -228,6 +251,11 @@ export default function MenuModal({
   };
 
   const handleSave = () => {
+    if (type === "modifiers") {
+      modifierRef.current?.submit();
+      return;
+    }
+
     if (isCategoryAdd) {
       if (!selectedStoreIds.length) {
         alert("Please select at least one store.");
@@ -248,142 +276,140 @@ export default function MenuModal({
       return;
     }
 
+    if (type === "products") {
+      productRef.current?.submit();
+      return;
+    }
+
     if (!selectedStoreId) {
       alert("Please select a store first.");
       return;
     }
 
-    if (type === "products" && selectedStoreCategories.length === 0) {
-      alert("No categories found for this store. Please add category first.");
-      return;
-    }
-
-    if (type === "products") productRef.current?.submit();
-    if (type === "modifiers") modifierRef.current?.submit();
     if (type === "upsells") upsellRef.current?.submit();
   };
 
   return (
     <BaseMenuModal
       title={`${isEdit ? "Edit" : "Add"} ${label}`}
-      subtitle={isEdit ? "Update details" : "Create new item"}
+      subtitle={
+        isModifier
+          ? "Create a global options-only group and link it to stores/categories"
+          : isEdit
+          ? "Update details"
+          : "Create new item"
+      }
       isEdit={isEdit}
       onClose={onClose}
       onSave={handleSave}
     >
-      <div className="mb-5 rounded-[22px] border border-zinc-200 bg-zinc-50 p-4">
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <label className="block text-xs font-black uppercase tracking-wide text-zinc-500">
-            {isCategoryAdd
-              ? "Apply Category To Stores *"
-              : isCategoryEdit
-              ? "Store"
-              : "Select Store *"}
-          </label>
+      {showTopStoreBox && (
+        <div className="mb-5 rounded-[22px] border border-zinc-200 bg-zinc-50 p-4">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <label className="block text-xs font-black uppercase tracking-wide text-zinc-500">
+              {isCategoryAdd
+                ? "Apply Category To Stores *"
+                : isCategoryEdit
+                ? "Store"
+                : "Select Store *"}
+            </label>
 
-          {isCategoryAdd && storeOptions.length > 0 && (
-            <button
-              type="button"
-              onClick={toggleAllStores}
-              className="rounded-full bg-white px-3 py-1.5 text-xs font-black text-green-800 ring-1 ring-zinc-200 transition hover:bg-green-50"
+            {isCategoryAdd && storeOptions.length > 0 && (
+              <button
+                type="button"
+                onClick={toggleAllStores}
+                className="rounded-full bg-white px-3 py-1.5 text-xs font-black text-green-800 ring-1 ring-zinc-200 transition hover:bg-green-50"
+              >
+                {selectedStoreIds.length === storeOptions.length
+                  ? "Unselect All"
+                  : "Select All"}
+              </button>
+            )}
+          </div>
+
+          {isCategoryAdd && (
+            <div className="grid gap-2 sm:grid-cols-3">
+              {storeOptions.map((store) => {
+                const checked = selectedStoreIds.includes(store.value);
+
+                return (
+                  <button
+                    key={store.value}
+                    type="button"
+                    onClick={() => toggleStore(store.value)}
+                    className={[
+                      "rounded-2xl border px-4 py-3 text-left text-sm font-black transition",
+                      checked
+                        ? "border-green-700 bg-green-50 text-green-900"
+                        : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50",
+                    ].join(" ")}
+                  >
+                    <span className="flex items-center gap-2">
+                      <span
+                        className={[
+                          "flex h-5 w-5 items-center justify-center rounded-md border text-xs",
+                          checked
+                            ? "border-green-700 bg-green-700 text-white"
+                            : "border-zinc-300 bg-white text-transparent",
+                        ].join(" ")}
+                      >
+                        ✓
+                      </span>
+
+                      {store.name}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {isCategoryEdit && (
+            <div>
+              <div className="inline-flex rounded-full bg-green-50 px-4 py-2 text-sm font-black text-green-800 ring-1 ring-green-100">
+                {lockedCategoryStoreName}
+              </div>
+
+              <p className="mt-2 text-xs font-semibold text-zinc-500">
+                Store cannot be changed while editing a category.
+              </p>
+            </div>
+          )}
+
+          {!isCategory && (
+            <select
+              value={selectedStoreId}
+              onChange={(event) => setSelectedStoreId(event.target.value)}
+              className="h-12 w-full rounded-2xl border border-zinc-200 bg-white px-4 text-sm font-bold text-zinc-900 outline-none transition focus:border-green-700"
             >
-              {selectedStoreIds.length === storeOptions.length
-                ? "Unselect All"
-                : "Select All"}
-            </button>
+              <option value="">Select Store</option>
+
+              {storeOptions.map((store) => (
+                <option key={store.value} value={store.value}>
+                  {store.name}
+                </option>
+              ))}
+            </select>
+          )}
+
+          {stores.length === 0 && (
+            <p className="mt-2 text-xs font-bold text-red-600">
+              No stores found. Please add store first.
+            </p>
           )}
         </div>
-
-        {isCategoryAdd && (
-          <div className="grid gap-2 sm:grid-cols-3">
-            {storeOptions.map((store) => {
-              const checked = selectedStoreIds.includes(store.value);
-
-              return (
-                <button
-                  key={store.value}
-                  type="button"
-                  onClick={() => toggleStore(store.value)}
-                  className={[
-                    "rounded-2xl border px-4 py-3 text-left text-sm font-black transition",
-                    checked
-                      ? "border-green-700 bg-green-50 text-green-900"
-                      : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50",
-                  ].join(" ")}
-                >
-                  <span className="flex items-center gap-2">
-                    <span
-                      className={[
-                        "flex h-5 w-5 items-center justify-center rounded-md border text-xs",
-                        checked
-                          ? "border-green-700 bg-green-700 text-white"
-                          : "border-zinc-300 bg-white text-transparent",
-                      ].join(" ")}
-                    >
-                      ✓
-                    </span>
-
-                    {store.name}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        )}
-
-        {isCategoryEdit && (
-          <div>
-            <div className="inline-flex rounded-full bg-green-50 px-4 py-2 text-sm font-black text-green-800 ring-1 ring-green-100">
-              {lockedCategoryStoreName}
-            </div>
-
-            <p className="mt-2 text-xs font-semibold text-zinc-500">
-              Store cannot be changed while editing a category.
-            </p>
-          </div>
-        )}
-
-        {!isCategory && (
-          <select
-            value={selectedStoreId}
-            onChange={(event) => setSelectedStoreId(event.target.value)}
-            className="h-12 w-full rounded-2xl border border-zinc-200 bg-white px-4 text-sm font-bold text-zinc-900 outline-none transition focus:border-green-700"
-          >
-            <option value="">Select Store</option>
-
-            {storeOptions.map((store) => (
-              <option key={store.value} value={store.value}>
-                {store.name}
-              </option>
-            ))}
-          </select>
-        )}
-
-        {stores.length === 0 && (
-          <p className="mt-2 text-xs font-bold text-red-600">
-            No stores found. Please add store first.
-          </p>
-        )}
-
-        {type === "products" &&
-          selectedStoreId &&
-          selectedStoreCategories.length === 0 && (
-            <p className="mt-2 text-xs font-bold text-red-600">
-              No categories found for this store. Please add category for this
-              store first.
-            </p>
-          )}
-      </div>
+      )}
 
       {type === "products" && (
         <ProductForm
-          key={`product-form-${selectedStoreId}-${getSafeId(item) || "new"}`}
+          key={`product-form-${getSafeId(item) || "new"}`}
           ref={productRef}
           item={item as Product | null}
-          categories={selectedStoreCategories}
-          modifierGroups={selectedStoreModifierGroups}
-          upsellRules={selectedStoreUpsellRules}
-          selectedStoreId={selectedStoreId}
+          categories={categories}
+          modifierGroups={modifierGroups}
+          upsellRules={upsellRules}
+          selectedStoreId={firstStoreId}
+          stores={storeOptions}
           onSave={handleFormSave}
         />
       )}
@@ -401,31 +427,39 @@ export default function MenuModal({
 
       {type === "modifiers" && (
         <ModifierGroupForm
-          key={`modifier-form-${selectedStoreId}-${getSafeId(item) || "new"}`}
+          key={`modifier-form-${getSafeId(item) || "new"}`}
           ref={modifierRef}
           item={item as ModifierGroup | null}
-          categories={selectedStoreCategories}
-          selectedStoreId={selectedStoreId}
+          categories={categories}
+          stores={storeOptions}
+          selectedStoreId={firstStoreId}
           onSave={handleFormSave}
         />
       )}
 
       {type === "upsells" && (
-        <UpsellForm
-          key={`upsell-form-${selectedStoreId}-${getSafeId(item) || "new"}`}
-          ref={upsellRef}
-          item={item as UpsellRule | null}
-          categories={selectedStoreCategories}
-          selectedStoreId={selectedStoreId}
-          onSave={handleFormSave}
-        />
+   <UpsellForm
+  key={`upsell-form-${selectedStoreId}-${getSafeId(item) || "new"}`}
+  ref={upsellRef}
+  item={item as UpsellRule | null}
+  categories={selectedStoreCategories}
+  products={selectedStoreProducts}
+  selectedStoreId={selectedStoreId}
+  onSave={handleFormSave}
+/>
       )}
     </BaseMenuModal>
   );
 }
 
 function getStoreValue(store: StoreItem) {
-  return String(store.slug || store._id || store.id || "").trim();
+  return String(store.slug || store._id || store.id || store.name || "").trim();
+}
+
+function getStoreAliases(store: StoreItem) {
+  return [store.slug, store._id, store.id, store.name, getStoreValue(store)]
+    .filter(Boolean)
+    .map((item) => String(item).trim());
 }
 
 function getSafeId(item: unknown) {
@@ -482,16 +516,40 @@ function normalizeStoreValue(value: unknown) {
 function isSameStore(store: StoreItem, value: string) {
   const cleanValue = String(value || "").trim();
 
-  return [
-    store.slug,
-    store._id,
-    store.id,
-    store.name,
-    getStoreValue(store),
-  ]
-    .filter(Boolean)
-    .map((item) => String(item).trim())
-    .includes(cleanValue);
+  return getStoreAliases(store).includes(cleanValue);
+}
+
+function areStoreValuesSame(
+  storeOptions: Array<StoreItem & { value: string }>,
+  first: string,
+  second: string
+) {
+  const cleanFirst = String(first || "").trim();
+  const cleanSecond = String(second || "").trim();
+
+  if (!cleanFirst || !cleanSecond) return false;
+  if (cleanFirst === cleanSecond) return true;
+
+  return storeOptions.some((store) => {
+    const aliases = getStoreAliases(store);
+    return aliases.includes(cleanFirst) && aliases.includes(cleanSecond);
+  });
+}
+
+function getAssignmentStoreId(assignment: unknown) {
+  if (!assignment || typeof assignment !== "object") return "";
+
+  const obj = assignment as {
+    storeId?: unknown;
+    storeSlug?: unknown;
+    store?: unknown;
+  };
+
+  return (
+    normalizeStoreValue(obj.storeId) ||
+    normalizeStoreValue(obj.storeSlug) ||
+    normalizeStoreValue(obj.store)
+  );
 }
 
 function isItemInSelectedStore(
@@ -499,19 +557,46 @@ function isItemInSelectedStore(
   selectedStoreId: string,
   storeOptions: Array<StoreItem & { value: string }>
 ) {
+  const cleanSelectedStoreId = String(selectedStoreId || "").trim();
+
+  if (!cleanSelectedStoreId || !item || typeof item !== "object") return false;
+
+  const obj = item as {
+    assignments?: Array<{
+      storeId?: unknown;
+      storeSlug?: unknown;
+      store?: unknown;
+      status?: "Active" | "Inactive";
+    }>;
+  };
+
+  /*
+    Important:
+    ModifierGroups are now global.
+    If assignments exist, assignments are the source of truth.
+    Old modifier.storeId can still be "towson", so do not check storeId first.
+  */
+  if (Array.isArray(obj.assignments) && obj.assignments.length > 0) {
+    return obj.assignments.some((assignment) => {
+      if (assignment.status === "Inactive") return false;
+
+      const assignmentStoreId = getAssignmentStoreId(assignment);
+
+      return areStoreValuesSame(
+        storeOptions,
+        assignmentStoreId,
+        cleanSelectedStoreId
+      );
+    });
+  }
+
   const itemStoreId = getItemStoreId(item);
 
-  if (!itemStoreId) return false;
+  if (itemStoreId) {
+    return areStoreValuesSame(storeOptions, itemStoreId, cleanSelectedStoreId);
+  }
 
-  if (itemStoreId === selectedStoreId) return true;
-
-  const selectedStore = storeOptions.find((store) => {
-    return isSameStore(store, selectedStoreId);
-  });
-
-  if (!selectedStore) return false;
-
-  return isSameStore(selectedStore, itemStoreId);
+  return false;
 }
 
 function dedupeCategoriesForSelect(categories: Category[]) {

@@ -11,23 +11,20 @@ function slugify(value: string) {
 
 const CategorySchema = new Schema(
   {
-    storeId: {
-      type: String,
-      required: true,
-      default: "towson",
-      index: true,
-    },
-
+    // Category Master = common/global category data only.
+    // Store-wise availability/status/sortOrder now live in CategoryStoreConfig.
     name: {
       type: String,
       required: true,
       trim: true,
+      index: true,
     },
 
     slug: {
       type: String,
       trim: true,
       lowercase: true,
+      index: true,
     },
 
     description: {
@@ -40,11 +37,9 @@ const CategorySchema = new Schema(
       default: "",
     },
 
-    sortOrder: {
-      type: Number,
-      default: 0,
-    },
-
+    // Legacy optional fields so old category routes/data do not crash during migration.
+    storeId: { type: String, default: "", trim: true },
+    sortOrder: { type: Number, default: 0 },
     status: {
       type: String,
       enum: ["Active", "Hidden", "Inactive"],
@@ -54,8 +49,17 @@ const CategorySchema = new Schema(
   {
     timestamps: true,
     collection: "categories",
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
   }
 );
+
+CategorySchema.virtual("storeConfigs", {
+  ref: "CategoryStoreConfig",
+  localField: "_id",
+  foreignField: "categoryId",
+  justOne: false,
+});
 
 CategorySchema.pre("validate", function () {
   const doc = this as any;
@@ -65,7 +69,12 @@ CategorySchema.pre("validate", function () {
   }
 });
 
-CategorySchema.index({ storeId: 1, slug: 1 }, { unique: true });
+CategorySchema.index({ slug: 1 });
+CategorySchema.index({ name: 1 });
+
+if (process.env.NODE_ENV === "development" && mongoose.models.Category) {
+  delete mongoose.models.Category;
+}
 
 const Category =
   mongoose.models.Category || mongoose.model("Category", CategorySchema);

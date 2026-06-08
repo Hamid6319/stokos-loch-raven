@@ -1,7 +1,17 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { Category, ModifierGroup, Product, UpsellRule } from "./types";
+import type {
+  Category,
+  ModifierGroup,
+  ModifierGroupAssignment,
+  ModifierOption,
+  Product,
+  ProductModifierGroup,
+  ProductModifierOption,
+  ProductSize,
+  UpsellRule,
+} from "./types";
 
 type MenuEntity = "products" | "categories" | "modifier-groups" | "upsells";
 
@@ -15,7 +25,12 @@ const API_ROUTES: Record<MenuEntity, string> = {
 const RESPONSE_KEYS: Record<MenuEntity, string[]> = {
   products: ["product", "products"],
   categories: ["category", "categories"],
-  "modifier-groups": ["modifierGroup", "modifierGroups", "modifier", "modifiers"],
+  "modifier-groups": [
+    "modifierGroup",
+    "modifierGroups",
+    "modifier",
+    "modifiers",
+  ],
   upsells: ["upsellRule", "upsellRules", "upsell", "upsells"],
 };
 
@@ -30,6 +45,10 @@ type MongoItem = {
 type CategoryWithMultiStore = Category & {
   storeId?: string;
   storeIds?: string[];
+};
+
+type ModifierGroupPayload = ModifierGroup & {
+  assignments?: ModifierGroupAssignment[];
 };
 
 function getMongoId(item: unknown): string {
@@ -98,7 +117,9 @@ function getItemFromResponse<T>(json: any, type: MenuEntity, fallback: T): T {
     if (typeof source === "object") {
       for (const key of keys) {
         if (source[key]) {
-          const item = Array.isArray(source[key]) ? source[key][0] : source[key];
+          const item = Array.isArray(source[key])
+            ? source[key][0]
+            : source[key];
 
           return {
             ...(fallback as object),
@@ -159,6 +180,7 @@ async function apiCreate<T>(type: MenuEntity, payload: T): Promise<T> {
   const json = await res.json().catch(() => null);
 
   if (!res.ok || json?.success === false) {
+    console.error(`CREATE ${type} ERROR:`, json);
     throw new Error(json?.message || `Failed to create ${type}`);
   }
 
@@ -190,6 +212,7 @@ async function apiUpdate<T extends object>(
   const json = await res.json().catch(() => null);
 
   if (!res.ok || json?.success === false) {
+    console.error(`UPDATE ${type} ERROR:`, json);
     throw new Error(json?.message || `Failed to update ${type}`);
   }
 
@@ -208,6 +231,7 @@ async function apiDelete(type: MenuEntity, id: string): Promise<void> {
   const json = await res.json().catch(() => null);
 
   if (!res.ok || json?.success === false) {
+    console.error(`DELETE ${type} ERROR:`, json);
     throw new Error(json?.message || `Failed to delete ${type}`);
   }
 }
@@ -227,43 +251,6 @@ function addTempId<T extends object>(item: T, tempId: string): T {
     ...item,
     id: tempId,
   } as T;
-}
-
-function normalizeProduct(product: Product): Product {
-  const productObj = product as Product & {
-    categoryName?: unknown;
-    categoryId?: unknown;
-  };
-
-  const category = String(productObj.category || productObj.categoryId || "").trim();
-  const categoryId = String(productObj.categoryId || productObj.category || "").trim();
-  const categoryName = String(productObj.categoryName || "").trim();
-
-  return {
-    ...product,
-    storeId: String(product.storeId || "").trim(),
-
-    category,
-    categoryId,
-    categoryName,
-
-    price: Number(product.price || 0),
-    image: product.image || "",
-    modifierGroups: safeArray((product as any).modifierGroups),
-    relatedUpsells: safeArray((product as any).relatedUpsells),
-    status: product.status || "Active",
-    updatedAt: product.updatedAt || "Today",
-  } as Product;
-}
-
-function normalizeCategory(
-  category: CategoryWithMultiStore
-): CategoryWithMultiStore {
-  return {
-    ...category,
-    storeId: String(category.storeId || "").trim(),
-    sortOrder: Number(category.sortOrder || 1),
-  };
 }
 
 function normalizeStoreValue(value: unknown) {
@@ -321,18 +308,504 @@ function getNextCategorySortOrder(
   return maxSortOrder + 1;
 }
 
+function getNextModifierSortOrder(existingModifierGroups: ModifierGroup[]) {
+  const maxSortOrder = existingModifierGroups.reduce((max, modifier) => {
+    return Math.max(max, Number(modifier.sortOrder || 0));
+  }, 0);
+
+  return maxSortOrder + 1;
+}
+
+function slugifyValue(value: string) {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "");
+}
+
+function normalizePriceNumber(value: unknown) {
+  const number = Number(value || 0);
+  return Number.isFinite(number) ? number : 0;
+}
+
+function normalizeProductSizes(value: unknown, fallbackPrice: unknown): ProductSize[] {
+  const rawSizes = safeArray<unknown>(value);
+
+  const sizes = rawSizes
+    .map((size: any, index) => {
+      const name = String(size?.name || "").trim();
+
+      if (!name) return null;
+
+      return {
+        id: String(size?.id || slugifyValue(name) || `size-${index + 1}`),
+        name,
+        price: normalizePriceNumber(size?.price),
+        sortOrder: Number(size?.sortOrder ?? index),
+      };
+    })
+    .filter(Boolean) as ProductSize[];
+
+  if (sizes.length > 0) return sizes;
+
+  return [
+    {
+      id: "regular",
+      name: "Regular",
+      price: normalizePriceNumber(fallbackPrice),
+      sortOrder: 0,
+    },
+  ];
+}
+
+function normalizePricesBySize(value: unknown, sizes: ProductSize[]) {
+  const prices: Record<string, number> = {};
+
+  if (value && typeof value === "object") {
+    Object.entries(value as Record<string, unknown>).forEach(([key, price]) => {
+      const cleanKey = String(key || "").trim();
+
+      if (!cleanKey) return;
+
+      prices[cleanKey] = normalizePriceNumber(price);
+    });
+  }
+
+  sizes.forEach((size) => {
+    const sizeName = String(size.name || "").trim();
+
+    if (!sizeName) return;
+
+    if (!(sizeName in prices)) {
+      prices[sizeName] = 0;
+    }
+  });
+
+  Object.keys(prices).forEach((key) => {
+    const exists = sizes.some((size) => String(size.name || "").trim() === key);
+
+    if (!exists) {
+      delete prices[key];
+    }
+  });
+
+  return prices;
+}
+
+function normalizeProductModifierOption(
+  option: unknown,
+  sizes: ProductSize[],
+  index: number
+): ProductModifierOption | null {
+  if (typeof option === "string" || typeof option === "number") {
+    const name = String(option || "").trim();
+
+    if (!name) return null;
+
+    const id = slugifyValue(name) || `option-${index + 1}`;
+
+    return {
+      id,
+      optionId: id,
+      name,
+      status: "Active",
+      pricesBySize: normalizePricesBySize({}, sizes),
+    };
+  }
+
+  if (!option || typeof option !== "object") return null;
+
+  const obj = option as {
+    id?: unknown;
+    _id?: unknown;
+    optionId?: unknown;
+    name?: unknown;
+    label?: unknown;
+    title?: unknown;
+    value?: unknown;
+    status?: unknown;
+    pricesBySize?: unknown;
+  };
+
+  const name = String(
+    obj.name || obj.label || obj.title || obj.value || ""
+  ).trim();
+
+  if (!name) return null;
+
+  const optionId = String(
+    obj.optionId || obj.id || obj._id || slugifyValue(name) || ""
+  ).trim();
+
+  return {
+    id: String(obj.id || optionId || `option-${index + 1}`),
+    optionId,
+    name,
+    status: obj.status === "Inactive" ? "Inactive" : "Active",
+    pricesBySize: normalizePricesBySize(obj.pricesBySize, sizes),
+  };
+}
+
+function normalizeProductModifierGroup(
+  group: unknown,
+  sizes: ProductSize[],
+  index: number
+): ProductModifierGroup | null {
+  if (typeof group === "string" || typeof group === "number") {
+    const name = String(group || "").trim();
+
+    if (!name) return null;
+
+    return {
+      modifierGroupId: "",
+      name,
+      required: false,
+      minSelect: 0,
+      maxSelect: 0,
+      sortOrder: index,
+      status: "Active",
+      options: [],
+    };
+  }
+
+  if (!group || typeof group !== "object") return null;
+
+  const obj = group as ProductModifierGroup & {
+    _id?: string;
+    id?: string;
+    groupId?: string;
+    slug?: string;
+    title?: string;
+    label?: string;
+  };
+
+  const name = String(obj.name || obj.title || obj.label || "").trim();
+  const modifierGroupId = String(
+    obj.modifierGroupId || obj.groupId || obj._id || obj.id || obj.slug || ""
+  ).trim();
+
+  if (!name && !modifierGroupId) return null;
+
+  return {
+    modifierGroupId,
+    name: name || modifierGroupId,
+    required: Boolean(obj.required),
+    minSelect: Number(obj.minSelect || 0),
+    maxSelect: Number(obj.maxSelect || 0),
+    sortOrder: Number(obj.sortOrder ?? index),
+    status: obj.status === "Inactive" ? "Inactive" : "Active",
+    options: safeArray<unknown>(obj.options)
+      .map((option, optionIndex) =>
+        normalizeProductModifierOption(option, sizes, optionIndex)
+      )
+      .filter(Boolean) as ProductModifierOption[],
+  };
+}
+
+function normalizeProductModifierGroups(
+  value: unknown,
+  sizes: ProductSize[]
+): ProductModifierGroup[] {
+  return safeArray<unknown>(value)
+    .map((group, index) => normalizeProductModifierGroup(group, sizes, index))
+    .filter(Boolean) as ProductModifierGroup[];
+}
+
+function normalizeStoreConfig(config: unknown, fallbackProduct?: Product) {
+  if (!config || typeof config !== "object") return null;
+
+  const obj = config as any;
+  const sizes = normalizeProductSizes(obj.sizes, obj.price ?? fallbackProduct?.price);
+  const modifierGroups = normalizeProductModifierGroups(obj.modifierGroups, sizes);
+
+  return {
+    ...obj,
+    _id: obj._id ? String(obj._id) : obj._id,
+    id: String(obj._id || obj.id || ""),
+    productId: String(obj.productId || obj.product || ""),
+    storeId: String(obj.storeId || obj.storeSlug || obj.store || "").trim(),
+    category: String(obj.category || obj.categoryId || "").trim(),
+    categoryId: String(obj.categoryId || obj.category || "").trim(),
+    categoryName: String(obj.categoryName || "").trim(),
+    price: Number(sizes[0]?.price || obj.price || 0),
+    sizes,
+    modifierGroups,
+    modifierGroupIds: Array.from(
+      new Set([
+        ...safeArray<string>(obj.modifierGroupIds),
+        ...modifierGroups
+          .map((group) => String(group.modifierGroupId || "").trim())
+          .filter(Boolean),
+      ])
+    ),
+    relatedUpsells: safeArray<string>(obj.relatedUpsells),
+    upsell: String(obj.upsell || ""),
+    status: obj.status || "Active",
+    sortOrder: Number(obj.sortOrder || 0),
+  };
+}
+
+function getPrimaryStoreConfig(product: Product) {
+  const configs = safeArray<unknown>((product as any).storeConfigs)
+    .map((config) => normalizeStoreConfig(config, product))
+    .filter(Boolean) as any[];
+
+  return configs[0] || null;
+}
+
+function normalizeProduct(product: Product): Product {
+  const productObj = product as Product & {
+    categoryName?: unknown;
+    categoryId?: unknown;
+    sizes?: unknown;
+    storeConfigs?: unknown;
+  };
+
+  const storeConfigs = safeArray<unknown>(productObj.storeConfigs)
+    .map((config) => normalizeStoreConfig(config, product))
+    .filter(Boolean) as any[];
+
+  const primaryConfig = storeConfigs[0] || getPrimaryStoreConfig(product);
+
+  const productSizes = primaryConfig
+    ? normalizeProductSizes(primaryConfig.sizes, primaryConfig.price)
+    : normalizeProductSizes(productObj.sizes, product.price);
+
+  const modifierGroups = primaryConfig
+    ? normalizeProductModifierGroups(primaryConfig.modifierGroups, productSizes)
+    : normalizeProductModifierGroups((product as any).modifierGroups, productSizes);
+
+  const sourceForStoreFields = (primaryConfig || product) as any;
+
+  const modifierGroupIds = Array.from(
+    new Set([
+      ...safeArray<string>(sourceForStoreFields.modifierGroupIds),
+      ...modifierGroups
+        .map((group) => String(group.modifierGroupId || "").trim())
+        .filter(Boolean),
+    ])
+  );
+
+  return {
+    ...product,
+    storeConfigs,
+    storeId: String(primaryConfig?.storeId || product.storeId || "").trim(),
+    category: String(primaryConfig?.category || primaryConfig?.categoryId || productObj.category || productObj.categoryId || "").trim(),
+    categoryId: String(primaryConfig?.categoryId || productObj.categoryId || productObj.category || "").trim(),
+    categoryName: String(primaryConfig?.categoryName || productObj.categoryName || "").trim(),
+    price: Number(productSizes[0]?.price || primaryConfig?.price || product.price || 0),
+    sizes: productSizes,
+    image: product.image || "",
+    modifierGroups,
+    modifierGroupIds,
+    relatedUpsells: safeArray<string>(sourceForStoreFields.relatedUpsells),
+    upsell: String(sourceForStoreFields.upsell || ""),
+    status: primaryConfig?.status || product.status || "Active",
+    sortOrder: Number(primaryConfig?.sortOrder || product.sortOrder || 0),
+    updatedAt: product.updatedAt || "Today",
+  } as Product;
+}
+
+function buildProductApiPayload(product: Product): Product {
+  const normalized = normalizeProduct(product) as Product & {
+    storeConfigs?: unknown;
+    replaceStoreConfigs?: unknown;
+  };
+
+  const raw = product as Product & {
+    storeConfigs?: unknown;
+    replaceStoreConfigs?: unknown;
+  };
+
+  const rawStoreConfigs = safeArray<unknown>(raw.storeConfigs);
+  const normalizedStoreConfigs = safeArray<unknown>(normalized.storeConfigs);
+
+  return {
+    ...normalized,
+    ...raw,
+    storeConfigs: rawStoreConfigs.length ? rawStoreConfigs : normalizedStoreConfigs,
+    replaceStoreConfigs: raw.replaceStoreConfigs !== false,
+  } as Product;
+}
+
+function normalizeCategory(
+  category: CategoryWithMultiStore
+): CategoryWithMultiStore {
+  return {
+    ...category,
+    storeId: String(category.storeId || "").trim(),
+    sortOrder: Number(category.sortOrder || 1),
+  };
+}
+
+function normalizeModifierOption(
+  option: unknown,
+  index: number
+): ModifierOption | null {
+  if (typeof option === "string" || typeof option === "number") {
+    const name = String(option || "").trim();
+
+    if (!name) return null;
+
+    return {
+      id:
+        name
+          .toLowerCase()
+          .trim()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)+/g, "") || `option-${index + 1}`,
+      name,
+      status: "Active",
+    };
+  }
+
+  if (!option || typeof option !== "object") return null;
+
+  const obj = option as {
+    id?: unknown;
+    name?: unknown;
+    label?: unknown;
+    title?: unknown;
+    value?: unknown;
+    status?: unknown;
+  };
+
+  const name = String(
+    obj.name || obj.label || obj.title || obj.value || ""
+  ).trim();
+
+  if (!name) return null;
+
+  return {
+    id: String(
+      obj.id ||
+        name
+          .toLowerCase()
+          .trim()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)+/g, "") ||
+        `option-${index + 1}`
+    ),
+    name,
+    status: obj.status === "Inactive" ? "Inactive" : "Active",
+  };
+}
+
+function normalizeModifierAssignment(
+  assignment: unknown,
+  index: number
+): ModifierGroupAssignment | null {
+  if (!assignment || typeof assignment !== "object") return null;
+
+  const obj = assignment as ModifierGroupAssignment & {
+    _id?: string;
+    id?: string;
+    storeSlug?: string;
+    category?: string;
+    appliesTo?: string;
+  };
+
+  const storeId = String(obj.storeId || obj.storeSlug || "").trim();
+
+  const categoryId = String(obj.categoryId || obj.category || "").trim();
+
+  const categoryName = String(obj.categoryName || obj.appliesTo || "").trim();
+
+  if (!storeId || !categoryId || !categoryName) return null;
+
+  return {
+    ...obj,
+    id: String(obj._id || obj.id || ""),
+    storeId,
+    categoryId,
+    categoryName,
+    sortOrder: Number(obj.sortOrder ?? index),
+    status: obj.status === "Inactive" ? "Inactive" : "Active",
+  };
+}
+
 function normalizeModifier(modifier: ModifierGroup): ModifierGroup {
+  const options = safeArray<unknown>((modifier as any).options)
+    .map((option, index) => normalizeModifierOption(option, index))
+    .filter(Boolean) as ModifierOption[];
+
+  const directAssignments = safeArray<unknown>((modifier as any).assignments)
+    .map((assignment, index) => normalizeModifierAssignment(assignment, index))
+    .filter(Boolean) as ModifierGroupAssignment[];
+
+  const legacyStoreId = String((modifier as any).storeId || "").trim();
+
+  const legacyCategoryId = String(
+    (modifier as any).categoryId ||
+      (modifier as any).category ||
+      safeArray<string>((modifier as any).appliesToCategories)[0] ||
+      ""
+  ).trim();
+
+  const legacyCategoryName = String(
+    (modifier as any).categoryName || (modifier as any).appliesTo || ""
+  ).trim();
+
+  const legacyAssignment =
+    !directAssignments.length && legacyStoreId && legacyCategoryId && legacyCategoryName
+      ? [
+          {
+            storeId: legacyStoreId,
+            categoryId: legacyCategoryId,
+            categoryName: legacyCategoryName,
+            status: modifier.status || "Active",
+            sortOrder: 0,
+          } as ModifierGroupAssignment,
+        ]
+      : [];
+
   return {
     ...modifier,
-    options: Array.isArray(modifier.options) ? modifier.options : [],
+    name: String(modifier.name || "").trim(),
+    options,
+    assignments: directAssignments.length ? directAssignments : legacyAssignment,
+    required: Boolean(modifier.required),
+    minSelect: Number(modifier.minSelect || 0),
+    maxSelect: Number(modifier.maxSelect || 0),
+    sortOrder: Number(modifier.sortOrder || 0),
+    status: modifier.status || "Active",
   };
 }
 
 function normalizeUpsell(upsell: UpsellRule): UpsellRule {
+  const triggerCategoryId = String(
+    (upsell as any).triggerCategoryId || ""
+  ).trim();
+
+  const triggerCategoryName = String(
+    (upsell as any).triggerCategoryName ||
+      safeArray<string>((upsell as any).appliesToCategories)[0] ||
+      ""
+  ).trim();
+
+  const offerProductIds = safeArray<unknown>(
+    (upsell as any).offerProductIds
+  )
+    .map((item) => String(item || "").trim())
+    .filter(Boolean);
+
   return {
     ...upsell,
-    image: upsell.image || "",
-    appliesToCategories: safeArray((upsell as any).appliesToCategories),
+    triggerCategoryId,
+    triggerCategoryName,
+    offerProductIds,
+    trigger:
+      upsell.trigger ||
+      (triggerCategoryName ? `Any ${triggerCategoryName}` : "Any Category Product"),
+    offer:
+      upsell.offer ||
+      `${offerProductIds.length} offer product${
+        offerProductIds.length === 1 ? "" : "s"
+      }`,
+    appliesToCategories: triggerCategoryName ? [triggerCategoryName] : [],
+    status: upsell.status || "Active",
   } as UpsellRule;
 }
 
@@ -345,19 +818,57 @@ function getEntityKey(item: unknown) {
     offer?: unknown;
     category?: unknown;
     categoryId?: unknown;
+    appliesTo?: unknown;
+    appliesToCategories?: unknown;
     price?: unknown;
     slug?: unknown;
+    storeConfigs?: unknown;
   };
 
-  const storeId = normalizeStoreValue(obj.storeId);
-  const name = String(obj.name || obj.offer || "").trim().toLowerCase();
+  const storeConfigs = safeArray<any>(obj.storeConfigs);
+  const storeIds = storeConfigs
+    .map((config) => normalizeStoreValue(config?.storeId))
+    .filter(Boolean)
+    .join(",");
+
+  const storeId = storeIds || normalizeStoreValue(obj.storeId);
+
+  const name = String(obj.name || obj.offer || "")
+    .trim()
+    .toLowerCase();
+
   const category = String(obj.categoryId || obj.category || "")
     .trim()
     .toLowerCase();
-  const price = String(obj.price || "").trim();
-  const slug = String(obj.slug || "").trim().toLowerCase();
 
-  return [storeId, name, category, price, slug].filter(Boolean).join("|");
+  const appliesTo = String(obj.appliesTo || "")
+    .trim()
+    .toLowerCase();
+
+  const appliesToCategories = Array.isArray(obj.appliesToCategories)
+    ? obj.appliesToCategories
+        .map((item) => String(item || "").trim().toLowerCase())
+        .filter(Boolean)
+        .join(",")
+    : "";
+
+  const price = String(obj.price || "").trim();
+
+  const slug = String(obj.slug || "")
+    .trim()
+    .toLowerCase();
+
+  return [
+    storeId,
+    name,
+    category,
+    appliesTo,
+    appliesToCategories,
+    price,
+    slug,
+  ]
+    .filter(Boolean)
+    .join("|");
 }
 
 function replaceTempOrMerge<T extends object>(
@@ -405,10 +916,7 @@ function updateLocalItem<T extends object>(items: T[], savedItem: T) {
     const itemId = getMongoId(item);
     const itemKey = getEntityKey(item);
 
-    if (
-      (savedId && itemId === savedId) ||
-      (savedKey && itemKey === savedKey)
-    ) {
+    if ((savedId && itemId === savedId) || (savedKey && itemKey === savedKey)) {
       return {
         ...(item as object),
         ...(savedItem as object),
@@ -442,7 +950,9 @@ export function useMenuCrud() {
       ]);
 
     setProducts(productsData.map(normalizeProduct));
-    setCategories(sortBySortOrder(categoriesData.map(normalizeCategory) as Category[]));
+    setCategories(
+      sortBySortOrder(categoriesData.map(normalizeCategory) as Category[])
+    );
     setModifierGroups(modifiersData.map(normalizeModifier));
     setUpsellRules(upsellsData.map(normalizeUpsell));
 
@@ -456,8 +966,8 @@ export function useMenuCrud() {
 
   const addProduct = async (product: Product) => {
     const tempId = `temp-product-${Date.now()}`;
-    const payload = normalizeProduct(product);
-    const optimisticProduct = addTempId(payload, tempId);
+    const payload = buildProductApiPayload(product);
+    const optimisticProduct = addTempId(normalizeProduct(payload), tempId);
 
     setProducts((prev) => [optimisticProduct, ...prev]);
 
@@ -476,7 +986,7 @@ export function useMenuCrud() {
   };
 
   const updateProduct = async (product: Product) => {
-    const payload = normalizeProduct(product);
+    const payload = buildProductApiPayload(product);
     const productId = getMongoId(payload);
     const oldProducts = products;
 
@@ -524,7 +1034,7 @@ export function useMenuCrud() {
           ? storeIds
           : ([category.storeId].filter(Boolean) as string[])
       )
-    );
+    ) as string[];
 
     if (!targetStoreIds.length) {
       throw new Error("Please select at least one store.");
@@ -629,9 +1139,15 @@ export function useMenuCrud() {
     }
   };
 
-  const addModifier = async (modifier: ModifierGroup) => {
+  const addModifier = async (modifier: ModifierGroupPayload) => {
+    const nextSortOrder = getNextModifierSortOrder(modifierGroups);
+
+    const payload = normalizeModifier({
+      ...modifier,
+      sortOrder: Number(modifier.sortOrder || nextSortOrder),
+    } as ModifierGroup);
+
     const tempId = `temp-modifier-${Date.now()}`;
-    const payload = normalizeModifier(modifier);
     const optimisticModifier = addTempId(payload, tempId);
 
     setModifierGroups((prev) => [optimisticModifier, ...prev]);
@@ -650,6 +1166,7 @@ export function useMenuCrud() {
       setModifierGroups((prev) =>
         prev.filter((item) => getMongoId(item) !== tempId)
       );
+
       throw error;
     }
   };

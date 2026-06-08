@@ -223,21 +223,22 @@ export default function MenuManagementClient() {
   const filteredProducts = useMemo(() => {
     return visibleProducts.filter((product) => {
       const name = product.name || "";
-
-     const categoryName = getProductCategoryLabel(categories, product);
       const searchValue = search.toLowerCase();
+      const categoryLabels = getProductCategoryLabels(product, selectedStoreFilter, categories);
+      const categorySearchValue = categoryLabels.join(" ").toLowerCase();
 
       const matchesSearch =
         name.toLowerCase().includes(searchValue) ||
-        categoryName.toLowerCase().includes(searchValue);
+        categorySearchValue.includes(searchValue);
 
       const matchesCategory =
         selectedCategory === "All Categories" ||
-        categoryName === selectedCategory;
+        categoryLabels.includes(selectedCategory);
 
       return matchesSearch && matchesCategory;
     });
-  }, [visibleProducts, categories, search, selectedCategory]);
+  }, [visibleProducts, categories, search, selectedCategory, selectedStoreFilter]);
+
 
   const categoryFilterOptions = useMemo(() => {
     return dedupeCategoriesForFilter(visibleCategories);
@@ -380,9 +381,13 @@ export default function MenuManagementClient() {
 
     try {
       if (modal.type === "products") {
+        const productPayload = isEdit
+          ? ({ ...(modal.item as object), ...(value as object) } as Product)
+          : (value as Product);
+
         isEdit
-          ? await updateProduct(mergedValue as Product)
-          : await addProduct(valueWithStore as Product);
+          ? await updateProduct(productPayload)
+          : await addProduct(productPayload);
       }
 
       if (modal.type === "categories") {
@@ -597,6 +602,7 @@ export default function MenuManagementClient() {
             products={filteredProducts}
             categories={categories}
             stores={stores}
+            selectedStoreId={selectedStoreFilter}
             onEdit={(product) => setModal({ type: "products", item: product })}
             onDelete={(id) => handleDelete("products", id)}
           />
@@ -627,27 +633,29 @@ export default function MenuManagementClient() {
         )}
 
         {activeTab === "upsells" && (
-          <UpsellTable
-            upsellRules={visibleUpsellRules}
-            stores={stores}
-            onEdit={(upsell) => setModal({ type: "upsells", item: upsell })}
-            onDelete={(id) => handleDelete("upsells", id)}
-          />
+    <UpsellTable
+  upsellRules={visibleUpsellRules}
+  stores={stores}
+  products={products}
+  onEdit={(upsell) => setModal({ type: "upsells", item: upsell })}
+  onDelete={(id) => handleDelete("upsells", id)}
+/>
         )}
       </section>
 
       {modal && (
-        <MenuModal
-          key={`${modal.type}-${getSafeId(modal.item) || "new"}`}
-          stores={stores}
-          type={modal.type}
-          item={modal.item}
-          categories={categories}
-          modifierGroups={modifierGroups}
-          upsellRules={upsellRules}
-          onClose={() => setModal(null)}
-          onSave={handleSave}
-        />
+   <MenuModal
+  key={`${modal.type}-${getSafeId(modal.item) || "new"}`}
+  stores={stores}
+  type={modal.type}
+  item={modal.item}
+  products={products}
+  categories={categories}
+  modifierGroups={modifierGroups}
+  upsellRules={upsellRules}
+  onClose={() => setModal(null)}
+  onSave={handleSave}
+/>
       )}
     </div>
   );
@@ -685,9 +693,19 @@ function getItemStoreId(item: unknown) {
     storeId?: unknown;
     storeSlug?: unknown;
     store?: unknown;
+    storeConfigs?: unknown;
   };
 
+  const storeConfigs = Array.isArray(obj.storeConfigs)
+    ? (obj.storeConfigs as Array<{ storeId?: unknown }>)
+    : [];
+
+  const firstConfigStoreId = storeConfigs
+    .map((config) => normalizeStoreValue(config.storeId))
+    .find(Boolean);
+
   return (
+    firstConfigStoreId ||
     normalizeStoreValue(obj.storeId) ||
     normalizeStoreValue(obj.storeSlug) ||
     normalizeStoreValue(obj.store)
@@ -715,12 +733,33 @@ function normalizeStoreValue(value: unknown) {
   return "";
 }
 
+function getStoreConfigs(item: unknown) {
+  if (!item || typeof item !== "object") return [];
+
+  const obj = item as { storeConfigs?: unknown };
+
+  return Array.isArray(obj.storeConfigs)
+    ? (obj.storeConfigs as Array<{ storeId?: unknown; status?: string; available?: boolean }>)
+    : [];
+}
+
 function filterItemsByStore<T>(items: T[], selectedStoreFilter: string) {
   if (selectedStoreFilter === "all") return items;
 
   return items.filter((item) => {
+    const storeConfigs = getStoreConfigs(item);
+
+    if (storeConfigs.length > 0) {
+      return storeConfigs.some((config) => {
+        const storeId = normalizeStoreValue(config.storeId);
+        const available = config.available !== false;
+        const active = config.status !== "Inactive";
+        return storeId === selectedStoreFilter && available && active;
+      });
+    }
+
     const itemStoreId = getItemStoreId(item);
-    return itemStoreId === selectedStoreFilter;
+    return itemStoreId === selectedStoreFilter || !itemStoreId;
   });
 }
 
@@ -749,8 +788,81 @@ function getTextValue(value: unknown, fallback = "Not selected") {
   return fallback;
 }
 
+function getProductConfigForStore(product: Product, selectedStoreId: string) {
+  const configs = getStoreConfigs(product) as Array<{
+    storeId?: unknown;
+    categoryName?: unknown;
+    categoryId?: unknown;
+    category?: unknown;
+  }>;
+
+  if (!configs.length) return null;
+
+  if (selectedStoreId && selectedStoreId !== "all") {
+    const found = configs.find(
+      (config) => normalizeStoreValue(config.storeId) === selectedStoreId
+    );
+
+    if (found) return found;
+  }
+
+  return configs[0];
+}
+
+function getProductCategoryLabels(
+  product: Product,
+  selectedStoreId: string,
+  categories: Category[]
+) {
+  const configs = getStoreConfigs(product) as Array<{
+    storeId?: unknown;
+    categoryName?: unknown;
+    categoryId?: unknown;
+    category?: unknown;
+  }>;
+
+  if (configs.length) {
+    const relevantConfigs =
+      selectedStoreId && selectedStoreId !== "all"
+        ? configs.filter(
+            (config) => normalizeStoreValue(config.storeId) === selectedStoreId
+          )
+        : configs;
+
+    const labels = relevantConfigs
+      .map((config) => {
+        const directName = String(config.categoryName || "").trim();
+        if (directName) return directName;
+
+        const categoryValue = String(config.categoryId || config.category || "").trim();
+        const foundCategory = categories.find((category) => {
+          const categoryValues = [
+            (category as any)._id,
+            (category as any).id,
+            (category as any).slug,
+            category.name,
+          ]
+            .map((value) => getTextValue(value, "").trim().toLowerCase())
+            .filter(Boolean);
+
+          return categoryValues.includes(categoryValue.toLowerCase());
+        });
+
+        return foundCategory?.name || categoryValue;
+      })
+      .filter(Boolean);
+
+    return Array.from(new Set(labels));
+  }
+
+  return [getProductCategoryLabel(categories, product)].filter(Boolean);
+}
+
 function getProductCategoryLabel(categories: Category[], product: Product) {
-  const productObj = product as Product & {
+  const config = getProductConfigForStore(product, "all");
+  const source = (config || product) as Product;
+
+  const productObj = source as Product & {
     category?: unknown;
     categoryId?: unknown;
     categoryName?: unknown;
@@ -763,7 +875,7 @@ function getProductCategoryLabel(categories: Category[], product: Product) {
     return directCategoryName;
   }
 
-  const productStoreId = getItemStoreId(product);
+  const productStoreId = normalizeStoreValue((config as any)?.storeId) || getItemStoreId(product);
 
   const productCategoryValues = [
     productObj.categoryId,

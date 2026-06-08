@@ -16,6 +16,7 @@ const UpsellRuleSchema = new Schema(
       required: true,
       default: "towson",
       index: true,
+      trim: true,
     },
 
     name: {
@@ -30,6 +31,35 @@ const UpsellRuleSchema = new Schema(
       lowercase: true,
     },
 
+    // Category that triggers this upsell rule.
+    triggerCategoryId: {
+      type: String,
+      required: true,
+      trim: true,
+      index: true,
+    },
+
+    triggerCategoryName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    // Multiple offered products.
+    // Pricing/image/name will come from Product model.
+    offerProductIds: {
+      type: [String],
+      required: true,
+      validate: {
+        validator(value: string[]) {
+          return Array.isArray(value) && value.length > 0;
+        },
+        message: "At least one offer product is required.",
+      },
+      default: [],
+    },
+
+    // Legacy/readable support.
     trigger: {
       type: String,
       default: "",
@@ -37,13 +67,8 @@ const UpsellRuleSchema = new Schema(
 
     offer: {
       type: String,
-      required: true,
-      trim: true,
-    },
-
-    image: {
-      type: String,
       default: "",
+      trim: true,
     },
 
     appliesToCategories: {
@@ -71,31 +96,39 @@ const UpsellRuleSchema = new Schema(
 UpsellRuleSchema.pre("validate", function () {
   const doc = this as any;
 
-  if (!doc.offer && doc.name) {
-    doc.offer = doc.name;
+  const categoryName = String(doc.triggerCategoryName || "").trim();
+  const categoryId = String(doc.triggerCategoryId || "").trim();
+
+  if (!doc.name) {
+    doc.name = categoryName ? `${categoryName} Upsells` : "Category Upsells";
   }
 
-  if (!doc.name && doc.offer) {
-    doc.name = doc.offer;
-  }
-
-  if (!doc.slug && (doc.name || doc.offer)) {
-    doc.slug = slugify(doc.name || doc.offer);
+  if (!doc.slug) {
+    doc.slug = slugify(`${categoryName || categoryId}-upsells`);
   }
 
   if (!doc.trigger) {
-    const categories = Array.isArray(doc.appliesToCategories)
-      ? doc.appliesToCategories
-      : [];
+    doc.trigger = categoryName ? `Any ${categoryName}` : "Any Category Product";
+  }
 
-    doc.trigger =
-      categories.length > 0
-        ? categories.map((item: string) => `Any ${item}`).join(", ")
-        : "Any Product";
+  if (!doc.offer) {
+    const count = Array.isArray(doc.offerProductIds)
+      ? doc.offerProductIds.length
+      : 0;
+
+    doc.offer = `${count} offer product${count === 1 ? "" : "s"}`;
+  }
+
+  if (!Array.isArray(doc.appliesToCategories) || doc.appliesToCategories.length === 0) {
+    doc.appliesToCategories = categoryName ? [categoryName] : [];
   }
 });
 
-UpsellRuleSchema.index({ storeId: 1, slug: 1 }, { unique: true });
+// One category rule per store.
+UpsellRuleSchema.index(
+  { storeId: 1, triggerCategoryId: 1 },
+  { unique: true }
+);
 
 const UpsellRule =
   mongoose.models.UpsellRule ||

@@ -1,6 +1,6 @@
 "use client";
 
-import type { UpsellRule } from "../types";
+import type { Product, UpsellRule } from "../types";
 import { ActionButtons, EmptyBox, ImageBox, StatusBadge, TableHead } from "./ui";
 
 type StoreItem = {
@@ -79,14 +79,16 @@ function getStoreName(stores: StoreItem[], item: unknown) {
 export default function UpsellTable({
   upsellRules = [],
   stores = [],
+  products = [],
   onEdit,
   onDelete,
 }: {
   upsellRules?: UpsellRule[];
   stores?: StoreItem[];
+  products?: Product[];
   onEdit: (upsell: UpsellRule) => void;
   onDelete: (id: string) => void;
-}) {
+})  {
   const safeUpsells = Array.isArray(upsellRules)
     ? (upsellRules as MongoUpsellRule[])
     : [];

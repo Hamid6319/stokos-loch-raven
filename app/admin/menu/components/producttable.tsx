@@ -19,6 +19,21 @@ type MongoObject = {
   slug?: string;
 };
 
+type ProductStoreConfig = {
+  _id?: string;
+  id?: string;
+  storeId?: string;
+  category?: unknown;
+  categoryId?: unknown;
+  categoryName?: unknown;
+  price?: number;
+  sizes?: Array<{ name?: string; price?: number }>;
+  modifierGroups?: unknown[];
+  upsell?: unknown;
+  status?: string;
+  sortOrder?: number;
+};
+
 function getItemId(item: unknown, fallback: string) {
   if (typeof item === "object" && item !== null) {
     const obj = item as MongoObject;
@@ -54,6 +69,28 @@ function getStoreVariants(store: StoreItem) {
   return [store.slug, store._id, store.id, store.name]
     .filter(Boolean)
     .map((value) => String(value).trim());
+}
+
+function getStoreConfigs(product: Product): ProductStoreConfig[] {
+  return Array.isArray((product as any).storeConfigs)
+    ? ((product as any).storeConfigs as ProductStoreConfig[])
+    : [];
+}
+
+function getProductConfig(product: Product, selectedStoreId?: string) {
+  const configs = getStoreConfigs(product);
+
+  if (!configs.length) return null;
+
+  if (selectedStoreId && selectedStoreId !== "all") {
+    const found = configs.find(
+      (config) => String(config.storeId || "").trim() === selectedStoreId
+    );
+
+    if (found) return found;
+  }
+
+  return configs[0];
 }
 
 function normalizeStoreValue(value: unknown) {
@@ -98,13 +135,30 @@ function isSameStore(
 
   return stores.some((store) => {
     const variants = getStoreVariants(store);
-
     return variants.includes(firstStoreId) && variants.includes(secondStoreId);
   });
 }
 
-function getStoreName(stores: StoreItem[], item: unknown) {
-  const storeId = getItemStoreId(item);
+function getStoreName(stores: StoreItem[], product: Product, selectedStoreId?: string) {
+  const configs = getStoreConfigs(product);
+
+  if (selectedStoreId && selectedStoreId !== "all") {
+    const config = getProductConfig(product, selectedStoreId);
+    const storeId = String(config?.storeId || getItemStoreId(product) || "").trim();
+
+    if (!storeId) return "No Store";
+
+    const foundStore = stores.find((store) => {
+      const variants = getStoreVariants(store);
+      return variants.includes(storeId);
+    });
+
+    return foundStore?.name || storeId;
+  }
+
+  if (configs.length > 1) return `${configs.length} Stores`;
+
+  const storeId = String(configs[0]?.storeId || getItemStoreId(product) || "").trim();
 
   if (!storeId) return "No Store";
 
@@ -140,9 +194,12 @@ function categoryMatchesValue(category: Category, value: string) {
 function getProductCategoryName(
   categories: Category[],
   product: Product,
-  stores: StoreItem[]
+  stores: StoreItem[],
+  selectedStoreId?: string
 ) {
-  const productObj = product as Product & {
+  const config = getProductConfig(product, selectedStoreId);
+
+  const productObj = (config || product) as Product & {
     category?: unknown;
     categoryId?: unknown;
     categoryName?: unknown;
@@ -151,11 +208,9 @@ function getProductCategoryName(
 
   const directCategoryName = String(productObj.categoryName || "").trim();
 
-  if (directCategoryName) {
-    return directCategoryName;
-  }
+  if (directCategoryName) return directCategoryName;
 
-  const productStoreId = getItemStoreId(product);
+  const productStoreId = String(config?.storeId || getItemStoreId(product) || "").trim();
 
   const productCategoryValues = [
     productObj.categoryId,
@@ -194,16 +249,86 @@ function getProductCategoryName(
   return anyCategory?.name || fallbackCategory;
 }
 
+function getProductPriceLabel(product: Product, selectedStoreId?: string) {
+  const configs = getStoreConfigs(product);
+
+  if (configs.length > 0 && (!selectedStoreId || selectedStoreId === "all")) {
+    const prices = configs.map((config) => Number(config.price || 0));
+    const minPrice = Math.min(...prices);
+    const maxPrice = Math.max(...prices);
+
+    if (minPrice === maxPrice) return `$${minPrice.toFixed(2)}`;
+
+    return `$${minPrice.toFixed(2)} - $${maxPrice.toFixed(2)}`;
+  }
+
+  const config = getProductConfig(product, selectedStoreId);
+  const source = config || product;
+  const sizes = Array.isArray((source as any).sizes)
+    ? ((source as any).sizes as Array<{ name?: string; price?: number }>)
+    : [];
+
+  const cleanSizes = sizes
+    .map((size) => ({
+      name: String(size.name || "").trim(),
+      price: Number(size.price || 0),
+    }))
+    .filter((size) => size.name);
+
+  if (cleanSizes.length > 1) {
+    const prices = cleanSizes.map((size) => size.price);
+    const minPrice = Math.min(...prices);
+    const maxPrice = Math.max(...prices);
+
+    if (minPrice === maxPrice) return `$${minPrice.toFixed(2)}`;
+
+    return `$${minPrice.toFixed(2)} - $${maxPrice.toFixed(2)}`;
+  }
+
+  return `$${Number((source as any).price || cleanSizes[0]?.price || 0).toFixed(2)}`;
+}
+
+function getProductSizeCount(product: Product, selectedStoreId?: string) {
+  const config = getProductConfig(product, selectedStoreId);
+  const source = config || product;
+  const sizes = Array.isArray((source as any).sizes)
+    ? ((source as any).sizes as unknown[])
+    : [];
+
+  return sizes.length;
+}
+
+function getProductModifierGroups(product: Product, selectedStoreId?: string) {
+  const config = getProductConfig(product, selectedStoreId);
+  const source = config || product;
+
+  return Array.isArray((source as any).modifierGroups)
+    ? ((source as any).modifierGroups as unknown[])
+    : [];
+}
+
+function getProductStatus(product: Product, selectedStoreId?: string) {
+  const config = getProductConfig(product, selectedStoreId);
+  return String(config?.status || product.status || "Active");
+}
+
+function getProductUpsell(product: Product, selectedStoreId?: string) {
+  const config = getProductConfig(product, selectedStoreId);
+  return getTextValue((config || product as any).upsell, "No upsell");
+}
+
 export default function ProductTable({
   products,
   categories = [],
   stores = [],
+  selectedStoreId = "all",
   onEdit,
   onDelete,
 }: {
   products: Product[];
   categories?: Category[];
   stores?: StoreItem[];
+  selectedStoreId?: string;
   onEdit: (product: Product) => void;
   onDelete: (id: string) => void;
 }) {
@@ -214,7 +339,7 @@ export default function ProductTable({
       <div className="border-b border-zinc-200 bg-zinc-50 p-4">
         <h3 className="text-lg font-black">Products</h3>
         <p className="mt-1 text-sm text-zinc-500">
-          Manage menu items, pricing, images, categories, and modifiers.
+          Product is global. Store-wise category, prices, sizes, modifiers, status, and order come from store configs.
         </p>
       </div>
 
@@ -223,7 +348,7 @@ export default function ProductTable({
           <thead className="border-b border-zinc-200 bg-white">
             <tr>
               <TableHead>Product</TableHead>
-              <TableHead>Store</TableHead>
+              <TableHead>Store Config</TableHead>
               <TableHead>Category</TableHead>
               <TableHead>Price</TableHead>
               <TableHead>Modifiers</TableHead>
@@ -243,19 +368,13 @@ export default function ProductTable({
               const categoryName = getProductCategoryName(
                 categories,
                 product,
-                stores
+                stores,
+                selectedStoreId
               );
 
-              const storeName = getStoreName(stores, product);
-
-              const upsellName = getTextValue(
-                (product as Product & { upsell?: unknown }).upsell,
-                "No upsell"
-              );
-
-              const modifierGroups = Array.isArray(product.modifierGroups)
-                ? product.modifierGroups
-                : [];
+              const storeName = getStoreName(stores, product, selectedStoreId);
+              const upsellName = getProductUpsell(product, selectedStoreId);
+              const modifierGroups = getProductModifierGroups(product, selectedStoreId);
 
               return (
                 <tr key={productId} className="transition hover:bg-green-50/50">
@@ -269,7 +388,7 @@ export default function ProductTable({
                         </p>
 
                         <p className="mt-1 text-xs font-semibold text-zinc-500">
-                          {categoryName}
+                          Master product
                         </p>
                       </div>
                     </div>
@@ -287,8 +406,16 @@ export default function ProductTable({
                     </span>
                   </td>
 
-                  <td className="px-5 py-5 text-sm font-black">
-                    ${Number(product.price || 0).toFixed(2)}
+                  <td className="px-5 py-5">
+                    <div className="text-sm font-black">
+                      {getProductPriceLabel(product, selectedStoreId)}
+                    </div>
+
+                    {getProductSizeCount(product, selectedStoreId) > 1 && (
+                      <div className="mt-1 text-xs font-semibold text-zinc-500">
+                        {getProductSizeCount(product, selectedStoreId)} sizes
+                      </div>
+                    )}
                   </td>
 
                   <td className="px-5 py-5">
@@ -327,7 +454,7 @@ export default function ProductTable({
                   </td>
 
                   <td className="px-5 py-5">
-                    <StatusBadge status={product.status || "Active"} />
+                    <StatusBadge status={getProductStatus(product, selectedStoreId)} />
                   </td>
 
                   <td className="px-5 py-5">
