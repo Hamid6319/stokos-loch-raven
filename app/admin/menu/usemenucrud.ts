@@ -37,6 +37,9 @@ const RESPONSE_KEYS: Record<MenuEntity, string[]> = {
 type MongoItem = {
   _id?: string;
   id?: string;
+  configId?: string;
+  storeConfigId?: string;
+  categoryId?: string;
   slug?: string;
   name?: string;
   offer?: string;
@@ -57,6 +60,24 @@ function getMongoId(item: unknown): string {
   const obj = item as MongoItem;
 
   return String(obj._id || obj.id || obj.slug || obj.name || obj.offer || "");
+}
+
+function getCategoryDeleteIds(item: unknown): string[] {
+  if (!item || typeof item !== "object") return [];
+
+  const obj = item as MongoItem;
+
+  return [
+    obj.storeConfigId,
+    obj.configId,
+    obj._id,
+    obj.id,
+    obj.categoryId,
+    obj.slug,
+    obj.name,
+  ]
+    .map((value) => String(value || "").trim())
+    .filter(Boolean);
 }
 
 function safeArray<T>(value: unknown): T[] {
@@ -157,13 +178,13 @@ async function apiGet<T>(type: MenuEntity): Promise<T[]> {
     const json = await res.json().catch(() => null);
 
     if (!res.ok || json?.success === false) {
-      console.error(`Failed to load ${type}`, json);
+      console.warn(`Failed to load ${type}`, json);
       return [];
     }
 
     return getArrayFromResponse<T>(json, type);
   } catch (error) {
-    console.error(`Failed to load ${type}`, error);
+    console.warn(`Failed to load ${type}`, error);
     return [];
   }
 }
@@ -180,7 +201,7 @@ async function apiCreate<T>(type: MenuEntity, payload: T): Promise<T> {
   const json = await res.json().catch(() => null);
 
   if (!res.ok || json?.success === false) {
-    console.error(`CREATE ${type} ERROR:`, json);
+    console.warn(`CREATE ${type} ERROR:`, json);
     throw new Error(json?.message || `Failed to create ${type}`);
   }
 
@@ -212,7 +233,7 @@ async function apiUpdate<T extends object>(
   const json = await res.json().catch(() => null);
 
   if (!res.ok || json?.success === false) {
-    console.error(`UPDATE ${type} ERROR:`, json);
+    console.warn(`UPDATE ${type} ERROR:`, json);
     throw new Error(json?.message || `Failed to update ${type}`);
   }
 
@@ -231,7 +252,7 @@ async function apiDelete(type: MenuEntity, id: string): Promise<void> {
   const json = await res.json().catch(() => null);
 
   if (!res.ok || json?.success === false) {
-    console.error(`DELETE ${type} ERROR:`, json);
+    console.warn(`DELETE ${type} ERROR:`, json);
     throw new Error(json?.message || `Failed to delete ${type}`);
   }
 }
@@ -1126,13 +1147,18 @@ export function useMenuCrud() {
 
   const deleteCategory = async (id: string) => {
     const oldCategories = categories;
+    const cleanId = String(id || "").trim();
+
+    if (!cleanId) {
+      throw new Error("Missing category ID for delete");
+    }
 
     setCategories((prev) =>
-      prev.filter((item) => getMongoId(item) !== String(id))
+      prev.filter((item) => !getCategoryDeleteIds(item).includes(cleanId))
     );
 
     try {
-      await apiDelete("categories", id);
+      await apiDelete("categories", cleanId);
     } catch (error) {
       setCategories(oldCategories);
       throw error;

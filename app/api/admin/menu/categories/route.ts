@@ -343,7 +343,6 @@ function getErrorMessage(error: any) {
 export async function GET(req: Request) {
   try {
     await connectDB();
-    // await cleanupDuplicateCategoryMasters();
 
     const { searchParams } = new URL(req.url);
     const storeId = searchParams.get("storeId");
@@ -370,7 +369,6 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     await connectDB();
-    await cleanupDuplicateCategoryMasters();
 
     const body = await req.json();
     const categoryPayload = buildCategoryPayload(body);
@@ -440,7 +438,6 @@ export async function POST(req: Request) {
 export async function PATCH(req: Request) {
   try {
     await connectDB();
-    await cleanupDuplicateCategoryMasters();
 
     const body = await req.json();
     const configId = cleanString(body.storeConfigId || body.configId);

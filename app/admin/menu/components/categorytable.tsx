@@ -17,6 +17,9 @@ type StoreItem = {
 type MongoObject = {
   _id?: string;
   id?: string;
+  configId?: string;
+  storeConfigId?: string;
+  categoryId?: string;
   name?: string;
   title?: string;
   offer?: string;
@@ -42,7 +45,16 @@ type CategoryGroup = {
 function getItemId(item: unknown, fallback: string) {
   if (typeof item === "object" && item !== null) {
     const obj = item as MongoObject;
-    return String(obj._id || obj.id || obj.slug || fallback);
+
+    return String(
+      obj.storeConfigId ||
+        obj.configId ||
+        obj._id ||
+        obj.id ||
+        obj.categoryId ||
+        obj.slug ||
+        fallback
+    );
   }
 
   return fallback;
